@@ -17,7 +17,7 @@ extension Suit {
 
 extension Tile {
     /// MPSZ の1文字（数字）とスートから牌を作る。`0` は赤5。
-    fileprivate init?(digit: Character, suit: Suit) {
+    init?(digit: Character, suit: Suit) {
         guard let value = digit.wholeNumberValue else { return nil }
         if value == 0 {
             self.init(suit: suit, rank: 5, isRed: true)
