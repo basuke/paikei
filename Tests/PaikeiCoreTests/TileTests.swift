@@ -54,6 +54,21 @@ struct TileModelTests {
         let red = Tile(suit: .pin, rank: 5, isRed: true)!
         #expect(red.normalized.normalized == red.normalized)
     }
+
+    @Test("牌の性質判定（么九・中張・三元・風）")
+    func classification() {
+        let oneMan = Tile(suit: .man, rank: 1)!
+        #expect(oneMan.isTerminal && oneMan.isTerminalOrHonor && !oneMan.isSimple && !oneMan.isHonor)
+
+        let fiveP = Tile(suit: .pin, rank: 5)!
+        #expect(fiveP.isSimple && !fiveP.isTerminalOrHonor)
+
+        let haku = Tile(suit: .honor, rank: 5)!
+        #expect(haku.isHonor && haku.isTerminalOrHonor && haku.isDragon && !haku.isWind)
+
+        let east = Tile(suit: .honor, rank: 1)!
+        #expect(east.isWind && !east.isDragon && east.isTerminalOrHonor)
+    }
 }
 
 @Suite("風 (Wind) と字牌の相互変換")

@@ -57,6 +57,24 @@ extension Tile {
     public var normalized: Tile {
         isRed ? Tile(suit: suit, rank: rank, isRed: false)! : self
     }
+
+    /// 字牌か。
+    public var isHonor: Bool { suit == .honor }
+
+    /// 老頭牌（数牌の1・9）か。
+    public var isTerminal: Bool { suit.isNumbered && (rank == 1 || rank == 9) }
+
+    /// 么九牌（老頭牌または字牌）か。
+    public var isTerminalOrHonor: Bool { isTerminal || isHonor }
+
+    /// 中張牌（数牌の2〜8）か。
+    public var isSimple: Bool { suit.isNumbered && (2...8).contains(rank) }
+
+    /// 三元牌（白發中）か。
+    public var isDragon: Bool { suit == .honor && (5...7).contains(rank) }
+
+    /// 風牌（東南西北）か。
+    public var isWind: Bool { suit == .honor && (1...4).contains(rank) }
 }
 
 // MARK: - 並び順
