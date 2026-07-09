@@ -28,20 +28,9 @@ enum TileFormatter {
         ts.map(tile).joined(separator: " ")
     }
 
-    /// 手牌をスートごとにまとめた漢字表記。
+    /// 手牌を1枚ずつ漢字表記に（例: `2萬 3萬 4萬 5筒 …`）。
     static func hand(_ tiles: [Tile]) -> String {
-        var groups: [String] = []
-        for suit in [Suit.man, .pin, .sou] {
-            let group = tiles.filter { $0.suit == suit }.sorted()
-            guard !group.isEmpty else { continue }
-            let digits = group.map { $0.isRed ? red("0") : String($0.rank) }.joined()
-            groups.append(digits + suitKanji[suit]!)
-        }
-        let honors = tiles.filter { $0.suit == .honor }.sorted()
-        if !honors.isEmpty {
-            groups.append(honors.map { honorNames[$0.rank - 1] }.joined())
-        }
-        return groups.joined(separator: " ")
+        tiles.sorted().map(tile).joined(separator: " ")
     }
 
     /// 河を漢字表記に。リーチ宣言牌は【】で強調。
