@@ -66,16 +66,36 @@ struct MeldTests {
         #expect(throws: MeldNotationError.self) { try Meld.parse("foo(123p)") }      // 未知の種類
     }
 
-    @Test("ラウンドトリップ: parse → notation → parse")
-    func roundTrip() throws {
-        let samples = ["pon(5'55p,L)", "pon(0'55p,L)", "pon(05'5p,L)", "chi(6'78p)",
-                       "ankan(9999s)", "kakan(5'555p,L)", "daiminkan(9'999s,C)"]
-        for sample in samples {
-            let once = try Meld.parse(sample)
-            #expect(once.notation == sample, "notation mismatch for \(sample)")
-            let twice = try Meld.parse(once.notation)
-            #expect(once == twice, "round-trip failed for \(sample)")
-        }
+    @Test("アポストロフィの異常: 二重・先頭はエラー")
+    func invalidCalledMarker() {
+        #expect(throws: MeldNotationError.self) { try Meld.parse("pon(5''5p,L)") }
+        #expect(throws: MeldNotationError.self) { try Meld.parse("pon('555p,L)") }
+    }
+
+    @Test("大明槓で赤を鳴いたケース")
+    func daiminkanWithRed() throws {
+        let meld = try Meld.parse("daiminkan(0'555s,R)")
+        #expect(meld.tiles[0].isRed)
+        #expect(meld.calledIndex == 0)
+        #expect(meld.from == .shimocha)
+    }
+
+    @Test("外周・方向前後の空白を許容する")
+    func whitespaceTolerance() throws {
+        let meld = try Meld.parse("  pon(5'55p, L)  ")
+        #expect(meld.kind == .pon)
+        #expect(meld.from == .kamicha)
+    }
+
+    @Test("ラウンドトリップ: parse → notation → parse",
+           arguments: ["pon(5'55p,L)", "pon(0'55p,L)", "pon(05'5p,L)", "chi(6'78p)",
+                       "ankan(9999s)", "kakan(5'555p,L)", "daiminkan(9'999s,C)",
+                       "daiminkan(0'555s,R)"])
+    func roundTrip(_ sample: String) throws {
+        let once = try Meld.parse(sample)
+        #expect(once.notation == sample, "notation mismatch for \(sample)")
+        let twice = try Meld.parse(once.notation)
+        #expect(once == twice, "round-trip failed for \(sample)")
     }
 }
 
@@ -119,6 +139,24 @@ struct RiverTests {
     func duplicateAttributes() {
         #expect(throws: RiverNotationError.self) { try RiverTile.parse("5p+-") }
         #expect(throws: RiverNotationError.self) { try RiverTile.parse("5p**") }
+    }
+
+    @Test("属性の順序は寛容（打牌属性と状態属性が逆でも同じ結果）")
+    func lenientAttributeOrder() throws {
+        #expect(try RiverTile.parse("4m*+") == RiverTile.parse("4m+*"))
+        #expect(try RiverTile.parse("5p^-") == RiverTile.parse("5p-^"))
+    }
+
+    @Test("牌本体が無いトークンはエラー")
+    func missingTile() {
+        #expect(throws: RiverNotationError.self) { try RiverTile.parse("+*") }
+        #expect(throws: RiverNotationError.self) { try RiverTile.parse("*") }
+    }
+
+    @Test("空の河の行は空配列")
+    func emptyLine() throws {
+        #expect(try RiverTile.parseLine("") == [])
+        #expect(try RiverTile.parseLine("   ") == [])
     }
 
     @Test("ラウンドトリップ: 河の行")

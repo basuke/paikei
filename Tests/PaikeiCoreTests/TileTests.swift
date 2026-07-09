@@ -33,6 +33,47 @@ struct TileModelTests {
         let five = Tile(suit: .man, rank: 5)!
         #expect(red < five)
     }
+
+    @Test("並び順はスート → 数値の順（スート跨ぎ）")
+    func crossSuitOrdering() {
+        #expect(Tile(suit: .man, rank: 9)! < Tile(suit: .pin, rank: 1)!)
+        #expect(Tile(suit: .sou, rank: 9)! < Tile(suit: .honor, rank: 1)!)
+        #expect(Tile(suit: .pin, rank: 3)! < Tile(suit: .pin, rank: 4)!)
+    }
+
+    @Test("赤5と通常5は Set 上で別要素、normalized は等しい")
+    func redAndNormalAreDistinct() {
+        let red = Tile(suit: .sou, rank: 5, isRed: true)!
+        let five = Tile(suit: .sou, rank: 5)!
+        #expect(Set([red, five]).count == 2)
+        #expect(red.normalized == five.normalized)
+    }
+
+    @Test("normalized は冪等")
+    func normalizedIdempotent() {
+        let red = Tile(suit: .pin, rank: 5, isRed: true)!
+        #expect(red.normalized.normalized == red.normalized)
+    }
+}
+
+@Suite("風 (Wind) と字牌の相互変換")
+struct WindTests {
+    @Test("風 → 字牌 → 風 のラウンドトリップ", arguments: Wind.allCases)
+    func roundTrip(_ wind: Wind) {
+        #expect(Wind(tile: wind.tile) == wind)
+    }
+
+    @Test("東=1z 〜 北=4z の対応")
+    func windToTile() {
+        #expect(Wind.east.tile == Tile(suit: .honor, rank: 1))
+        #expect(Wind.north.tile == Tile(suit: .honor, rank: 4))
+    }
+
+    @Test("三元牌(5z〜7z)や数牌からは風にならない")
+    func nonWindTiles() {
+        #expect(Wind(tile: Tile(suit: .honor, rank: 5)!) == nil)  // 白
+        #expect(Wind(tile: Tile(suit: .man, rank: 1)!) == nil)
+    }
 }
 
 @Suite("MPSZ パース / シリアライズ")
@@ -86,15 +127,34 @@ struct TileNotationTests {
         }
     }
 
-    @Test("ラウンドトリップ: parse → serialize → parse が一致する")
-    func roundTrip() throws {
-        let samples = ["123m456p789s11z", "44056m", "0p0s0m", "1112345678999m"]
-        for sample in samples {
-            let once = try Tile.parseHand(sample)
-            let text = once.mpszString()
-            let twice = try Tile.parseHand(text)
-            #expect(once.sorted() == twice.sorted(), "round-trip failed for \(sample)")
-            #expect(text == twice.mpszString(), "serialize not idempotent for \(sample)")
-        }
+    @Test("空文字列は空の牌列")
+    func parseEmpty() throws {
+        #expect(try Tile.parseHand("") == [])
+    }
+
+    @Test("数字でもスートでもない文字はエラー")
+    func unexpectedCharacter() {
+        #expect(throws: TileNotationError.self) { try Tile.parseHand("12x3m") }
+    }
+
+    @Test("内部の空白は無視される（寛容にパース）")
+    func internalWhitespace() throws {
+        #expect(try Tile.parseHand("1 2 3m") == Tile.parseHand("123m"))
+    }
+
+    @Test("単独パースは2枚以上を拒否する")
+    func parseSingleRejectsMultiple() {
+        #expect(throws: TileNotationError.self) { try Tile.parse("12m") }
+        #expect(throws: TileNotationError.self) { try Tile.parse("") }
+    }
+
+    @Test("ラウンドトリップ: parse → serialize → parse が一致する",
+           arguments: ["123m456p789s11z", "44056m", "0p0s0m", "1112345678999m"])
+    func roundTrip(_ sample: String) throws {
+        let once = try Tile.parseHand(sample)
+        let text = once.mpszString()
+        let twice = try Tile.parseHand(text)
+        #expect(once.sorted() == twice.sorted(), "round-trip failed for \(sample)")
+        #expect(text == twice.mpszString(), "serialize not idempotent for \(sample)")
     }
 }
