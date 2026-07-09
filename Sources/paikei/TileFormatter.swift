@@ -16,11 +16,11 @@ enum TileFormatter {
     private static let suitKanji: [Suit: String] = [.man: "萬", .pin: "筒", .sou: "索"]
     private static let honorNames = ["東", "南", "西", "北", "白", "發", "中"]  // 1z〜7z
 
-    /// 牌1枚の漢字表記。
+    /// 牌1枚の漢字表記。赤5は「赤5萬」のように赤字で表す。
     static func tile(_ t: Tile) -> String {
         if t.suit == .honor { return honorNames[t.rank - 1] }
-        let digit = t.isRed ? red("0") : String(t.rank)
-        return digit + suitKanji[t.suit]!
+        let body = "\(t.rank)\(suitKanji[t.suit]!)"
+        return t.isRed ? red("赤" + body) : body
     }
 
     /// 複数牌をスペース区切りの漢字表記に（河・ドラなど）。
