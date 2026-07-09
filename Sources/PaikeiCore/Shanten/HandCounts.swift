@@ -24,6 +24,19 @@ struct HandCounts {
         return base + tile.rank - 1
     }
 
+    /// 34配列インデックス → 代表牌（赤フラグなし）。受け入れ計算で使う。
+    static func tile(at index: Int) -> Tile {
+        let suit: Suit
+        let base: Int
+        switch index {
+        case 0..<9: (suit, base) = (.man, 0)
+        case 9..<18: (suit, base) = (.pin, 9)
+        case 18..<27: (suit, base) = (.sou, 18)
+        default: (suit, base) = (.honor, 27)
+        }
+        return Tile(suit: suit, rank: index - base + 1)!
+    }
+
     /// 么九牌（老頭牌＋字牌）のインデックス。国士無双で使う。
     static let terminalsAndHonors = [0, 8, 9, 17, 18, 26, 27, 28, 29, 30, 31, 32, 33]
 
