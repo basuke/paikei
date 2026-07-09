@@ -98,6 +98,13 @@ struct TileNotationTests {
         #expect(try Tile.parse("0s") == Tile(suit: .sou, rank: 5, isRed: true))
     }
 
+    @Test("単独牌のシリアライズ（赤は 0）")
+    func singleMpsz() {
+        #expect(Tile(suit: .pin, rank: 3)!.mpsz == "3p")
+        #expect(Tile(suit: .sou, rank: 5, isRed: true)!.mpsz == "0s")
+        #expect(Tile(suit: .honor, rank: 1)!.mpsz == "1z")
+    }
+
     @Test("正規化: 赤0は同種5の直前に置かれる（仕様§2の例）")
     func normalizeRedPlacement() throws {
         let tiles = try Tile.parseHand("44056m")

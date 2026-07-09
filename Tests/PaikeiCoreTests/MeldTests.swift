@@ -159,6 +159,16 @@ struct RiverTests {
         #expect(try RiverTile.parseLine("   ") == [])
     }
 
+    @Test("リーチ宣言牌が鳴かれた牌（* と ^ の併用）は * → ^ の順で正規化")
+    func riichiAndCalledAway() throws {
+        // 仕様§5は状態属性の複数付与順を明示しないため * → ^ を正規形と定める。
+        // パースは順不同を受理する。
+        let a = try RiverTile.parse("4m+*^")
+        #expect(a.declaresRiichi && a.wasCalledAway && a.manner == .tedashi)
+        #expect(a.notation == "4m+*^")
+        #expect(try RiverTile.parse("4m+^*") == a)  // 逆順入力も同一
+    }
+
     @Test("ラウンドトリップ: 河の行")
     func roundTrip() throws {
         let samples = ["1z- 9m+ 5p-^ 4m+* 6p", "9s 1z 2z 4m* 6p", "0s- 3p+ 7z"]
