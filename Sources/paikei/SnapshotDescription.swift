@@ -22,7 +22,7 @@ enum SnapshotDescription {
         if let honba = state.honba, honba > 0 { parts.append("\(honba)本場") }
         if let kyotaku = state.kyotaku, kyotaku > 0 { parts.append("供託\(kyotaku)") }
         if !state.doraMarkers.isEmpty {
-            parts.append("ドラ表示:" + state.doraMarkers.map(\.mpsz).joined(separator: ""))
+            parts.append("ドラ表示:" + TileFormatter.tiles(state.doraMarkers))
         }
         if let wall = state.wall { parts.append("残り\(wall)枚") }
         return parts.joined(separator: " ")
@@ -33,9 +33,10 @@ enum SnapshotDescription {
         if let seat = ps.seat { parts.append(seatName(seat)) }
         if let score = ps.score { parts.append("\(score)点") }
         if ps.riichi == true { parts.append("リーチ") }
-        if let hand = ps.hand { parts.append("手牌:\(hand.mpszString())") }
-        if let draw = ps.draw { parts.append("ツモ:\(draw.mpsz)") }
-        if !ps.melds.isEmpty { parts.append("副露:" + ps.melds.map(\.notation).joined(separator: " ")) }
+        if let hand = ps.hand { parts.append("手牌:\(TileFormatter.hand(hand))") }
+        if let draw = ps.draw { parts.append("ツモ:\(TileFormatter.tile(draw))") }
+        if !ps.melds.isEmpty { parts.append("副露:" + TileFormatter.melds(ps.melds)) }
+        if !ps.river.isEmpty { parts.append("河:" + TileFormatter.river(ps.river)) }
         return parts.joined(separator: " ")
     }
 
@@ -46,7 +47,7 @@ enum SnapshotDescription {
         case let .awaitingDiscard(player, context):
             return "打牌待ち（\(playerName(player)), \(discardContext(context))）"
         case let .awaitingClaim(tile, from, context):
-            return "応答待ち（\(playerName(from))が\(tile.mpsz)を打牌, \(claimContext(context))）"
+            return "応答待ち（\(playerName(from))が\(TileFormatter.tile(tile))を打牌, \(claimContext(context))）"
         }
     }
 
