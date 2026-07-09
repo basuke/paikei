@@ -26,6 +26,7 @@ let package = Package(
         .testTarget(
             name: "PaikeiCoreTests",
             dependencies: ["PaikeiCore"],
+            resources: [.copy("Fixtures")],
             swiftSettings: [.swiftLanguageMode(.v6)]
         ),
     ]

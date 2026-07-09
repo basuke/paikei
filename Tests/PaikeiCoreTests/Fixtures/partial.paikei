@@ -1,0 +1,17 @@
+# partial.paikei — 認識できなかった情報を ? で明示
+bakaze: E
+kyoku: ?
+honba: ?
+kyotaku: 0
+dora_markers: 6m
+wall: ?
+
+[self] seat=?
+hand: 345m22567p45699s
+draw: 3s
+river: 1z 2z 9m
+score: ?
+
+[shimocha] seat=?
+river: 1m 9p 3z 8s
+score: ?

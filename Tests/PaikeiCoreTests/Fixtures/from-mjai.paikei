@@ -1,0 +1,28 @@
+# from-mjai.paikei — MJAIイベントストリームから変換した局面
+bakaze: S
+kyoku: 3
+honba: 0
+kyotaku: 0
+dora_markers: 1z
+wall: 30
+
+[self] seat=S
+hand: 23m456p678s55z22m
+river: 9p- 1z+ 3z- 8m+
+score: 21000
+
+[shimocha] seat=W
+melds: chi(4'56m)
+river: 1z- 9s- 2z+ 7p+^ 3s-
+score: 28000
+
+[toimen] seat=N
+river: 5z- 1m+ 9m- 2p+ 4s+*
+riichi: true
+score: 26000
+
+[kamicha] seat=E
+river: 3z+ 2s- 8p-
+score: 25000
+
+claim_tile: 1m from=toimen

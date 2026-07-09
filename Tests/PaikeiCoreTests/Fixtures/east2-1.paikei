@@ -1,0 +1,27 @@
+# east2-1.paikei — 東2局1本場、下家リーチ、対面ポンあり
+bakaze: E
+kyoku: 2
+honba: 1
+kyotaku: 1
+dora_markers: 3p
+wall: 42
+
+[self] seat=W
+hand: 234m567p23788s11z
+draw: 0s
+river: 1z 9m 1p 9p
+score: 24000
+
+[shimocha] seat=N
+river: 9s 1z 2z 4m* 6p
+riichi: true
+score: 26300
+
+[toimen] seat=E
+melds: pon(5'55p,L)
+river: 1z 3z 9m 1s 2s
+score: 25700
+
+[kamicha] seat=S
+river: 2z 8m 1m 7z 9s
+score: 23000
