@@ -67,6 +67,15 @@ struct YakuTests {
         #expect(yaku.isSuperset(of: [.対々和, .三暗刻]))
     }
 
+    @Test("二盃口は3翻、七対子形より優先される")
+    func ryanpeikou() throws {
+        #expect(Yaku.二盃口.han(menzen: true) == 3)
+        // 112233m445566p77s は七対子形でもあるが、二盃口(3翻)が選ばれる
+        let yaku = try best("112233m445566p77s")
+        #expect(yaku.contains(.二盃口))
+        #expect(!yaku.contains(.七対子))
+    }
+
     @Test("混一色")
     func honitsu() throws {
         #expect(try best("123456789m111z22z", seat: .west, round: .south).contains(.混一色))

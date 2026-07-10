@@ -33,9 +33,11 @@ public enum Yaku: Sendable, Hashable {
             return menzen ? 2 : 1
         case .純全帯幺九, .混一色:
             return menzen ? 3 : 2
+        case .二盃口:
+            return 3  // 面前のみ
         case .清一色:
             return menzen ? 6 : 5
-        case .ダブル立直, .二盃口, .三色同刻, .対々和, .三暗刻, .三槓子, .小三元, .混老頭, .七対子:
+        case .ダブル立直, .三色同刻, .対々和, .三暗刻, .三槓子, .小三元, .混老頭, .七対子:
             return 2
         default:  // 立直/一発/門前ツモ/海底/河底/嶺上/槍槓/役牌/自風/場風/断么九/一盃口
             return 1
