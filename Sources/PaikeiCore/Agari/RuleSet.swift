@@ -12,19 +12,23 @@ public struct RuleSet: Sendable, Equatable {
     public var ippatsu: Bool
     /// 裏ドラを認めるか。
     public var uraDora: Bool
+    /// 連風牌（場風かつ自風）の雀頭の符。伝統的に4、天鳳系は2。
+    public var doubleWindPairFu: Int
 
     public init(
         kuitan: Bool = true,
         redFives: Bool = true,
         roundUpMangan: Bool = false,
         ippatsu: Bool = true,
-        uraDora: Bool = true
+        uraDora: Bool = true,
+        doubleWindPairFu: Int = 4
     ) {
         self.kuitan = kuitan
         self.redFives = redFives
         self.roundUpMangan = roundUpMangan
         self.ippatsu = ippatsu
         self.uraDora = uraDora
+        self.doubleWindPairFu = doubleWindPairFu
     }
 
     /// CLAUDE.md の既定値: 喰いタンあり・赤3枚・切り上げなし・一発/裏あり。

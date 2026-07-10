@@ -8,7 +8,7 @@ public enum Yaku: Sendable, Hashable {
     // 役牌
     case 白, 發, 中, 自風, 場風
     // 形役（1〜3翻）
-    case 断么九, 一盃口, 二盃口, 三色同順, 三色同刻, 一気通貫
+    case 平和, 断么九, 一盃口, 二盃口, 三色同順, 三色同刻, 一気通貫
     case 混全帯幺九, 純全帯幺九, 対々和, 三暗刻, 三槓子, 小三元, 混老頭, 七対子
     // 一色系
     case 混一色, 清一色
@@ -134,6 +134,9 @@ public struct YakuDetector {
 
         let sequences = d.sets.filter { $0.kind == .sequence }
         let triplets = d.sets.filter { $0.kind == .triplet }
+
+        // 平和（待ちの形に依存。判定は符計算と共有）
+        if isPinfu(hand) { result.append(.平和) }
 
         // 役牌（三元牌・自風・場風）
         for triplet in triplets {
