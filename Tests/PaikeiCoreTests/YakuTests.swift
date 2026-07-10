@@ -20,8 +20,9 @@ struct YakuTests {
         let ctx = WinContext(
             seatWind: seat, roundWind: round, winType: winType, winningTile: wt,
             riichi: riichi, doubleRiichi: doubleRiichi, ippatsu: ippatsu)
-        let hands = Agari.winningHands(concealed: tiles, melds: melds, context: ctx, rules: .standard)
-        let detected = hands.map { YakuDetector.detect($0) }
+        let hands = Agari.winningHands(concealed: tiles, melds: melds, context: ctx)
+        let detector = YakuDetector(rules: .standard)
+        let detected = hands.map { detector.detect($0) }
         let menzen = melds.allSatisfy { $0.kind == .ankan }
         let bestList = detected.max { totalHan($0, menzen) < totalHan($1, menzen) } ?? []
         return Set(bestList)
@@ -99,8 +100,9 @@ struct YakumanTests {
     func best(_ concealed: String) throws -> Set<Yaku> {
         let tiles = try Tile.parseHand(concealed)
         let ctx = WinContext(seatWind: .east, roundWind: .east, winType: .tsumo, winningTile: tiles[0])
-        let hands = Agari.winningHands(concealed: tiles, melds: [], context: ctx, rules: .standard)
-        return Set(hands.flatMap { YakuDetector.detect($0) })
+        let hands = Agari.winningHands(concealed: tiles, melds: [], context: ctx)
+        let detector = YakuDetector(rules: .standard)
+        return Set(hands.flatMap { detector.detect($0) })
     }
 
     @Test("国士無双")

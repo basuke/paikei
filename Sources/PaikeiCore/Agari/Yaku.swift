@@ -55,10 +55,16 @@ public enum Yaku: Sendable, Hashable {
     }
 }
 
-/// 役判定。
-public enum YakuDetector {
+/// 役判定器。ルール（喰いタン・一発など）を注入して使う。
+public struct YakuDetector {
+    public let rules: RuleSet
+
+    public init(rules: RuleSet = .standard) {
+        self.rules = rules
+    }
+
     /// 和了手の役を列挙する。役満が1つでもあれば役満のみを返す。
-    public static func detect(_ hand: WinningHand) -> [Yaku] {
+    public func detect(_ hand: WinningHand) -> [Yaku] {
         var yaku: [Yaku] = []
 
         switch hand.form {
@@ -80,12 +86,12 @@ public enum YakuDetector {
 
     // MARK: - 状況役（分解非依存）
 
-    private static func situationalYaku(_ hand: WinningHand) -> [Yaku] {
+    private func situationalYaku(_ hand: WinningHand) -> [Yaku] {
         var result: [Yaku] = []
         let ctx = hand.context
         if ctx.doubleRiichi { result.append(.ダブル立直) }
         else if ctx.riichi { result.append(.立直) }
-        if ctx.ippatsu && hand.rules.ippatsu { result.append(.一発) }
+        if ctx.ippatsu && rules.ippatsu { result.append(.一発) }
         if hand.isMenzen && ctx.winType == .tsumo { result.append(.門前清自摸和) }
         if ctx.lastTile { result.append(ctx.winType == .tsumo ? .海底摸月 : .河底撈魚) }
         if ctx.afterKan { result.append(.嶺上開花) }
@@ -95,12 +101,12 @@ public enum YakuDetector {
 
     // MARK: - スート・么九系（牌集合で判定、分解非依存）
 
-    private static func suitAndTerminalYaku(_ hand: WinningHand) -> [Yaku] {
+    private func suitAndTerminalYaku(_ hand: WinningHand) -> [Yaku] {
         var result: [Yaku] = []
         let tiles = hand.allTiles
 
         if tiles.allSatisfy(\.isSimple) {
-            if hand.isMenzen || hand.rules.kuitan { result.append(.断么九) }
+            if hand.isMenzen || rules.kuitan { result.append(.断么九) }
         }
 
         if tiles.allSatisfy(\.isHonor) { result.append(.字一色) }
@@ -122,7 +128,7 @@ public enum YakuDetector {
 
     // MARK: - 一般形の形役（分解依存）
 
-    private static func standardShapeYaku(_ hand: WinningHand) -> [Yaku] {
+    private func standardShapeYaku(_ hand: WinningHand) -> [Yaku] {
         guard let d = hand.decomposition else { return [] }
         var result: [Yaku] = []
 
@@ -193,7 +199,7 @@ public enum YakuDetector {
     // MARK: - 補助
 
     /// ロンで完成した刻子は明刻扱い（暗刻に数えない）。
-    private static func concealedTripletCount(_ hand: WinningHand) -> Int {
+    private func concealedTripletCount(_ hand: WinningHand) -> Int {
         guard let d = hand.decomposition else { return 0 }
         var count = d.sets.filter { $0.kind == .triplet && $0.isConcealed }.count
         if hand.context.winType == .ron {
@@ -207,39 +213,39 @@ public enum YakuDetector {
         return count
     }
 
-    private static func countIdenticalSequencePairs(_ sequences: [TileGroup]) -> Int {
+    private func countIdenticalSequencePairs(_ sequences: [TileGroup]) -> Int {
         var counts: [[Tile]: Int] = [:]
         for seq in sequences { counts[seq.tiles, default: 0] += 1 }
         return counts.values.reduce(0) { $0 + $1 / 2 }
     }
 
-    private static func hasSanshokuSequence(_ sequences: [TileGroup]) -> Bool {
+    private func hasSanshokuSequence(_ sequences: [TileGroup]) -> Bool {
         (1...7).contains { rank in
             Set(sequences.filter { $0.leadTile.rank == rank && !$0.leadTile.isHonor }
                 .map(\.leadTile.suit)).count == 3
         }
     }
 
-    private static func hasSanshokuTriplet(_ triplets: [TileGroup]) -> Bool {
+    private func hasSanshokuTriplet(_ triplets: [TileGroup]) -> Bool {
         (1...9).contains { rank in
             Set(triplets.filter { $0.leadTile.rank == rank && !$0.leadTile.isHonor }
                 .map(\.leadTile.suit)).count == 3
         }
     }
 
-    private static func hasIttsu(_ sequences: [TileGroup]) -> Bool {
+    private func hasIttsu(_ sequences: [TileGroup]) -> Bool {
         [Suit.man, .pin, .sou].contains { suit in
             Set(sequences.filter { $0.leadTile.suit == suit }.map(\.leadTile.rank))
                 .isSuperset(of: [1, 4, 7])
         }
     }
 
-    private static func isGreen(_ tile: Tile) -> Bool {
+    private func isGreen(_ tile: Tile) -> Bool {
         if tile.suit == .sou { return [2, 3, 4, 6, 8].contains(tile.rank) }
         return tile.suit == .honor && tile.rank == 6  // 發
     }
 
-    private static func dragonYaku(_ tile: Tile) -> Yaku {
+    private func dragonYaku(_ tile: Tile) -> Yaku {
         switch tile.rank {
         case 5: .白
         case 6: .發
@@ -247,7 +253,7 @@ public enum YakuDetector {
         }
     }
 
-    private static func dedup(_ yaku: [Yaku]) -> [Yaku] {
+    private func dedup(_ yaku: [Yaku]) -> [Yaku] {
         var seen: Set<Yaku> = []
         return yaku.filter { seen.insert($0).inserted }
     }

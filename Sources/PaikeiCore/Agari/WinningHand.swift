@@ -12,15 +12,15 @@ public struct WinningHand: Sendable {
     /// 面前か（副露なし。暗槓は面前を保つ）。
     public let isMenzen: Bool
     public let context: WinContext
-    public let rules: RuleSet
 }
 
 extension Agari {
     /// 和了手を全ての読み方で束ねて返す。和了していなければ空。
     ///
     /// `concealed` は純手牌 + 和了牌（14 − 3×副露 枚）。
+    /// ルールは手牌データに持たせず、役・符・点の評価器へ注入する。
     public static func winningHands(
-        concealed: [Tile], melds: [Meld], context: WinContext, rules: RuleSet
+        concealed: [Tile], melds: [Meld], context: WinContext
     ) -> [WinningHand] {
         let isMenzen = melds.allSatisfy { $0.kind == .ankan }
         var hands: [WinningHand] = []
@@ -28,20 +28,18 @@ extension Agari {
         if Decomposition.isThirteenOrphans(concealed: concealed, melds: melds) {
             hands.append(WinningHand(
                 form: .thirteenOrphans, decomposition: nil, melds: melds,
-                allTiles: concealed.map(\.normalized), isMenzen: isMenzen,
-                context: context, rules: rules))
+                allTiles: concealed.map(\.normalized), isMenzen: isMenzen, context: context))
         }
         if Decomposition.isSevenPairs(concealed: concealed, melds: melds) {
             hands.append(WinningHand(
                 form: .sevenPairs, decomposition: nil, melds: melds,
-                allTiles: concealed.map(\.normalized), isMenzen: isMenzen,
-                context: context, rules: rules))
+                allTiles: concealed.map(\.normalized), isMenzen: isMenzen, context: context))
         }
         for decomposition in Decomposition.standard(concealed: concealed, melds: melds) {
             let all = decomposition.sets.flatMap(\.tiles) + decomposition.pair.tiles
             hands.append(WinningHand(
                 form: .standard, decomposition: decomposition, melds: melds,
-                allTiles: all, isMenzen: isMenzen, context: context, rules: rules))
+                allTiles: all, isMenzen: isMenzen, context: context))
         }
         return hands
     }
