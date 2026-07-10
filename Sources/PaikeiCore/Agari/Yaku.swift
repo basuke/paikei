@@ -1,20 +1,59 @@
-/// 成立した役1つ（名前・翻数・役満か）。
-public struct Yaku: Sendable, Equatable, Hashable {
-    public let name: String
-    public let han: Int
-    public let isYakuman: Bool
-
-    public init(name: String, han: Int, isYakuman: Bool = false) {
-        self.name = name
-        self.han = han
-        self.isYakuman = isYakuman
-    }
-}
-
-/// 役判定（仕様フェーズ4・図解③）。
+/// 役（仕様フェーズ4・図解③）。翻数・役満・食い下がりは case から導出する。
 ///
 /// 平和は待ちの形に依存し符計算と密結合のため、ここではなく符計算側で扱う。
 /// ドラ・赤・裏は役ではないため点数計算側で加算する。
+public enum Yaku: Sendable, Hashable {
+    // 状況役
+    case 立直, ダブル立直, 一発, 門前清自摸和, 海底摸月, 河底撈魚, 嶺上開花, 槍槓
+    // 役牌
+    case 白, 發, 中, 自風, 場風
+    // 形役（1〜3翻）
+    case 断么九, 一盃口, 二盃口, 三色同順, 三色同刻, 一気通貫
+    case 混全帯幺九, 純全帯幺九, 対々和, 三暗刻, 三槓子, 小三元, 混老頭, 七対子
+    // 一色系
+    case 混一色, 清一色
+    // 役満
+    case 国士無双, 大三元, 四暗刻, 字一色, 清老頭, 緑一色, 大四喜, 小四喜, 四槓子
+
+    /// 役満か。
+    public var isYakuman: Bool {
+        switch self {
+        case .国士無双, .大三元, .四暗刻, .字一色, .清老頭, .緑一色, .大四喜, .小四喜, .四槓子:
+            true
+        default:
+            false
+        }
+    }
+
+    /// 翻数。面前か否かで食い下がりを反映する。役満は13。
+    public func han(menzen: Bool) -> Int {
+        if isYakuman { return 13 }
+        switch self {
+        case .三色同順, .一気通貫, .混全帯幺九:
+            return menzen ? 2 : 1
+        case .純全帯幺九, .混一色:
+            return menzen ? 3 : 2
+        case .清一色:
+            return menzen ? 6 : 5
+        case .ダブル立直, .二盃口, .三色同刻, .対々和, .三暗刻, .三槓子, .小三元, .混老頭, .七対子:
+            return 2
+        default:  // 立直/一発/門前ツモ/海底/河底/嶺上/槍槓/役牌/自風/場風/断么九/一盃口
+            return 1
+        }
+    }
+
+    /// 表示名。役牌は「役牌 白」のように整形する。
+    public var displayName: String {
+        switch self {
+        case .白: "役牌 白"
+        case .發: "役牌 發"
+        case .中: "役牌 中"
+        default: String(describing: self)
+        }
+    }
+}
+
+/// 役判定。
 public enum YakuDetector {
     /// 和了手の役を列挙する。役満が1つでもあれば役満のみを返す。
     public static func detect(_ hand: WinningHand) -> [Yaku] {
@@ -22,9 +61,9 @@ public enum YakuDetector {
 
         switch hand.form {
         case .thirteenOrphans:
-            yaku.append(Yaku(name: "国士無双", han: 13, isYakuman: true))
+            yaku.append(.国士無双)
         case .sevenPairs:
-            yaku.append(Yaku(name: "七対子", han: 2))
+            yaku.append(.七対子)
             yaku += suitAndTerminalYaku(hand)
             yaku += situationalYaku(hand)
         case .standard:
@@ -33,9 +72,8 @@ public enum YakuDetector {
             yaku += situationalYaku(hand)
         }
 
-        // 役満があれば役満のみ。
         let yakuman = yaku.filter(\.isYakuman)
-        return yakuman.isEmpty ? dedup(yaku) : dedup(yakuman)
+        return dedup(yakuman.isEmpty ? yaku : yakuman)
     }
 
     // MARK: - 状況役（分解非依存）
@@ -43,15 +81,13 @@ public enum YakuDetector {
     private static func situationalYaku(_ hand: WinningHand) -> [Yaku] {
         var result: [Yaku] = []
         let ctx = hand.context
-        if ctx.doubleRiichi { result.append(Yaku(name: "ダブル立直", han: 2)) }
-        else if ctx.riichi { result.append(Yaku(name: "立直", han: 1)) }
-        if ctx.ippatsu && hand.rules.ippatsu { result.append(Yaku(name: "一発", han: 1)) }
-        if hand.isMenzen && ctx.winType == .tsumo { result.append(Yaku(name: "門前清自摸和", han: 1)) }
-        if ctx.lastTile {
-            result.append(Yaku(name: ctx.winType == .tsumo ? "海底摸月" : "河底撈魚", han: 1))
-        }
-        if ctx.afterKan { result.append(Yaku(name: "嶺上開花", han: 1)) }
-        if ctx.robbingKan { result.append(Yaku(name: "槍槓", han: 1)) }
+        if ctx.doubleRiichi { result.append(.ダブル立直) }
+        else if ctx.riichi { result.append(.立直) }
+        if ctx.ippatsu && hand.rules.ippatsu { result.append(.一発) }
+        if hand.isMenzen && ctx.winType == .tsumo { result.append(.門前清自摸和) }
+        if ctx.lastTile { result.append(ctx.winType == .tsumo ? .海底摸月 : .河底撈魚) }
+        if ctx.afterKan { result.append(.嶺上開花) }
+        if ctx.robbingKan { result.append(.槍槓) }
         return result
     }
 
@@ -61,38 +97,22 @@ public enum YakuDetector {
         var result: [Yaku] = []
         let tiles = hand.allTiles
 
-        // 断么九
         if tiles.allSatisfy(\.isSimple) {
-            if hand.isMenzen || hand.rules.kuitan {
-                result.append(Yaku(name: "断么九", han: 1))
-            }
+            if hand.isMenzen || hand.rules.kuitan { result.append(.断么九) }
         }
 
-        // 字一色・清老頭・緑一色（役満）
-        if tiles.allSatisfy(\.isHonor) {
-            result.append(Yaku(name: "字一色", han: 13, isYakuman: true))
-        }
-        if tiles.allSatisfy(\.isTerminal) {
-            result.append(Yaku(name: "清老頭", han: 13, isYakuman: true))
-        }
-        if tiles.allSatisfy(isGreen) {
-            result.append(Yaku(name: "緑一色", han: 13, isYakuman: true))
+        if tiles.allSatisfy(\.isHonor) { result.append(.字一色) }
+        if tiles.allSatisfy(\.isTerminal) { result.append(.清老頭) }
+        if tiles.allSatisfy(isGreen) { result.append(.緑一色) }
+
+        if tiles.allSatisfy(\.isTerminalOrHonor)
+            && !tiles.allSatisfy(\.isHonor) && !tiles.allSatisfy(\.isTerminal) {
+            result.append(.混老頭)
         }
 
-        // 混老頭（すべて么九、順子なし）— 七対子/対々と複合
-        if tiles.allSatisfy(\.isTerminalOrHonor) && !tiles.allSatisfy(\.isHonor) && !tiles.allSatisfy(\.isTerminal) {
-            result.append(Yaku(name: "混老頭", han: 2))
-        }
-
-        // 混一色・清一色
         let numberSuits = Set(tiles.filter { !$0.isHonor }.map(\.suit))
-        let hasHonor = tiles.contains(where: \.isHonor)
         if numberSuits.count == 1 {
-            if hasHonor {
-                result.append(Yaku(name: "混一色", han: hand.isMenzen ? 3 : 2))
-            } else {
-                result.append(Yaku(name: "清一色", han: hand.isMenzen ? 6 : 5))
-            }
+            result.append(tiles.contains(where: \.isHonor) ? .混一色 : .清一色)
         }
 
         return result
@@ -110,81 +130,59 @@ public enum YakuDetector {
         // 役牌（三元牌・自風・場風）
         for triplet in triplets {
             let tile = triplet.leadTile
-            if tile.isDragon { result.append(Yaku(name: "役牌 " + dragonName(tile), han: 1)) }
-            if tile == hand.context.seatWind.tile { result.append(Yaku(name: "自風", han: 1)) }
-            if tile == hand.context.roundWind.tile { result.append(Yaku(name: "場風", han: 1)) }
+            if tile.isDragon { result.append(dragonYaku(tile)) }
+            if tile == hand.context.seatWind.tile { result.append(.自風) }
+            if tile == hand.context.roundWind.tile { result.append(.場風) }
         }
 
         // 小三元 / 大三元
         let dragonTriplets = triplets.filter { $0.leadTile.isDragon }.count
-        let pairIsDragon = d.pair.leadTile.isDragon
         if dragonTriplets == 3 {
-            result.append(Yaku(name: "大三元", han: 13, isYakuman: true))
-        } else if dragonTriplets == 2 && pairIsDragon {
-            result.append(Yaku(name: "小三元", han: 2))
+            result.append(.大三元)
+        } else if dragonTriplets == 2 && d.pair.leadTile.isDragon {
+            result.append(.小三元)
         }
 
-        // 四喜（風牌）
+        // 四喜
         let windTriplets = triplets.filter { $0.leadTile.isWind }.count
-        let pairIsWind = d.pair.leadTile.isWind
         if windTriplets == 4 {
-            result.append(Yaku(name: "大四喜", han: 13, isYakuman: true))
-        } else if windTriplets == 3 && pairIsWind {
-            result.append(Yaku(name: "小四喜", han: 13, isYakuman: true))
+            result.append(.大四喜)
+        } else if windTriplets == 3 && d.pair.leadTile.isWind {
+            result.append(.小四喜)
         }
 
         // 一盃口 / 二盃口（面前限定）
         if hand.isMenzen {
-            let identicalPairs = countIdenticalSequencePairs(sequences)
-            if identicalPairs >= 2 {
-                result.append(Yaku(name: "二盃口", han: 3))
-            } else if identicalPairs == 1 {
-                result.append(Yaku(name: "一盃口", han: 1))
+            switch countIdenticalSequencePairs(sequences) {
+            case 2...: result.append(.二盃口)
+            case 1: result.append(.一盃口)
+            default: break
             }
         }
 
-        // 三色同順
-        if hasSanshokuSequence(sequences) {
-            result.append(Yaku(name: "三色同順", han: hand.isMenzen ? 2 : 1))
-        }
-        // 三色同刻
-        if hasSanshokuTriplet(triplets) {
-            result.append(Yaku(name: "三色同刻", han: 2))
-        }
-        // 一気通貫
-        if hasIttsu(sequences) {
-            result.append(Yaku(name: "一気通貫", han: hand.isMenzen ? 2 : 1))
-        }
+        if hasSanshokuSequence(sequences) { result.append(.三色同順) }
+        if hasSanshokuTriplet(triplets) { result.append(.三色同刻) }
+        if hasIttsu(sequences) { result.append(.一気通貫) }
 
-        // 全帯 / 純全帯（順子ありが条件。全て刻子なら混老頭/清老頭側）
+        // 全帯 / 純全帯（順子ありが条件）
         let allGroups = d.sets + [d.pair]
-        let everyGroupHasTerminalOrHonor = allGroups.allSatisfy { $0.tiles.contains(where: \.isTerminalOrHonor) }
-        if everyGroupHasTerminalOrHonor && !sequences.isEmpty {
-            let anyHonor = hand.allTiles.contains(where: \.isHonor)
-            if anyHonor {
-                result.append(Yaku(name: "混全帯幺九", han: hand.isMenzen ? 2 : 1))
-            } else {
-                result.append(Yaku(name: "純全帯幺九", han: hand.isMenzen ? 3 : 2))
-            }
+        if allGroups.allSatisfy({ $0.tiles.contains(where: \.isTerminalOrHonor) }), !sequences.isEmpty {
+            result.append(hand.allTiles.contains(where: \.isHonor) ? .混全帯幺九 : .純全帯幺九)
         }
 
         // 対々和 / 三暗刻 / 四暗刻
-        if triplets.count == 4 {
-            result.append(Yaku(name: "対々和", han: 2))
-        }
-        let ankou = concealedTripletCount(hand)
-        if ankou == 4 {
-            result.append(Yaku(name: "四暗刻", han: 13, isYakuman: true))
-        } else if ankou == 3 {
-            result.append(Yaku(name: "三暗刻", han: 2))
+        if triplets.count == 4 { result.append(.対々和) }
+        switch concealedTripletCount(hand) {
+        case 4: result.append(.四暗刻)
+        case 3: result.append(.三暗刻)
+        default: break
         }
 
         // 三槓子 / 四槓子
-        let kans = d.sets.filter(\.isKan).count
-        if kans == 4 {
-            result.append(Yaku(name: "四槓子", han: 13, isYakuman: true))
-        } else if kans == 3 {
-            result.append(Yaku(name: "三槓子", han: 2))
+        switch d.sets.filter(\.isKan).count {
+        case 4: result.append(.四槓子)
+        case 3: result.append(.三槓子)
+        default: break
         }
 
         return result
@@ -214,27 +212,24 @@ public enum YakuDetector {
     }
 
     private static func hasSanshokuSequence(_ sequences: [TileGroup]) -> Bool {
-        for rank in 1...7 {
-            let suits = Set(sequences.filter { $0.leadTile.rank == rank && !$0.leadTile.isHonor }.map { $0.leadTile.suit })
-            if suits.count == 3 { return true }
+        (1...7).contains { rank in
+            Set(sequences.filter { $0.leadTile.rank == rank && !$0.leadTile.isHonor }
+                .map(\.leadTile.suit)).count == 3
         }
-        return false
     }
 
     private static func hasSanshokuTriplet(_ triplets: [TileGroup]) -> Bool {
-        for rank in 1...9 {
-            let suits = Set(triplets.filter { $0.leadTile.rank == rank && !$0.leadTile.isHonor }.map { $0.leadTile.suit })
-            if suits.count == 3 { return true }
+        (1...9).contains { rank in
+            Set(triplets.filter { $0.leadTile.rank == rank && !$0.leadTile.isHonor }
+                .map(\.leadTile.suit)).count == 3
         }
-        return false
     }
 
     private static func hasIttsu(_ sequences: [TileGroup]) -> Bool {
-        for suit in [Suit.man, .pin, .sou] {
-            let leads = Set(sequences.filter { $0.leadTile.suit == suit }.map { $0.leadTile.rank })
-            if leads.isSuperset(of: [1, 4, 7]) { return true }
+        [Suit.man, .pin, .sou].contains { suit in
+            Set(sequences.filter { $0.leadTile.suit == suit }.map(\.leadTile.rank))
+                .isSuperset(of: [1, 4, 7])
         }
-        return false
     }
 
     private static func isGreen(_ tile: Tile) -> Bool {
@@ -242,11 +237,11 @@ public enum YakuDetector {
         return tile.suit == .honor && tile.rank == 6  // 發
     }
 
-    private static func dragonName(_ tile: Tile) -> String {
+    private static func dragonYaku(_ tile: Tile) -> Yaku {
         switch tile.rank {
-        case 5: "白"
-        case 6: "發"
-        default: "中"
+        case 5: .白
+        case 6: .發
+        default: .中
         }
     }
 
