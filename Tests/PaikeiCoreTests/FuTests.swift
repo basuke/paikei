@@ -16,18 +16,9 @@ struct FuTests {
         let ctx = WinContext(
             seatWind: seat, roundWind: round, winType: winType,
             winningTile: try Tile.parse(winTile))
-        let hands = Agari.winningHands(concealed: tiles, melds: melds, context: ctx)
-        let detector = YakuDetector()
-        let fuCalc = FuCalculator()
-        let menzen = melds.allSatisfy { $0.kind == .ankan }
-        // 高点法: (翻→符) の順で最良を選ぶ。
-        let best = hands.max {
-            let l = detector.detect($0).reduce(0) { $0 + $1.han(menzen: menzen) }
-            let r = detector.detect($1).reduce(0) { $0 + $1.han(menzen: menzen) }
-            if l != r { return l < r }
-            return fuCalc.calculate($0) < fuCalc.calculate($1)
-        }!
-        return (fuCalc.calculate(best), Set(detector.detect(best)))
+        // 高点法（翻→符）は HandEvaluator の責務。
+        let best = try #require(HandEvaluator().best(concealed: tiles, melds: melds, context: ctx))
+        return (best.fu, Set(best.yaku))
     }
 
     @Test("平和ツモは20符")

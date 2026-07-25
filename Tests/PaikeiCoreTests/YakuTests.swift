@@ -20,16 +20,9 @@ struct YakuTests {
         let ctx = WinContext(
             seatWind: seat, roundWind: round, winType: winType, winningTile: wt,
             riichi: riichi, doubleRiichi: doubleRiichi, ippatsu: ippatsu)
-        let hands = Agari.winningHands(concealed: tiles, melds: melds, context: ctx)
-        let detector = YakuDetector(rules: .standard)
-        let detected = hands.map { detector.detect($0) }
-        let menzen = melds.allSatisfy { $0.kind == .ankan }
-        let bestList = detected.max { totalHan($0, menzen) < totalHan($1, menzen) } ?? []
-        return Set(bestList)
-    }
-
-    func totalHan(_ yaku: [Yaku], _ menzen: Bool) -> Int {
-        yaku.reduce(0) { $0 + $1.han(menzen: menzen) }
+        let evaluator = HandEvaluator(rules: .standard)
+        let best = try #require(evaluator.best(concealed: tiles, melds: melds, context: ctx))
+        return Set(best.yaku)
     }
 
     @Test("断么九 + 門前清自摸和")

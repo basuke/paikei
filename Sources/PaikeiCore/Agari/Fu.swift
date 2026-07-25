@@ -21,7 +21,7 @@ func isPinfu(_ hand: WinningHand) -> Bool {
 }
 
 /// 符計算（仕様フェーズ4）。ルール（連風牌雀頭符など）を注入して使う。
-public struct FuCalculator {
+public struct FuCalculator: Sendable {
     public let rules: RuleSet
 
     public init(rules: RuleSet = .standard) {

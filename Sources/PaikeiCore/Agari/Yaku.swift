@@ -56,7 +56,7 @@ public enum Yaku: Sendable, Hashable {
 }
 
 /// 役判定器。ルール（喰いタン・一発など）を注入して使う。
-public struct YakuDetector {
+public struct YakuDetector: Sendable {
     public let rules: RuleSet
 
     public init(rules: RuleSet = .standard) {
