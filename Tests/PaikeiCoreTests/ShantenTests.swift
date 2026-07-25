@@ -43,6 +43,16 @@ struct StandardShantenTests {
         #expect(try Shanten.standard(Tile.parseHand("123456789m11p"), melds: 1) == -1)  // 和了
         #expect(try Shanten.standard(Tile.parseHand("123m456m11p23p"), melds: 1) == 0)  // テンパイ
     }
+
+    @Test("槓も副露1つとして数える（手牌は 13 − 3×副露 枚）")
+    func withKan() throws {
+        // 暗槓1つ + 手牌10枚。77z/99sのシャンポン待ちテンパイ。
+        #expect(try Shanten.value(Tile.parseHand("234567p77z99s"), melds: 1) == 0)
+        // 和了形（11枚）
+        #expect(try Shanten.value(Tile.parseHand("234567p777z99s"), melds: 1) == -1)
+        // 槓が2つでも同じ（手牌7枚）
+        #expect(try Shanten.value(Tile.parseHand("234p777z9s"), melds: 2) == 0)
+    }
 }
 
 @Suite("シャンテン数: 七対子")

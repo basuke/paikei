@@ -37,6 +37,46 @@ struct DecompositionTests {
         #expect(d.sets.contains { !$0.isConcealed && $0.kind == .triplet })  // 副露のポン
     }
 
+    @Test("暗槓は4枚の面前グループとして分解に入る")
+    func withAnkan() throws {
+        // 暗槓 1111m + 純手牌 11枚 (14 − 3×副露): 234p 567p 777z 99s
+        let concealed = try Tile.parseHand("234567p777z99s")
+        let melds = [try Meld.parse("ankan(1111m)")]
+        let decomps = Decomposition.standard(concealed: concealed, melds: melds)
+        #expect(decomps.count == 1)
+        let d = try #require(decomps.first)
+        #expect(d.sets.count == 4)
+        let kan = try #require(d.sets.first { $0.isKan })
+        #expect(kan.tiles.count == 4)          // 槓は4枚のまま保持
+        #expect(kan.isConcealed)               // 暗槓は面前
+        #expect(kan.kind == .triplet)          // 刻子扱い（isKan で区別）
+    }
+
+    @Test("大明槓・加槓は明刻グループになる")
+    func withOpenKan() throws {
+        let concealed = try Tile.parseHand("234567p777z99s")
+        for text in ["daiminkan(1'111m,C)", "kakan(1'111m,L)"] {
+            let decomps = Decomposition.standard(concealed: concealed, melds: [try Meld.parse(text)])
+            let d = try #require(decomps.first)
+            let kan = try #require(d.sets.first { $0.isKan })
+            #expect(!kan.isConcealed, "\(text) は明槓")
+            #expect(kan.calledFrom != nil)
+        }
+    }
+
+    @Test("槓4つ（四槓子形）でも分解できる")
+    func fourKans() throws {
+        let concealed = try Tile.parseHand("99s")  // 雀頭のみ
+        let melds = try ["ankan(1111m)", "ankan(2222m)", "ankan(3333m)", "ankan(4444m)"]
+            .map { try Meld.parse($0) }
+        let decomps = Decomposition.standard(concealed: concealed, melds: melds)
+        #expect(decomps.count == 1)
+        let d = try #require(decomps.first)
+        #expect(d.sets.count == 4)
+        #expect(d.sets.allSatisfy { $0.isKan })
+        #expect(d.pair.leadTile == Tile(suit: .sou, rank: 9))
+    }
+
     @Test("テンパイ（未和了）は分解ゼロ")
     func notAgari() throws {
         let concealed = try Tile.parseHand("123456789m2355p")  // 13枚テンパイ

@@ -87,6 +87,27 @@ struct YakuTests {
         #expect(try best("111234567m888m99m").contains(.清一色))
     }
 
+    @Test("三槓子（暗槓3つは三暗刻も兼ねる）")
+    func sankantsu() throws {
+        let melds = try ["ankan(1111m)", "ankan(2222m)", "ankan(3333m)"].map { try Meld.parse($0) }
+        let yaku = try best("234p99s", melds: melds, winTile: "9s")
+        #expect(yaku.isSuperset(of: [.三槓子, .三暗刻, .門前清自摸和]))
+    }
+
+    @Test("暗槓は面前を保つ（門前ツモが成立する）")
+    func ankanKeepsMenzen() throws {
+        let yaku = try best("234567p777z99s", melds: [try Meld.parse("ankan(1111m)")], winTile: "9s")
+        #expect(yaku.isSuperset(of: [.門前清自摸和, .中]))
+    }
+
+    @Test("大明槓は面前を崩す（門前ツモが消える）")
+    func daiminkanBreaksMenzen() throws {
+        let yaku = try best("234567p777z99s",
+                            melds: [try Meld.parse("daiminkan(1'111m,C)")], winTile: "9s")
+        #expect(yaku.contains(.中))
+        #expect(!yaku.contains(.門前清自摸和))
+    }
+
     @Test("食い下がり: 三色は面前2翻・鳴き1翻")
     func kuisagari() {
         #expect(Yaku.三色同順.han(menzen: true) == 2)
@@ -126,5 +147,32 @@ struct YakumanTests {
     @Test("字一色")
     func tsuuiisou() throws {
         #expect(try best("111z222z333z444z55z").contains(.字一色))
+    }
+
+    @Test("四槓子（暗槓4つは四暗刻も兼ねる）")
+    func suukantsu() throws {
+        let concealed = try Tile.parseHand("99s")
+        let melds = try ["ankan(1111m)", "ankan(2222m)", "ankan(3333m)", "ankan(4444m)"]
+            .map { try Meld.parse($0) }
+        let ctx = WinContext(seatWind: .east, roundWind: .east, winType: .tsumo,
+                             winningTile: try Tile.parse("9s"))
+        let hands = Agari.winningHands(concealed: concealed, melds: melds, context: ctx)
+        let yaku = Set(hands.flatMap { YakuDetector().detect($0) })
+        #expect(yaku.isSuperset(of: [.四槓子, .四暗刻]))
+        let onlyYakuman = yaku.allSatisfy(\.isYakuman)
+        #expect(onlyYakuman)  // 役満成立時は役満のみ返る
+    }
+
+    @Test("大明槓を含む四槓子は四暗刻にならない")
+    func suukantsuWithOpenKan() throws {
+        let concealed = try Tile.parseHand("99s")
+        let melds = try ["ankan(1111m)", "ankan(2222m)", "ankan(3333m)", "daiminkan(4'444m,C)"]
+            .map { try Meld.parse($0) }
+        let ctx = WinContext(seatWind: .east, roundWind: .east, winType: .tsumo,
+                             winningTile: try Tile.parse("9s"))
+        let hands = Agari.winningHands(concealed: concealed, melds: melds, context: ctx)
+        let yaku = Set(hands.flatMap { YakuDetector().detect($0) })
+        #expect(yaku.contains(.四槓子))
+        #expect(!yaku.contains(.四暗刻))
     }
 }

@@ -23,6 +23,19 @@ struct UkeireTests {
         #expect(uke.total == 4)
     }
 
+    @Test("暗槓ありの待ち（槓の4枚は可視牌として引かれる）")
+    func waitsWithKan() throws {
+        // 暗槓1111m + 234567p 77z 99s → 7z/9s のシャンポン待ち。
+        let uke = Acceptance.ukeire(
+            hand: try Tile.parseHand("234567p77z99s"),
+            melds: 1,
+            visible: try Tile.parseHand("1111m")  // 暗槓の4枚
+        )
+        #expect(uke.shanten == 0)
+        #expect(uke.tiles.map(\.tile) == [Tile(suit: .sou, rank: 9)!, Tile(suit: .honor, rank: 7)!])
+        #expect(uke.total == 4)  // 7z:2 + 9s:2
+    }
+
     @Test("1シャンテンの受け入れ")
     func oneShantenUkeire() throws {
         // 123456789m + 2358p は 1シャンテン

@@ -76,6 +76,51 @@ struct FuTests {
         #expect(r.fu == 40)
     }
 
+    // MARK: - 槓
+
+    @Test("么九の暗槓は32符（単騎ツモで70符）")
+    func terminalAnkanTsumo() throws {
+        // 暗槓1111m + 777z暗刻 + 234p + 567p + 99s単騎。
+        let r = try evaluate("234567p777z99s", melds: [try Meld.parse("ankan(1111m)")],
+                             winType: .tsumo, winTile: "9s")
+        // 20 + 暗槓么九32 + 字牌暗刻8 + ツモ2 + 単騎2 = 64 → 70
+        #expect(r.fu == 70)
+        #expect(r.yaku.isSuperset(of: [.中, .門前清自摸和]))  // 暗槓は面前を保つ
+    }
+
+    @Test("么九の大明槓は16符（単騎ロンで50符）")
+    func terminalDaiminkanRon() throws {
+        let r = try evaluate("234567p777z99s", melds: [try Meld.parse("daiminkan(1'111m,C)")],
+                             winType: .ron, winTile: "9s")
+        // 20 + 明槓么九16 + 字牌暗刻8 + 単騎2 = 46 → 50（鳴きなので門前ロン10符は付かない）
+        #expect(r.fu == 50)
+        #expect(!r.yaku.contains(.門前清自摸和))
+    }
+
+    @Test("加槓は大明槓と同じ明槓の符")
+    func kakanIsOpenKan() throws {
+        let r = try evaluate("234567p777z99s", melds: [try Meld.parse("kakan(1'111m,L)")],
+                             winType: .ron, winTile: "9s")
+        #expect(r.fu == 50)
+    }
+
+    @Test("暗槓は面前を保つので門前ロン10符が付く")
+    func ankanKeepsMenzenRonFu() throws {
+        let r = try evaluate("234567p777z99s", melds: [try Meld.parse("ankan(1111m)")],
+                             winType: .ron, winTile: "9s")
+        // 20 + 門前ロン10 + 暗槓么九32 + 字牌暗刻8 + 単騎2 = 72 → 80
+        #expect(r.fu == 80)
+    }
+
+    @Test("三槓子（暗槓3つ）は90符")
+    func sankantsuFu() throws {
+        let melds = try ["ankan(1111m)", "ankan(2222m)", "ankan(3333m)"].map { try Meld.parse($0) }
+        let r = try evaluate("234p99s", melds: melds, winType: .tsumo, winTile: "9s")
+        // 20 + 暗槓么九32 + 暗槓中張16×2 + ツモ2 + 単騎2 = 88 → 90
+        #expect(r.fu == 90)
+        #expect(r.yaku.isSuperset(of: [.三槓子, .三暗刻]))
+    }
+
     @Test("連風牌の雀頭符はルールで変わる")
     func doubleWindPairFu() throws {
         #expect(RuleSet(doubleWindPairFu: 4).doubleWindPairFu == 4)
