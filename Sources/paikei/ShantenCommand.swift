@@ -15,9 +15,11 @@ struct ShantenCommand: ParsableCommand {
     @Option(name: .shortAndLong, help: "何切るで表示する打牌候補の数")
     var top: Int = 6
 
+    @Option(name: .long, help: "ストリームを N イベント目まで適用した状態で解析（省略時は末尾）")
+    var at: Int?
+
     func run() throws {
-        let text = try String(contentsOfFile: path, encoding: .utf8)
-        let state = try SnapshotParser.parse(text)
+        let state = try DocumentLoading.state(at: path, steps: at)
 
         guard let me = state.players[.myself], let hand = me.hand else {
             throw ValidationError("自分の手牌が不明のためシャンテン計算ができません")

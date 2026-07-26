@@ -446,6 +446,13 @@ river: 3z+ 2s- 8p-
 score: 25000
 
 claim_tile: 1m from=toimen
+
+# 誰も鳴かず、続きをMJAI生ログのまま格納（self_actor=2: 自分が絶対座席2）
+[stream] format=mjai self_actor=2
+{"type":"tsumo","actor":1,"pai":"?"}
+{"type":"dahai","actor":1,"pai":"N","tsumogiri":true}
+{"type":"tsumo","actor":2,"pai":"6m"}
+{"type":"dahai","actor":2,"pai":"2m","tsumogiri":false}
 ```
 
 ---

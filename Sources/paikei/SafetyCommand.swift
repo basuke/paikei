@@ -19,9 +19,11 @@ struct SafetyCommand: ParsableCommand {
     @Argument(help: "対象プレイヤー（shimocha/toimen/kamicha）。省略時はリーチ者")
     var target: String?
 
+    @Option(name: .long, help: "ストリームを N イベント目まで適用した状態で解析（省略時は末尾）")
+    var at: Int?
+
     func run() throws {
-        let text = try String(contentsOfFile: path, encoding: .utf8)
-        let state = try SnapshotParser.parse(text)
+        let state = try DocumentLoading.state(at: path, steps: at)
 
         let targets: [Player]
         if let target {

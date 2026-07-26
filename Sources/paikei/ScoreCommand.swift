@@ -52,9 +52,11 @@ struct ScoreCommand: ParsableCommand {
     @Option(name: .long, help: "裏ドラ表示牌（例: 1m5p）")
     var ura: String?
 
+    @Option(name: .long, help: "ストリームを N イベント目まで適用した状態で解析（省略時は末尾）")
+    var at: Int?
+
     func run() throws {
-        let text = try String(contentsOfFile: path, encoding: .utf8)
-        var state = try SnapshotParser.parse(text)
+        var state = try DocumentLoading.state(at: path, steps: at)
 
         guard let target = Player(rawValue: player) else {
             throw ValidationError("プレイヤー名が不正です: \(player)")

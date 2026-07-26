@@ -8,7 +8,7 @@ struct Paikei: ParsableCommand {
         commandName: "paikei",
         abstract: "麻雀局面解析エンジン Paikei",
         subcommands: [Analyze.self, ShantenCommand.self, ScoreCommand.self,
-                      SafetyCommand.self, Normalize.self]
+                      SafetyCommand.self, ReplayCommand.self, Normalize.self]
     )
 }
 
@@ -21,9 +21,11 @@ struct Analyze: ParsableCommand {
     @Argument(help: ".paikei ファイルへのパス")
     var path: String
 
+    @Option(name: .long, help: "ストリームを N イベント目まで適用した状態で解析（省略時は末尾）")
+    var at: Int?
+
     func run() throws {
-        let text = try String(contentsOfFile: path, encoding: .utf8)
-        let state = try SnapshotParser.parse(text)
+        let state = try DocumentLoading.state(at: path, steps: at)
         print(SnapshotDescription.summary(of: state))
     }
 }
