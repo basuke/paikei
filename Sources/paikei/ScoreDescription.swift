@@ -94,6 +94,25 @@ enum ScoreDescription {
         }
     }
 
+    // MARK: - 矛盾
+
+    /// 文脈フラグの矛盾（コアの検証結果）をエラーメッセージにする。
+    static func text(_ error: WinContextError) -> String {
+        error.contradictions.map(contradiction).joined(separator: "\n")
+    }
+
+    private static func contradiction(_ c: WinContextContradiction) -> String {
+        switch c {
+        case .ippatsuRequiresRiichi:
+            "一発には立直が必要です（--riichi / --double-riichi を付けるか、"
+            + "スナップショットに riichi: true が必要です）"
+        case .afterKanRequiresTsumo:
+            "嶺上開花はツモ和了です（ron と同時には指定できません）"
+        case .robbingKanRequiresRon:
+            "槍槓はロン和了です（tsumo と同時には指定できません）"
+        }
+    }
+
     // MARK: - 仮定と不足情報
 
     private static func assumption(_ assumption: Assumption) -> String {

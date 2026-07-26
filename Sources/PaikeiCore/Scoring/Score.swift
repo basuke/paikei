@@ -81,10 +81,11 @@ public struct ScoreCalculator: Sendable {
     }
 
     /// 手牌から高点法・ドラ計算・点数計算をまとめて行う。和了していなければ nil。
+    /// 文脈が矛盾していれば `WinContextError` を投げる。
     public func score(
         concealed: [Tile], melds: [Meld], context: WinContext, honba: Int = 0, kyotaku: Int = 0
-    ) -> Score? {
-        guard let best = HandEvaluator(rules: rules)
+    ) throws -> Score? {
+        guard let best = try HandEvaluator(rules: rules)
             .best(concealed: concealed, melds: melds, context: context) else { return nil }
         return score(best, dora: DoraCounter(rules: rules).count(best.hand),
                      honba: honba, kyotaku: kyotaku)

@@ -17,7 +17,7 @@ struct FuTests {
             seatWind: seat, roundWind: round, winType: winType,
             winningTile: try Tile.parse(winTile))
         // 高点法（翻→符）は HandEvaluator の責務。
-        let best = try #require(HandEvaluator().best(concealed: tiles, melds: melds, context: ctx))
+        let best = try #require(try HandEvaluator().best(concealed: tiles, melds: melds, context: ctx))
         return (best.fu, Set(best.yaku))
     }
 

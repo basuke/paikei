@@ -18,7 +18,7 @@ struct HandEvaluatorTests {
         // 順子読み: 一盃口(1翻) + 門前ツモ(1翻) = 2翻
         let tiles = try Tile.parseHand("111222333m456p99s")
         let best = try #require(
-            HandEvaluator().best(concealed: tiles, melds: [],
+            try HandEvaluator().best(concealed: tiles, melds: [],
                                  context: try context(winTile: "9s")))
         #expect(best.han == 3)
         #expect(Set(best.yaku) == [.三暗刻, .門前清自摸和])
@@ -31,7 +31,7 @@ struct HandEvaluatorTests {
         // 5mツモ和了だと前者は単騎(2符)、後者は両面(0符)。役はどちらも一盃口で同翻。
         let tiles = try Tile.parseHand("22334455m678p999s")
         let ctx = try context(winTile: "5m")
-        let best = try #require(HandEvaluator().best(concealed: tiles, melds: [], context: ctx))
+        let best = try #require(try HandEvaluator().best(concealed: tiles, melds: [], context: ctx))
         #expect(best.yaku.contains(.一盃口))
         // 20 + 999s暗刻8 + ツモ2 + 単騎2 = 32 → 40（両面読みなら30符）
         #expect(best.fu == 40)
@@ -42,9 +42,9 @@ struct HandEvaluatorTests {
     func deterministic() throws {
         let tiles = try Tile.parseHand("111222333m456p99s")
         let ctx = try context(winTile: "9s")
-        let first = try #require(HandEvaluator().best(concealed: tiles, melds: [], context: ctx))
+        let first = try #require(try HandEvaluator().best(concealed: tiles, melds: [], context: ctx))
         for _ in 0..<20 {
-            let again = try #require(HandEvaluator().best(concealed: tiles, melds: [], context: ctx))
+            let again = try #require(try HandEvaluator().best(concealed: tiles, melds: [], context: ctx))
             #expect(again.fu == first.fu)
             #expect(again.yaku == first.yaku)
             #expect(again.hand.decomposition == first.hand.decomposition)
@@ -54,7 +54,7 @@ struct HandEvaluatorTests {
     @Test("和了していなければ nil")
     func notAgari() throws {
         let tiles = try Tile.parseHand("123456789m2355p")  // 13枚テンパイ
-        #expect(HandEvaluator().best(concealed: tiles, melds: [],
+        #expect(try HandEvaluator().best(concealed: tiles, melds: [],
                                      context: try context(winTile: "5p")) == nil)
     }
 
@@ -66,12 +66,12 @@ struct HandEvaluatorTests {
         let ctx = try context(winType: .ron, winTile: "5p")
 
         let withKuitan = try #require(
-            HandEvaluator(rules: RuleSet(kuitan: true)).best(concealed: tiles, melds: melds, context: ctx))
+            try HandEvaluator(rules: RuleSet(kuitan: true)).best(concealed: tiles, melds: melds, context: ctx))
         #expect(withKuitan.yaku == [.断么九])
         #expect(withKuitan.han == 1)
 
         let withoutKuitan = try #require(
-            HandEvaluator(rules: RuleSet(kuitan: false)).best(concealed: tiles, melds: melds, context: ctx))
+            try HandEvaluator(rules: RuleSet(kuitan: false)).best(concealed: tiles, melds: melds, context: ctx))
         #expect(withoutKuitan.yaku.isEmpty)
         #expect(withoutKuitan.han == 0)
     }
@@ -80,7 +80,7 @@ struct HandEvaluatorTests {
     func yakuman() throws {
         let suuankou = try Tile.parseHand("111222m333p555s77z")
         let single = try #require(
-            HandEvaluator().best(concealed: suuankou, melds: [],
+            try HandEvaluator().best(concealed: suuankou, melds: [],
                                  context: try context(winTile: "7z")))
         #expect(single.isYakuman)
         #expect(single.han == 13)
@@ -89,7 +89,7 @@ struct HandEvaluatorTests {
         let melds = try ["ankan(1111m)", "ankan(2222m)", "ankan(3333m)", "ankan(4444m)"]
             .map { try Meld.parse($0) }
         let double = try #require(
-            HandEvaluator().best(concealed: try Tile.parseHand("99s"), melds: melds,
+            try HandEvaluator().best(concealed: try Tile.parseHand("99s"), melds: melds,
                                  context: try context(winTile: "9s")))
         #expect(Set(double.yaku) == [.四暗刻, .四槓子])
         #expect(double.han == 26)
@@ -101,9 +101,9 @@ struct HandEvaluatorTests {
         let ctx = WinContext(seatWind: .east, roundWind: .east, winType: .tsumo,
                              winningTile: try Tile.parse("8s"),
                              riichi: true, ippatsu: true)
-        let on = try #require(HandEvaluator(rules: RuleSet(ippatsu: true))
+        let on = try #require(try HandEvaluator(rules: RuleSet(ippatsu: true))
             .best(concealed: tiles, melds: [], context: ctx))
-        let off = try #require(HandEvaluator(rules: RuleSet(ippatsu: false))
+        let off = try #require(try HandEvaluator(rules: RuleSet(ippatsu: false))
             .best(concealed: tiles, melds: [], context: ctx))
         #expect(on.yaku.contains(.一発))
         #expect(!off.yaku.contains(.一発))

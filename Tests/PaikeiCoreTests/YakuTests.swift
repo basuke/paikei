@@ -24,7 +24,7 @@ struct YakuTests {
             riichi: riichi, doubleRiichi: doubleRiichi, ippatsu: ippatsu,
             afterKan: afterKan, robbingKan: robbingKan)
         let evaluator = HandEvaluator(rules: .standard)
-        let best = try #require(evaluator.best(concealed: tiles, melds: melds, context: ctx))
+        let best = try #require(try evaluator.best(concealed: tiles, melds: melds, context: ctx))
         return Set(best.yaku)
     }
 
@@ -38,23 +38,29 @@ struct YakuTests {
         #expect(try best("234567m234p55p678s", riichi: true).contains(.立直))
     }
 
-    @Test("一発は立直が前提（立直なしでは付かない）")
+    @Test("一発は立直が前提（立直なしは矛盾としてエラー）")
     func ippatsuRequiresRiichi() throws {
-        #expect(try !best("234567m234p55p678s", ippatsu: true).contains(.一発))
+        #expect(throws: WinContextError(contradictions: [.ippatsuRequiresRiichi])) {
+            _ = try self.best("234567m234p55p678s", ippatsu: true)
+        }
         #expect(try best("234567m234p55p678s", riichi: true, ippatsu: true).contains(.一発))
         #expect(try best("234567m234p55p678s", doubleRiichi: true, ippatsu: true).contains(.一発))
     }
 
-    @Test("嶺上開花はツモ限定")
+    @Test("嶺上開花はツモ限定（ロンとの併用は矛盾としてエラー）")
     func rinshanIsTsumoOnly() throws {
         #expect(try best("234567m234p55p678s", winType: .tsumo, afterKan: true).contains(.嶺上開花))
-        #expect(try !best("234567m234p55p678s", winType: .ron, afterKan: true).contains(.嶺上開花))
+        #expect(throws: WinContextError(contradictions: [.afterKanRequiresTsumo])) {
+            _ = try self.best("234567m234p55p678s", winType: .ron, afterKan: true)
+        }
     }
 
-    @Test("槍槓はロン限定")
+    @Test("槍槓はロン限定（ツモとの併用は矛盾としてエラー）")
     func chankanIsRonOnly() throws {
         #expect(try best("234567m234p55p678s", winType: .ron, robbingKan: true).contains(.槍槓))
-        #expect(try !best("234567m234p55p678s", winType: .tsumo, robbingKan: true).contains(.槍槓))
+        #expect(throws: WinContextError(contradictions: [.robbingKanRequiresRon])) {
+            _ = try self.best("234567m234p55p678s", winType: .tsumo, robbingKan: true)
+        }
     }
 
     @Test("役牌: 場風と自風")
@@ -138,7 +144,7 @@ struct YakumanTests {
         let ctx = WinContext(seatWind: .east, roundWind: .east, winType: .tsumo, winningTile: tiles[0])
         let hands = Agari.winningHands(concealed: tiles, melds: [], context: ctx)
         let detector = YakuDetector(rules: .standard)
-        return Set(hands.flatMap { detector.detect($0) })
+        return try Set(hands.flatMap { try detector.detect($0) })
     }
 
     @Test("国士無双")
@@ -186,7 +192,7 @@ struct YakumanTests {
         let ctx = WinContext(seatWind: .east, roundWind: .east, winType: .tsumo,
                              winningTile: try Tile.parse("9s"))
         let hands = Agari.winningHands(concealed: concealed, melds: melds, context: ctx)
-        let yaku = Set(hands.flatMap { YakuDetector().detect($0) })
+        let yaku = try Set(hands.flatMap { try YakuDetector().detect($0) })
         #expect(yaku.isSuperset(of: [.四槓子, .四暗刻]))
         let onlyYakuman = yaku.allSatisfy(\.isYakuman)
         #expect(onlyYakuman)  // 役満成立時は役満のみ返る
@@ -200,7 +206,7 @@ struct YakumanTests {
         let ctx = WinContext(seatWind: .east, roundWind: .east, winType: .tsumo,
                              winningTile: try Tile.parse("9s"))
         let hands = Agari.winningHands(concealed: concealed, melds: melds, context: ctx)
-        let yaku = Set(hands.flatMap { YakuDetector().detect($0) })
+        let yaku = try Set(hands.flatMap { try YakuDetector().detect($0) })
         #expect(yaku.contains(.四槓子))
         #expect(!yaku.contains(.四暗刻))
     }

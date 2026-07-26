@@ -125,7 +125,7 @@ struct HonbaAndRuleTests {
                              winningTile: try Tile.parse("6s"))
         // 2m・2p・4s がドラ（手牌に1枚ずつ）。
         ctx.doraMarkers = try ["1m", "1p", "3s"].map { try Tile.parse($0) }
-        return try #require(ScoreCalculator(rules: rules).score(
+        return try #require(try ScoreCalculator(rules: rules).score(
             concealed: try Tile.parseHand("234567m234p456s99p"), melds: [], context: ctx))
     }
 
@@ -238,7 +238,7 @@ struct ScoringIntegrationTests {
     func pinfuTsumo() throws {
         let ctx = WinContext(seatWind: .south, roundWind: .east, winType: .tsumo,
                              winningTile: try Tile.parse("6s"), riichi: true)
-        let score = try #require(ScoreCalculator().score(
+        let score = try #require(try ScoreCalculator().score(
             concealed: try Tile.parseHand("234567m234p456s99p"), melds: [], context: ctx))
         #expect(score.han == 3)  // 立直 + 平和 + 門前ツモ
         #expect(score.fu == 20)
@@ -254,9 +254,9 @@ struct ScoringIntegrationTests {
         var withDora = base
         withDora.doraMarkers = [try Tile.parse("1p")]  // 2p がドラ、手牌に1枚
 
-        let plain = try #require(ScoreCalculator().score(
+        let plain = try #require(try ScoreCalculator().score(
             concealed: try Tile.parseHand("234567m234p456s99p"), melds: [], context: base))
-        let dora = try #require(ScoreCalculator().score(
+        let dora = try #require(try ScoreCalculator().score(
             concealed: try Tile.parseHand("234567m234p456s99p"), melds: [], context: withDora))
         #expect(dora.han == plain.han + 1)
         #expect(dora.dora.dora == 1)
@@ -269,7 +269,7 @@ struct ScoringIntegrationTests {
                              winningTile: try Tile.parse("5p"))
         ctx.doraMarkers = [try Tile.parse("4p")]
         let calc = ScoreCalculator(rules: RuleSet(kuitan: false))
-        #expect(calc.score(concealed: try Tile.parseHand("345m678p456s55p"),
+        #expect(try calc.score(concealed: try Tile.parseHand("345m678p456s55p"),
                            melds: [try Meld.parse("pon(2'22m,L)")], context: ctx) == nil)
     }
 
@@ -277,7 +277,7 @@ struct ScoringIntegrationTests {
     func notAgari() throws {
         let ctx = WinContext(seatWind: .south, roundWind: .east, winType: .ron,
                              winningTile: try Tile.parse("5p"))
-        #expect(ScoreCalculator().score(concealed: try Tile.parseHand("123456789m2355p"),
+        #expect(try ScoreCalculator().score(concealed: try Tile.parseHand("123456789m2355p"),
                                         melds: [], context: ctx) == nil)
     }
 
@@ -286,7 +286,7 @@ struct ScoringIntegrationTests {
         var ctx = WinContext(seatWind: .south, roundWind: .east, winType: .tsumo,
                              winningTile: try Tile.parse("7z"))
         ctx.doraMarkers = [try Tile.parse("9m")]  // 1m がドラ（手牌に3枚）
-        let score = try #require(ScoreCalculator().score(
+        let score = try #require(try ScoreCalculator().score(
             concealed: try Tile.parseHand("111222m333p555s77z"), melds: [], context: ctx))
         #expect(score.han == 13)
         #expect(score.limit == .役満(multiplier: 1))
@@ -299,7 +299,7 @@ struct ScoringIntegrationTests {
         // 立直のみ（1翻40符）の子ロン。么九暗刻で 20+門前ロン10+8 = 38 → 40符。
         let ctx = WinContext(seatWind: .south, roundWind: .east, winType: .ron,
                              winningTile: try Tile.parse("4s"), riichi: true)
-        let score = try #require(ScoreCalculator().score(
+        let score = try #require(try ScoreCalculator().score(
             concealed: try Tile.parseHand("111m234p567p234s99m"), melds: [], context: ctx,
             honba: 1, kyotaku: 2))
         #expect(score.han == 1)

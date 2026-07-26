@@ -30,9 +30,9 @@ public struct HandEvaluator: Sendable {
         self.fuCalculator = FuCalculator(rules: rules)
     }
 
-    /// 1つの読み方を評価する。
-    public func evaluate(_ hand: WinningHand) -> HandEvaluation {
-        let yaku = detector.detect(hand)
+    /// 1つの読み方を評価する。文脈が矛盾していれば `WinContextError` を投げる。
+    public func evaluate(_ hand: WinningHand) throws -> HandEvaluation {
+        let yaku = try detector.detect(hand)
         let han = yaku.reduce(0) { $0 + $1.han(menzen: hand.isMenzen) }
         return HandEvaluation(hand: hand, yaku: yaku, han: han, fu: fuCalculator.calculate(hand))
     }
@@ -45,8 +45,8 @@ public struct HandEvaluator: Sendable {
     ///
     /// 役なしの手も評価としては返る（`yaku` が空）。「役なしだから和了できない」の
     /// 判断は点数計算側の責務で、ここでは形の評価に徹する。
-    public func best(_ hands: [WinningHand]) -> HandEvaluation? {
-        hands.map(evaluate).max { lhs, rhs in
+    public func best(_ hands: [WinningHand]) throws -> HandEvaluation? {
+        try hands.map(evaluate).max { lhs, rhs in
             if lhs.han != rhs.han { return lhs.han < rhs.han }
             if lhs.fu != rhs.fu { return lhs.fu < rhs.fu }
             return canonicalKey(lhs.hand) > canonicalKey(rhs.hand)
@@ -54,8 +54,8 @@ public struct HandEvaluator: Sendable {
     }
 
     /// 手牌から直接、最良の読み方を求める。和了していなければ nil。
-    public func best(concealed: [Tile], melds: [Meld], context: WinContext) -> HandEvaluation? {
-        best(Agari.winningHands(concealed: concealed, melds: melds, context: context))
+    public func best(concealed: [Tile], melds: [Meld], context: WinContext) throws -> HandEvaluation? {
+        try best(Agari.winningHands(concealed: concealed, melds: melds, context: context))
     }
 
     /// 同点時の決着用キー。面子を正規化表記で並べた文字列。

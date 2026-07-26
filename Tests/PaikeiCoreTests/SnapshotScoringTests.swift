@@ -37,7 +37,7 @@ struct SnapshotScoringTests {
         let s = try state(dora: [try Tile.parse("3p")],
                           claim: ClaimTile(tile: try Tile.parse("6s"), from: .shimocha))
         let (score, yaku, assumptions) = try scored(
-            s.score(winningTile: try Tile.parse("6s"), winType: .ron))
+            try s.score(winningTile: try Tile.parse("6s"), winType: .ron))
 
         #expect(assumptions.isEmpty)
         #expect(yaku == [.平和])
@@ -51,7 +51,7 @@ struct SnapshotScoringTests {
     @Test("席風が親なら支払いが親のものになる")
     func dealer() throws {
         let s = try state(seat: .east)
-        let (score, _, _) = try scored(s.score(winningTile: try Tile.parse("6s"), winType: .ron))
+        let (score, _, _) = try scored(try s.score(winningTile: try Tile.parse("6s"), winType: .ron))
         #expect(score.payment == .ron(1500 + 300))   // 親の1翻30符 + 1本場
     }
 
@@ -60,7 +60,7 @@ struct SnapshotScoringTests {
         let s = try state(riichi: true)
         let options = WinOptions(ippatsu: true, uraMarkers: [try Tile.parse("3p")])
         let (score, yaku, assumptions) = try scored(
-            s.score(winningTile: try Tile.parse("6s"), winType: .ron, options: options))
+            try s.score(winningTile: try Tile.parse("6s"), winType: .ron, options: options))
 
         #expect(yaku.isSuperset(of: [.立直, .一発, .平和]))
         #expect(score.dora.ura == 1)          // 裏ドラ表示3p → 4p が1枚
@@ -73,7 +73,7 @@ struct SnapshotScoringTests {
         let s = try state(dora: [try Tile.parse("3p")], riichi: true,
                           claim: ClaimTile(tile: try Tile.parse("6s"), from: .shimocha))
         let (_, _, assumptions) = try scored(
-            s.score(winningTile: try Tile.parse("6s"), winType: .ron))
+            try s.score(winningTile: try Tile.parse("6s"), winType: .ron))
         #expect(assumptions == [.noUraMarkers])
     }
 
@@ -83,7 +83,7 @@ struct SnapshotScoringTests {
     func assumptions() throws {
         let s = try state(bakaze: nil, honba: nil, kyotaku: nil, seat: nil, riichi: nil)
         let (score, _, assumptions) = try scored(
-            s.score(winningTile: try Tile.parse("6s"), winType: .ron))
+            try s.score(winningTile: try Tile.parse("6s"), winType: .ron))
 
         // 場風は不明のままだが、この手（風牌なし）では答えが変わらないので注記も出ない。
         #expect(assumptions == [
@@ -94,13 +94,38 @@ struct SnapshotScoringTests {
         #expect(score.payment == .ron(1000))  // 子の1翻30符、本場も供託もなし
     }
 
+    // MARK: - 矛盾した入力は型付きエラーで拒む
+
+    @Test("矛盾したオプションは WinContextError（不足の declined とは別扱い）")
+    func contradictoryOptionsThrow() throws {
+        let s = try state()
+        #expect(throws: WinContextError(contradictions: [.ippatsuRequiresRiichi])) {
+            _ = try s.score(winningTile: try Tile.parse("6s"), winType: .ron,
+                            options: WinOptions(ippatsu: true))
+        }
+        // 立直済みの局面なら同じオプションでも矛盾しない。
+        let riichied = try state(riichi: true)
+        _ = try scored(try riichied.score(winningTile: try Tile.parse("6s"), winType: .ron,
+                                          options: WinOptions(ippatsu: true)))
+    }
+
+    @Test("複数の矛盾は全て列挙される")
+    func multipleContradictions() throws {
+        let s = try state()
+        #expect(throws: WinContextError(
+            contradictions: [.ippatsuRequiresRiichi, .afterKanRequiresTsumo])) {
+            _ = try s.score(winningTile: try Tile.parse("6s"), winType: .ron,
+                            options: WinOptions(ippatsu: true, afterKan: true))
+        }
+    }
+
     // MARK: - 和了の前提を局面と突き合わせる
 
     @Test("ツモ牌と一致するツモ和了は、局面が裏づけているので仮定に挙げない")
     func tsumoBackedByDraw() throws {
         let s = try state(draw: try Tile.parse("6s"))
         let (_, _, assumptions) = try scored(
-            s.score(winningTile: try Tile.parse("6s"), winType: .tsumo))
+            try s.score(winningTile: try Tile.parse("6s"), winType: .tsumo))
         #expect(!assumptions.contains { if case .hypotheticalWin = $0 { true } else { false } })
     }
 
@@ -108,7 +133,7 @@ struct SnapshotScoringTests {
     func ronBackedByClaim() throws {
         let s = try state(claim: ClaimTile(tile: try Tile.parse("6s"), from: .shimocha))
         let (_, _, assumptions) = try scored(
-            s.score(winningTile: try Tile.parse("6s"), winType: .ron))
+            try s.score(winningTile: try Tile.parse("6s"), winType: .ron))
         #expect(!assumptions.contains { if case .hypotheticalWin = $0 { true } else { false } })
     }
 
@@ -116,7 +141,7 @@ struct SnapshotScoringTests {
     func quiescentIsHypothetical() throws {
         let s = try state()  // draw も claim も無い＝静止状態
         let (_, _, assumptions) = try scored(
-            s.score(winningTile: try Tile.parse("6s"), winType: .ron))
+            try s.score(winningTile: try Tile.parse("6s"), winType: .ron))
         #expect(assumptions.first == .hypotheticalWin(try Tile.parse("6s"), .ron))
     }
 
@@ -125,13 +150,13 @@ struct SnapshotScoringTests {
         // ツモ直後なのにロンを指定。
         let drew = try state(draw: try Tile.parse("6s"))
         let (_, _, ronAssumptions) = try scored(
-            drew.score(winningTile: try Tile.parse("6s"), winType: .ron))
+            try drew.score(winningTile: try Tile.parse("6s"), winType: .ron))
         #expect(ronAssumptions.first == .hypotheticalWin(try Tile.parse("6s"), .ron))
 
         // 応答待ちの対象は1zなのに6sのロンを指定。
         let claimed = try state(claim: ClaimTile(tile: try Tile.parse("1z"), from: .shimocha))
         let (_, _, otherTile) = try scored(
-            claimed.score(winningTile: try Tile.parse("6s"), winType: .ron))
+            try claimed.score(winningTile: try Tile.parse("6s"), winType: .ron))
         #expect(otherTile.first == .hypotheticalWin(try Tile.parse("6s"), .ron))
     }
 
@@ -139,7 +164,7 @@ struct SnapshotScoringTests {
     func cannotRonOwnDiscard() throws {
         let s = try state(claim: ClaimTile(tile: try Tile.parse("6s"), from: .myself))
         let (_, _, assumptions) = try scored(
-            s.score(winningTile: try Tile.parse("6s"), winType: .ron))
+            try s.score(winningTile: try Tile.parse("6s"), winType: .ron))
         #expect(assumptions.first == .hypotheticalWin(try Tile.parse("6s"), .ron))
     }
 
@@ -154,18 +179,18 @@ struct SnapshotScoringTests {
     @Test("風で役が変わる手は、風が不明なら仮定せずに断る")
     func windMattersSoDecline() throws {
         let s = try windTripletState()
-        #expect(s.score(winningTile: try Tile.parse("1z"), winType: .ron)
+        #expect(try s.score(winningTile: try Tile.parse("1z"), winType: .ron)
                 == .declined([.roundWind, .seatWind(.myself)]))
     }
 
     @Test("片方だけ不明なら、足りない方だけを挙げる")
     func onlyMissingWindIsReported() throws {
         let noBakaze = try windTripletState(seat: .west)
-        #expect(noBakaze.score(winningTile: try Tile.parse("1z"), winType: .ron)
+        #expect(try noBakaze.score(winningTile: try Tile.parse("1z"), winType: .ron)
                 == .declined([.roundWind]))
 
         let noSeat = try windTripletState(bakaze: .south)
-        #expect(noSeat.score(winningTile: try Tile.parse("1z"), winType: .ron)
+        #expect(try noSeat.score(winningTile: try Tile.parse("1z"), winType: .ron)
                 == .declined([.seatWind(.myself)]))
     }
 
@@ -190,7 +215,7 @@ struct SnapshotScoringTests {
                 seat: nil, hand: try Tile.parseHand("19m19p19s1234567z"), riichi: false)],
             claim: ClaimTile(tile: try Tile.parse("1z"), from: .toimen))
         let (score, yaku, assumptions) = try scored(
-            s.score(winningTile: try Tile.parse("1z"), winType: .ron))
+            try s.score(winningTile: try Tile.parse("1z"), winType: .ron))
         #expect(yaku == [.国士無双])
         #expect(score.total == 32000)              // 子の役満
         #expect(assumptions == [.seatWind(.south)]) // 残るのは親子の仮定だけ
@@ -200,7 +225,7 @@ struct SnapshotScoringTests {
     func seatAssumptionIsNonDealer() throws {
         let s = try state(seat: nil)
         let (score, _, assumptions) = try scored(
-            s.score(winningTile: try Tile.parse("6s"), winType: .ron))
+            try s.score(winningTile: try Tile.parse("6s"), winType: .ron))
         #expect(assumptions.contains(.seatWind(.south)))
         #expect(score.payment == .ron(1000 + 300))  // 子の支払い
     }
@@ -210,21 +235,21 @@ struct SnapshotScoringTests {
     @Test("手牌が不明なら必要な情報を宣言して断る")
     func handUnknown() throws {
         let s = GameState(players: [.myself: PlayerState(seat: .west, hand: nil)])
-        #expect(s.score(winningTile: try Tile.parse("6s"), winType: .ron)
+        #expect(try s.score(winningTile: try Tile.parse("6s"), winType: .ron)
                 == .declined([.hand(.myself)]))
     }
 
     @Test("そもそもプレイヤーが観測されていなければ断る")
     func playerUnknown() throws {
         let s = try state()
-        #expect(s.score(for: .toimen, winningTile: try Tile.parse("6s"), winType: .ron)
+        #expect(try s.score(for: .toimen, winningTile: try Tile.parse("6s"), winType: .ron)
                 == .declined([.hand(.toimen)]))
     }
 
     @Test("手牌の枚数が合わなければ断る（黙って推測しない）")
     func wrongHandSize() throws {
         let s = try state(hand: "234567m234p456s")  // 12枚
-        #expect(s.score(winningTile: try Tile.parse("6s"), winType: .ron)
+        #expect(try s.score(winningTile: try Tile.parse("6s"), winType: .ron)
                 == .declined([.handSize(actual: 12, expected: 13)]))
     }
 
@@ -233,13 +258,13 @@ struct SnapshotScoringTests {
         // 和了牌を含む14枚形。二重に足さず、そのまま14枚として扱う。
         let ok = try state(hand: "234567m234p456s99p")  // 6s を含む14枚
         let (score, yaku, _) = try scored(
-            ok.score(winningTile: try Tile.parse("6s"), winType: .ron))
+            try ok.score(winningTile: try Tile.parse("6s"), winType: .ron))
         #expect(yaku == [.平和])
         #expect(score.fu == 30)
 
         // 14枚形なのに和了牌が入っていない場合は断る。
         let ng = try state(hand: "234567m234p45s99p1z")
-        #expect(ng.score(winningTile: try Tile.parse("6s"), winType: .ron)
+        #expect(try ng.score(winningTile: try Tile.parse("6s"), winType: .ron)
                 == .declined([.winningTileInHand(try Tile.parse("6s"))]))
     }
 
@@ -248,7 +273,7 @@ struct SnapshotScoringTests {
     @Test("和了形でなければそう答える")
     func notAWinningShape() throws {
         let s = try state(hand: "234567m234p456s93p")
-        #expect(s.score(winningTile: try Tile.parse("6s"), winType: .ron)
+        #expect(try s.score(winningTile: try Tile.parse("6s"), winType: .ron)
                 == .notAWin(.notAWinningShape))
     }
 
@@ -261,10 +286,10 @@ struct SnapshotScoringTests {
             players: [.myself: PlayerState(
                 seat: .west, hand: try Tile.parseHand("345m678p456s55p"),
                 melds: [try Meld.parse("pon(2'22m,L)")], riichi: false)])
-        #expect(s.score(winningTile: try Tile.parse("5p"), winType: .ron,
+        #expect(try s.score(winningTile: try Tile.parse("5p"), winType: .ron,
                         rules: RuleSet(kuitan: false)) == .notAWin(.noYaku))
         // 喰いタンありなら断么九で和了できる。
-        guard case .scored = s.score(winningTile: try Tile.parse("5p"), winType: .ron,
+        guard case .scored = try s.score(winningTile: try Tile.parse("5p"), winType: .ron,
                                      rules: RuleSet(kuitan: true)) else {
             Issue.record("喰いタンありなら和了できるはず")
             return
@@ -289,7 +314,7 @@ struct SnapshotScoringTests {
             """
         let s = try SnapshotParser.parse(text)
         let (score, yaku, assumptions) = try scored(
-            s.score(winningTile: try Tile.parse("9s"), winType: .tsumo))
+            try s.score(winningTile: try Tile.parse("9s"), winType: .tsumo))
 
         #expect(assumptions.isEmpty)
         #expect(yaku.isSuperset(of: [.中, .門前清自摸和]))  // 暗槓は面前を保つ

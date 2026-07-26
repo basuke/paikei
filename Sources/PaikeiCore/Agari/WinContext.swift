@@ -11,6 +11,28 @@ public enum AgariForm: Sendable, Equatable {
     case thirteenOrphans // 国士無双
 }
 
+/// `WinContext` の文脈フラグの矛盾。麻雀のルール上ありえない組み合わせを表す。
+///
+/// 観測の不足（`Requirement`）とは別物で、これは**呼び出し側の入力の誤り**。
+/// 解析は矛盾を黙って握りつぶさず、`WinContextError` で拒む。
+public enum WinContextContradiction: Sendable, Equatable {
+    /// 一発には立直（ダブル立直を含む）が必要。
+    case ippatsuRequiresRiichi
+    /// 嶺上開花はツモ和了のみ。
+    case afterKanRequiresTsumo
+    /// 槍槓はロン和了のみ。
+    case robbingKanRequiresRon
+}
+
+/// 矛盾した `WinContext` で解析を呼んだときのエラー。見つかった矛盾を全て持つ。
+public struct WinContextError: Error, Equatable, Sendable {
+    public let contradictions: [WinContextContradiction]
+
+    public init(contradictions: [WinContextContradiction]) {
+        self.contradictions = contradictions
+    }
+}
+
 /// 和了計算に必要な、手牌からは読み取れない文脈情報（仕様§1の履歴層など）。
 ///
 /// 一発・海底などの履歴依存情報は、スナップショットに持たず解析時に与える（仕様§10-1）。
@@ -68,5 +90,22 @@ public struct WinContext: Sendable, Equatable {
         self.robbingKan = robbingKan
         self.doraMarkers = doraMarkers
         self.uraMarkers = uraMarkers
+    }
+}
+
+extension WinContext {
+    /// 文脈フラグの矛盾を列挙する。空なら整合している。
+    public var contradictions: [WinContextContradiction] {
+        var result: [WinContextContradiction] = []
+        if ippatsu && !(riichi || doubleRiichi) { result.append(.ippatsuRequiresRiichi) }
+        if afterKan && winType != .tsumo { result.append(.afterKanRequiresTsumo) }
+        if robbingKan && winType != .ron { result.append(.robbingKanRequiresRon) }
+        return result
+    }
+
+    /// 矛盾があれば `WinContextError` を投げる。役判定の入口で呼ばれる。
+    public func validate() throws {
+        let found = contradictions
+        guard found.isEmpty else { throw WinContextError(contradictions: found) }
     }
 }

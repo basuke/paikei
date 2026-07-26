@@ -84,26 +84,19 @@ struct ScoreCommand: ParsableCommand {
             state.players[target, default: PlayerState()].riichi = true
         }
 
-        // 定義上あり得ない組み合わせは計算せずにエラーにする（黙って落とさない）。
-        if ippatsu && state.players[target]?.riichi != true {
-            throw ValidationError(
-                "一発には立直が必要です（--riichi / --double-riichi を付けるか、"
-                + "スナップショットに riichi: true が必要です）")
-        }
-        if rinshan && type != .tsumo {
-            throw ValidationError("嶺上開花はツモ和了です（ron と同時には指定できません）")
-        }
-        if chankan && type != .ron {
-            throw ValidationError("槍槓はロン和了です（tsumo と同時には指定できません）")
-        }
-
         let options = WinOptions(
             doubleRiichi: doubleRiichi, ippatsu: ippatsu, lastTile: haitei,
             afterKan: rinshan, robbingKan: chankan,
             uraMarkers: try ura.map { try Tile.parseHand($0) } ?? [])
+        let winningTile = try Tile.parse(tile)
 
-        let analysis = state.score(
-            for: target, winningTile: try Tile.parse(tile), winType: type, options: options)
-        print(ScoreDescription.text(analysis, player: target))
+        // 矛盾の検証はコア（WinContext.validate）の責務。CLI は表示に変換するだけ。
+        do {
+            let analysis = try state.score(
+                for: target, winningTile: winningTile, winType: type, options: options)
+            print(ScoreDescription.text(analysis, player: target))
+        } catch let error as WinContextError {
+            throw ValidationError(ScoreDescription.text(error))
+        }
     }
 }

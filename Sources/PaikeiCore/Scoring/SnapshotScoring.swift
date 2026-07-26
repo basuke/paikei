@@ -94,13 +94,16 @@ extension GameState {
     /// 手牌そのものが無い・枚数が合わないときは仮定で埋めず、必要な情報を宣言して断る。
     ///
     /// 一発・海底・裏ドラなど履歴に依存する情報は `options` で与える（仕様§10の論点1）。
+    ///
+    /// `options` が矛盾している（一発なのに立直がない等）ときは `WinContextError` を投げる。
+    /// 観測の不足（`declined`）と違い、これは呼び出し側の入力の誤り。
     public func score(
         for player: Player = .myself,
         winningTile: Tile,
         winType: WinType,
         options: WinOptions = WinOptions(),
         rules: RuleSet = .standard
-    ) -> ScoreAnalysis {
+    ) throws -> ScoreAnalysis {
         guard let ps = players[player], let hand = ps.hand else {
             return .declined([.hand(player)])
         }
@@ -151,9 +154,13 @@ extension GameState {
                 uraMarkers: options.uraMarkers)
         }
 
+        // 文脈フラグの矛盾は風の選び方によらないので、代表の風で先に検査する。
+        // 以降の評価呼び出しが WinContextError を投げることはない。
+        try context(round: .east, seat: .east).validate()
+
         // 風が不明なら、候補を総当たりして答えが実際に変わるかを確かめる。
         // 変わらないなら仮定は無害（国士や風牌のない手）。変わるなら仮定せず断る。
-        let missingWinds = unresolvableWinds(
+        let missingWinds = try unresolvableWinds(
             for: player, concealed: concealed, melds: ps.melds, rules: rules, context: context)
         guard missingWinds.isEmpty else { return .declined(missingWinds) }
 
@@ -162,7 +169,7 @@ extension GameState {
         let seatWind = ps.seat ?? .south
         if ps.seat == nil { assumptions.insert(.seatWind(.south), at: 0) }
 
-        guard let best = HandEvaluator(rules: rules)
+        guard let best = try HandEvaluator(rules: rules)
             .best(concealed: concealed, melds: ps.melds, context: context(round: roundWind, seat: seatWind)) else {
             return .notAWin(.notAWinningShape)
         }
@@ -210,14 +217,14 @@ extension GameState {
     private func unresolvableWinds(
         for player: Player, concealed: [Tile], melds: [Meld], rules: RuleSet,
         context: (Wind, Wind) -> WinContext
-    ) -> [Requirement] {
+    ) throws -> [Requirement] {
         /// 風の選び方による違いを見るための、役と符の組。nil は和了形でないこと。
         struct Outcome: Hashable {
             let yaku: Set<Yaku>
             let fu: Int
         }
-        func outcome(round: Wind, seat: Wind) -> Outcome? {
-            HandEvaluator(rules: rules)
+        func outcome(round: Wind, seat: Wind) throws -> Outcome? {
+            try HandEvaluator(rules: rules)
                 .best(concealed: concealed, melds: melds, context: context(round, seat))
                 .map { Outcome(yaku: Set($0.yaku), fu: $0.fu) }
         }
@@ -226,16 +233,17 @@ extension GameState {
         let seats = players[player]?.seat.map { [$0] } ?? Wind.allCases
 
         // 片方を固定したときに、もう片方を動かして結果が変わるか。
-        let roundMatters = rounds.count > 1 && seats.contains { seat in
-            Set(rounds.map { outcome(round: $0, seat: seat) }).count > 1
-        }
-        let seatMatters = seats.count > 1 && rounds.contains { round in
-            Set(seats.map { outcome(round: round, seat: $0) }).count > 1
-        }
-
         var missing: [Requirement] = []
-        if roundMatters { missing.append(.roundWind) }
-        if seatMatters { missing.append(.seatWind(player)) }
+        if rounds.count > 1, try seats.contains(where: { seat in
+            try Set(rounds.map { try outcome(round: $0, seat: seat) }).count > 1
+        }) {
+            missing.append(.roundWind)
+        }
+        if seats.count > 1, try rounds.contains(where: { round in
+            try Set(seats.map { try outcome(round: round, seat: $0) }).count > 1
+        }) {
+            missing.append(.seatWind(player))
+        }
         return missing
     }
 }

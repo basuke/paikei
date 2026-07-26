@@ -64,7 +64,10 @@ public struct YakuDetector: Sendable {
     }
 
     /// 和了手の役を列挙する。役満が1つでもあれば役満のみを返す。
-    public func detect(_ hand: WinningHand) -> [Yaku] {
+    ///
+    /// 文脈フラグが矛盾していれば `WinContextError` を投げる（黙って無視しない）。
+    public func detect(_ hand: WinningHand) throws -> [Yaku] {
+        try hand.context.validate()
         var yaku: [Yaku] = []
 
         switch hand.form {
@@ -89,15 +92,15 @@ public struct YakuDetector: Sendable {
     private func situationalYaku(_ hand: WinningHand) -> [Yaku] {
         var result: [Yaku] = []
         let ctx = hand.context
-        let riichi = ctx.riichi || ctx.doubleRiichi
+        // 矛盾した組み合わせ（一発×立直なし、嶺上×ロン、槍槓×ツモ）は
+        // detect 冒頭の validate() で拒否済み。ここではフラグを信頼してよい。
         if ctx.doubleRiichi { result.append(.ダブル立直) }
         else if ctx.riichi { result.append(.立直) }
-        // 文脈フラグは呼び出し側の入力なので、成立の前提と矛盾するときは付けない。
-        if ctx.ippatsu && rules.ippatsu && riichi { result.append(.一発) }  // 一発は立直が前提
+        if ctx.ippatsu && rules.ippatsu { result.append(.一発) }
         if hand.isMenzen && ctx.winType == .tsumo { result.append(.門前清自摸和) }
         if ctx.lastTile { result.append(ctx.winType == .tsumo ? .海底摸月 : .河底撈魚) }
-        if ctx.afterKan && ctx.winType == .tsumo { result.append(.嶺上開花) }  // 嶺上はツモ限定
-        if ctx.robbingKan && ctx.winType == .ron { result.append(.槍槓) }      // 槍槓はロン限定
+        if ctx.afterKan { result.append(.嶺上開花) }
+        if ctx.robbingKan { result.append(.槍槓) }
         return result
     }
 
