@@ -25,6 +25,12 @@ struct ScoreCommand: ParsableCommand {
     @Option(name: .long, help: "対象プレイヤー（self/shimocha/toimen/kamicha）")
     var player: String = "self"
 
+    @Option(name: .long, help: "場風（E/S/W/N）。スナップショットの値を上書きする")
+    var bakaze: String?
+
+    @Option(name: .long, help: "対象プレイヤーの席風（E/S/W/N）。スナップショットの値を上書きする")
+    var seat: String?
+
     @Flag(name: .long, help: "ダブル立直")
     var doubleRiichi = false
 
@@ -45,10 +51,23 @@ struct ScoreCommand: ParsableCommand {
 
     func run() throws {
         let text = try String(contentsOfFile: path, encoding: .utf8)
-        let state = try SnapshotParser.parse(text)
+        var state = try SnapshotParser.parse(text)
 
         guard let target = Player(rawValue: player) else {
             throw ValidationError("プレイヤー名が不正です: \(player)")
+        }
+        // 認識できなかった風をその場で補える（ファイルを書き換えずに済む）。
+        if let bakaze {
+            guard let wind = Wind(rawValue: bakaze) else {
+                throw ValidationError("場風は E/S/W/N で指定してください: \(bakaze)")
+            }
+            state.bakaze = wind
+        }
+        if let seat {
+            guard let wind = Wind(rawValue: seat) else {
+                throw ValidationError("席風は E/S/W/N で指定してください: \(seat)")
+            }
+            state.players[target, default: PlayerState()].seat = wind
         }
         let type: WinType
         switch winType {

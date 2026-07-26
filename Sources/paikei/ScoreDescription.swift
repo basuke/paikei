@@ -98,10 +98,9 @@ enum ScoreDescription {
 
     private static func assumption(_ assumption: Assumption) -> String {
         switch assumption {
-        case .roundWind(let wind):
-            return "場風が不明なので\(windName(wind))場と仮定"
         case .seatWind(let wind):
-            return "席風が不明なので\(windName(wind))家と仮定（自風の役牌と親子の別が変わります）"
+            return "席風が不明なので\(windName(wind))家（子）と仮定"
+                + "（役・符は風によらず同じですが、実際が親なら支払いが変わります）"
         case .notRiichi:
             return "立直の有無が不明なので立直なしと仮定"
         case .noDoraMarkers:
@@ -119,6 +118,11 @@ enum ScoreDescription {
         switch requirement {
         case .hand(let player):
             return "\(playerName(player))の手牌"
+        case .roundWind:
+            return "場風（この手は場風によって役が変わります。--bakaze で指定できます）"
+        case .seatWind(let player):
+            return "\(playerName(player))の席風"
+                + "（この手は自風によって役が変わります。--seat で指定できます）"
         case let .handSize(actual, expected):
             return "手牌の枚数が合いません（\(actual)枚。\(expected)枚か\(expected + 1)枚のはず）"
         case .winningTileInHand(let tile):

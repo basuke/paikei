@@ -73,18 +73,70 @@ struct SnapshotScoringTests {
 
     // MARK: - 不明を仮定で埋める
 
-    @Test("場風・席風・立直・ドラ・本場・供託の不明は仮定して答える")
+    @Test("立直・ドラ・本場・供託の不明は仮定して答える（答えが低めに出るだけ）")
     func assumptions() throws {
         let s = try state(bakaze: nil, honba: nil, kyotaku: nil, seat: nil, riichi: nil)
         let (score, _, assumptions) = try scored(
             s.score(winningTile: try Tile.parse("6s"), winType: .ron))
 
+        // 場風は不明のままだが、この手（風牌なし）では答えが変わらないので注記も出ない。
         #expect(assumptions == [
-            .roundWind(.east), .seatWind(.south), .notRiichi,
-            .noDoraMarkers, .noHonba, .noKyotaku,
+            .seatWind(.south), .notRiichi, .noDoraMarkers, .noHonba, .noKyotaku,
         ])
         #expect(score.han == 1)               // 平和のみ（ドラ0）
         #expect(score.payment == .ron(1000))  // 子の1翻30符、本場も供託もなし
+    }
+
+    // MARK: - 風が答えを変えるときは断る
+
+    /// 1z（東）の刻子で和了する手。場風・自風の役牌が付くかどうかが風で決まる。
+    func windTripletState(bakaze: Wind? = nil, seat: Wind? = nil) throws -> GameState {
+        try state(bakaze: bakaze, honba: 0, kyotaku: 0, seat: seat,
+                  hand: "234m567p234s99p11z")
+    }
+
+    @Test("風で役が変わる手は、風が不明なら仮定せずに断る")
+    func windMattersSoDecline() throws {
+        let s = try windTripletState()
+        #expect(s.score(winningTile: try Tile.parse("1z"), winType: .ron)
+                == .declined([.roundWind, .seatWind(.myself)]))
+    }
+
+    @Test("片方だけ不明なら、足りない方だけを挙げる")
+    func onlyMissingWindIsReported() throws {
+        let noBakaze = try windTripletState(seat: .west)
+        #expect(noBakaze.score(winningTile: try Tile.parse("1z"), winType: .ron)
+                == .declined([.roundWind]))
+
+        let noSeat = try windTripletState(bakaze: .south)
+        #expect(noSeat.score(winningTile: try Tile.parse("1z"), winType: .ron)
+                == .declined([.seatWind(.myself)]))
+    }
+
+    @Test("風を与えれば答えが出る。与える値で結果が変わることも確認")
+    func windSupplied() throws {
+        // 東場・東家以外 → 1z は役牌でないので役なし。
+        #expect(try windTripletState(bakaze: .south, seat: .west)
+            .score(winningTile: try Tile.parse("1z"), winType: .ron) == .notAWin(.noYaku))
+
+        // 東場 → 1z が場風になる。
+        let (score, yaku, _) = try scored(try windTripletState(bakaze: .east, seat: .south)
+            .score(winningTile: try Tile.parse("1z"), winType: .ron))
+        #expect(yaku == [.場風])
+        #expect(score.payment == .ron(1300))  // 子の1翻40符
+    }
+
+    @Test("風牌だらけでも答えが変わらないなら答える（国士無双）")
+    func kokushiAnswersWithoutWinds() throws {
+        let s = GameState(
+            bakaze: nil, kyoku: nil, honba: 0, kyotaku: 0,
+            players: [.myself: PlayerState(
+                seat: nil, hand: try Tile.parseHand("19m19p19s1234567z"), riichi: false)])
+        let (score, yaku, assumptions) = try scored(
+            s.score(winningTile: try Tile.parse("1z"), winType: .ron))
+        #expect(yaku == [.国士無双])
+        #expect(score.total == 32000)              // 子の役満
+        #expect(assumptions == [.seatWind(.south)]) // 残るのは親子の仮定だけ
     }
 
     @Test("席風の仮定は子（南家）— 親と決めつけない")

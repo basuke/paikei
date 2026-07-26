@@ -31,10 +31,12 @@ public struct WinOptions: Sendable, Equatable {
 /// 不明なフィールドを埋めるために置いた仮定（仕様§1・§7.1）。
 ///
 /// 黙って推測しないための型。答えには必ずこれを添えて提示する。
+///
+/// ここに並ぶのは「外すと答えが低めに出る」仮定だけ。答えが誤る方向にも
+/// 振れる仮定（場風・席風で役が変わる場合）は仮定せず `Requirement` で断る。
 public enum Assumption: Sendable, Equatable {
-    /// 場風が不明なので仮定した。
-    case roundWind(Wind)
-    /// 席風が不明なので仮定した。**自風の役牌判定と親子の別が変わる**。
+    /// 席風が不明なので子（南家）とした。役・符は風によらず同じだが、
+    /// 実際が親なら支払いが変わる。
     case seatWind(Wind)
     /// 立直の有無が不明なので「していない」とした。
     case notRiichi
@@ -52,6 +54,10 @@ public enum Assumption: Sendable, Equatable {
 public enum Requirement: Sendable, Equatable {
     /// 手牌が不明。
     case hand(Player)
+    /// 場風が不明で、どれと仮定するかで役・符が変わってしまう。
+    case roundWind
+    /// 席風が不明で、どれと仮定するかで役・符が変わってしまう。
+    case seatWind(Player)
     /// 手牌の枚数が `13 − 3×副露` にも `+1` にも一致しない。
     case handSize(actual: Int, expected: Int)
     /// 手牌が14枚形なのに、和了牌がその中に無い。
@@ -118,9 +124,6 @@ extension GameState {
             return value
         }
 
-        let roundWind = assume(bakaze, .east, .roundWind(.east))
-        // 席風が不明なら子（南家）と仮定する。親子の別と自風の役牌に効くため必ず注記する。
-        let seatWind = assume(ps.seat, .south, .seatWind(.south))
         let riichi = assume(ps.riichi, false, .notRiichi)
         if doraMarkers.isEmpty { assumptions.append(.noDoraMarkers) }
         if riichi && rules.uraDora && options.uraMarkers.isEmpty {
@@ -129,20 +132,33 @@ extension GameState {
         let honbaCount = assume(honba, 0, .noHonba)
         let kyotakuCount = assume(kyotaku, 0, .noKyotaku)
 
-        let context = WinContext(
-            seatWind: seatWind, roundWind: roundWind, winType: winType,
-            winningTile: winningTile,
-            riichi: riichi || options.doubleRiichi,
-            doubleRiichi: options.doubleRiichi,
-            ippatsu: options.ippatsu,
-            lastTile: options.lastTile,
-            afterKan: options.afterKan,
-            robbingKan: options.robbingKan,
-            doraMarkers: doraMarkers,
-            uraMarkers: options.uraMarkers)
+        func context(round: Wind, seat: Wind) -> WinContext {
+            WinContext(
+                seatWind: seat, roundWind: round, winType: winType,
+                winningTile: winningTile,
+                riichi: riichi || options.doubleRiichi,
+                doubleRiichi: options.doubleRiichi,
+                ippatsu: options.ippatsu,
+                lastTile: options.lastTile,
+                afterKan: options.afterKan,
+                robbingKan: options.robbingKan,
+                doraMarkers: doraMarkers,
+                uraMarkers: options.uraMarkers)
+        }
+
+        // 風が不明なら、候補を総当たりして答えが実際に変わるかを確かめる。
+        // 変わらないなら仮定は無害（国士や風牌のない手）。変わるなら仮定せず断る。
+        let missingWinds = unresolvableWinds(
+            for: player, concealed: concealed, melds: ps.melds, rules: rules, context: context)
+        guard missingWinds.isEmpty else { return .declined(missingWinds) }
+
+        let roundWind = bakaze ?? .east
+        // 役・符は風によらないと確かめた上での仮定。残るのは親子（＝支払い）だけ。
+        let seatWind = ps.seat ?? .south
+        if ps.seat == nil { assumptions.insert(.seatWind(.south), at: 0) }
 
         guard let best = HandEvaluator(rules: rules)
-            .best(concealed: concealed, melds: ps.melds, context: context) else {
+            .best(concealed: concealed, melds: ps.melds, context: context(round: roundWind, seat: seatWind)) else {
             return .notAWin(.notAWinningShape)
         }
         guard let score = ScoreCalculator(rules: rules).score(
@@ -150,6 +166,48 @@ extension GameState {
             honba: honbaCount, kyotaku: kyotakuCount) else {
             return .notAWin(.noYaku)
         }
+        // 役満はドラを加算しないため、ドラ不明は答えに影響しない＝仮定として挙げない。
+        if case .役満 = score.limit {
+            assumptions.removeAll { $0 == .noDoraMarkers || $0 == .noUraMarkers }
+        }
         return .scored(score, yaku: best.yaku, assumptions: assumptions)
+    }
+
+    /// 不明な風のうち、仮定すると答えが変わってしまうものを列挙する。
+    ///
+    /// 候補（不明なら東南西北の4通り）を総当たりし、役と符が全て一致すれば
+    /// その風は結果に影響しないので仮定してよい。1つでも違えば断る対象。
+    /// 親子の別は席風が決まらないと確定しないが、そちらは仮定して注記する
+    /// 方針なのでここでは見ない（役・符だけを比べる）。
+    private func unresolvableWinds(
+        for player: Player, concealed: [Tile], melds: [Meld], rules: RuleSet,
+        context: (Wind, Wind) -> WinContext
+    ) -> [Requirement] {
+        /// 風の選び方による違いを見るための、役と符の組。nil は和了形でないこと。
+        struct Outcome: Hashable {
+            let yaku: Set<Yaku>
+            let fu: Int
+        }
+        func outcome(round: Wind, seat: Wind) -> Outcome? {
+            HandEvaluator(rules: rules)
+                .best(concealed: concealed, melds: melds, context: context(round, seat))
+                .map { Outcome(yaku: Set($0.yaku), fu: $0.fu) }
+        }
+
+        let rounds = bakaze.map { [$0] } ?? Wind.allCases
+        let seats = players[player]?.seat.map { [$0] } ?? Wind.allCases
+
+        // 片方を固定したときに、もう片方を動かして結果が変わるか。
+        let roundMatters = rounds.count > 1 && seats.contains { seat in
+            Set(rounds.map { outcome(round: $0, seat: seat) }).count > 1
+        }
+        let seatMatters = seats.count > 1 && rounds.contains { round in
+            Set(seats.map { outcome(round: round, seat: $0) }).count > 1
+        }
+
+        var missing: [Requirement] = []
+        if roundMatters { missing.append(.roundWind) }
+        if seatMatters { missing.append(.seatWind(player)) }
+        return missing
     }
 }
