@@ -30,30 +30,13 @@
 
 ## パッケージ構成
 
-```
-Package.swift              # パッケージ名: Paikei
-docs/
-  PAIKEI_SPEC.md           # フォーマット仕様（正典。実装はこれに従う）
-Sources/
-  PaikeiCore/              # 共有ライブラリ（将来iOSアプリPaikeiもこれを使う）
-    Model/                 # 麻雀のドメインモデル
-      Tile.swift           # 牌: スート+数値+赤フラグ。MPSZ相互変換
-      Hand.swift, Meld.swift, River.swift
-      GameState.swift      # 卓全体の状態。不明値をOptionalで表現
-      Phase.swift          # 局面フェーズ（仕様§7の型をそのまま）
-    Shanten/               # シャンテン計算（一般形+七対子+国士）
-    Agari/                 # 和了判定・面子分解・役判定
-    Scoring/               # 符計算・点数計算・ルールオプション
-    Safety/                # フリテン・現物・スジ・壁
-    Format/                # .paikeiのパーサー/シリアライザ
-      SnapshotParser.swift # 仕様§2〜§6
-      PhaseDerivation.swift# 仕様§7.1の導出規則
-      Stream/              # 仕様§8: イベント適用、mjai方言、self_actor対応
-  paikei/                  # CLI実行ファイル（PaikeiCoreに依存）
-Tests/
-  PaikeiCoreTests/
-    Fixtures/              # 仕様§9のサンプル4つから始める
-```
+新規ファイルの置き場所（未作成のディレクトリは必要になったら作る）:
+
+- `Sources/PaikeiCore/` … Model / Shanten / Agari / Scoring（符・点数・ルール） /
+  Safety（フリテン・安牌） / Format（`.paikei` の入出力、`Format/Stream/` は仕様§8）
+- `Sources/paikei/` … CLI実行ファイル（PaikeiCoreに依存）
+- `Tests/PaikeiCoreTests/Fixtures/` … 仕様§9のサンプル
+- `docs/PAIKEI_SPEC.md` が正典
 
 設計原則:
 
