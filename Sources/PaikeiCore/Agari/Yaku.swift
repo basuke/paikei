@@ -13,12 +13,12 @@ public enum Yaku: Sendable, Hashable {
     // 一色系
     case 混一色, 清一色
     // 役満
-    case 国士無双, 大三元, 四暗刻, 字一色, 清老頭, 緑一色, 大四喜, 小四喜, 四槓子
+    case 国士無双, 大三元, 四暗刻, 字一色, 清老頭, 緑一色, 大四喜, 小四喜, 四槓子, 九蓮宝燈
 
     /// 役満か。
     public var isYakuman: Bool {
         switch self {
-        case .国士無双, .大三元, .四暗刻, .字一色, .清老頭, .緑一色, .大四喜, .小四喜, .四槓子:
+        case .国士無双, .大三元, .四暗刻, .字一色, .清老頭, .緑一色, .大四喜, .小四喜, .四槓子, .九蓮宝燈:
             true
         default:
             false
@@ -89,13 +89,15 @@ public struct YakuDetector: Sendable {
     private func situationalYaku(_ hand: WinningHand) -> [Yaku] {
         var result: [Yaku] = []
         let ctx = hand.context
+        let riichi = ctx.riichi || ctx.doubleRiichi
         if ctx.doubleRiichi { result.append(.ダブル立直) }
         else if ctx.riichi { result.append(.立直) }
-        if ctx.ippatsu && rules.ippatsu { result.append(.一発) }
+        // 文脈フラグは呼び出し側の入力なので、成立の前提と矛盾するときは付けない。
+        if ctx.ippatsu && rules.ippatsu && riichi { result.append(.一発) }  // 一発は立直が前提
         if hand.isMenzen && ctx.winType == .tsumo { result.append(.門前清自摸和) }
         if ctx.lastTile { result.append(ctx.winType == .tsumo ? .海底摸月 : .河底撈魚) }
-        if ctx.afterKan { result.append(.嶺上開花) }
-        if ctx.robbingKan { result.append(.槍槓) }
+        if ctx.afterKan && ctx.winType == .tsumo { result.append(.嶺上開花) }  // 嶺上はツモ限定
+        if ctx.robbingKan && ctx.winType == .ron { result.append(.槍槓) }      // 槍槓はロン限定
         return result
     }
 
@@ -123,7 +125,22 @@ public struct YakuDetector: Sendable {
             result.append(tiles.contains(where: \.isHonor) ? .混一色 : .清一色)
         }
 
+        if isChuuren(hand) { result.append(.九蓮宝燈) }
+
         return result
+    }
+
+    /// 九蓮宝燈: 完全門前（副露・暗槓なし）の清一色14枚で 1112345678999 + 任意の1枚。
+    private func isChuuren(_ hand: WinningHand) -> Bool {
+        guard hand.isMenzen, hand.melds.isEmpty else { return false }
+        let tiles = hand.allTiles
+        guard tiles.count == 14,
+              let suit = tiles.first?.suit, suit.isNumbered,
+              tiles.allSatisfy({ $0.suit == suit }) else { return false }
+
+        var counts = Array(repeating: 0, count: 10)
+        for tile in tiles { counts[tile.rank] += 1 }
+        return counts[1] >= 3 && counts[9] >= 3 && (2...8).allSatisfy { counts[$0] >= 1 }
     }
 
     // MARK: - 一般形の形役（分解依存）

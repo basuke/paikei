@@ -13,13 +13,16 @@ struct YakuTests {
         winTile: String? = nil,
         riichi: Bool = false,
         doubleRiichi: Bool = false,
-        ippatsu: Bool = false
+        ippatsu: Bool = false,
+        afterKan: Bool = false,
+        robbingKan: Bool = false
     ) throws -> Set<Yaku> {
         let tiles = try Tile.parseHand(concealed)
         let wt = try Tile.parse(winTile ?? tiles[0].mpsz)
         let ctx = WinContext(
             seatWind: seat, roundWind: round, winType: winType, winningTile: wt,
-            riichi: riichi, doubleRiichi: doubleRiichi, ippatsu: ippatsu)
+            riichi: riichi, doubleRiichi: doubleRiichi, ippatsu: ippatsu,
+            afterKan: afterKan, robbingKan: robbingKan)
         let evaluator = HandEvaluator(rules: .standard)
         let best = try #require(evaluator.best(concealed: tiles, melds: melds, context: ctx))
         return Set(best.yaku)
@@ -33,6 +36,25 @@ struct YakuTests {
     @Test("立直")
     func riichi() throws {
         #expect(try best("234567m234p55p678s", riichi: true).contains(.立直))
+    }
+
+    @Test("一発は立直が前提（立直なしでは付かない）")
+    func ippatsuRequiresRiichi() throws {
+        #expect(try !best("234567m234p55p678s", ippatsu: true).contains(.一発))
+        #expect(try best("234567m234p55p678s", riichi: true, ippatsu: true).contains(.一発))
+        #expect(try best("234567m234p55p678s", doubleRiichi: true, ippatsu: true).contains(.一発))
+    }
+
+    @Test("嶺上開花はツモ限定")
+    func rinshanIsTsumoOnly() throws {
+        #expect(try best("234567m234p55p678s", winType: .tsumo, afterKan: true).contains(.嶺上開花))
+        #expect(try !best("234567m234p55p678s", winType: .ron, afterKan: true).contains(.嶺上開花))
+    }
+
+    @Test("槍槓はロン限定")
+    func chankanIsRonOnly() throws {
+        #expect(try best("234567m234p55p678s", winType: .ron, robbingKan: true).contains(.槍槓))
+        #expect(try !best("234567m234p55p678s", winType: .tsumo, robbingKan: true).contains(.槍槓))
     }
 
     @Test("役牌: 場風と自風")
@@ -135,6 +157,20 @@ struct YakumanTests {
     @Test("四暗刻")
     func suuankou() throws {
         #expect(try best("111222m333p555s77z").contains(.四暗刻))
+    }
+
+    @Test("九蓮宝燈")
+    func chuuren() throws {
+        // 1112345678999 + 5m（14枚）。清一色より役満が優先される。
+        #expect(try best("11123455678999m") == [.九蓮宝燈])
+    }
+
+    @Test("清一色でも九蓮の形でなければ九蓮宝燈にならない")
+    func chinitsuIsNotChuuren() throws {
+        // 123 234 456 789 + 99 の清一色。1が1枚しかない。
+        let yaku = try best("12323445678999m")
+        #expect(yaku.contains(.清一色))
+        #expect(!yaku.contains(.九蓮宝燈))
     }
 
     @Test("字一色")
