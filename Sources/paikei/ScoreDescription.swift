@@ -98,6 +98,9 @@ enum ScoreDescription {
 
     private static func assumption(_ assumption: Assumption) -> String {
         switch assumption {
+        case let .hypotheticalWin(tile, winType):
+            let how = winType == .tsumo ? "ツモ" : "ロン"
+            return "局面はこの和了を示していないので、\(TileFormatter.tile(tile))の\(how)和了を仮定"
         case .seatWind(let wind):
             return "席風が不明なので\(windName(wind))家（子）と仮定"
                 + "（役・符は風によらず同じですが、実際が親なら支払いが変わります）"

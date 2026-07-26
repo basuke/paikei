@@ -35,6 +35,11 @@ public struct WinOptions: Sendable, Equatable {
 /// ここに並ぶのは「外すと答えが低めに出る」仮定だけ。答えが誤る方向にも
 /// 振れる仮定（場風・席風で役が変わる場合）は仮定せず `Requirement` で断る。
 public enum Assumption: Sendable, Equatable {
+    /// 局面がこの和了を示していないので、指定された和了牌・和了方法を仮定した。
+    ///
+    /// 静止状態での試算（「この牌が出たら？」）や、`draw:` / `claim_tile:` と
+    /// 食い違う指定がこれにあたる。
+    case hypotheticalWin(Tile, WinType)
     /// 席風が不明なので子（南家）とした。役・符は風によらず同じだが、
     /// 実際が親なら支払いが変わる。
     case seatWind(Wind)
@@ -170,7 +175,30 @@ extension GameState {
         if case .役満 = score.limit {
             assumptions.removeAll { $0 == .noDoraMarkers || $0 == .noUraMarkers }
         }
+        // 和了そのものが局面に裏づけられていないなら、それを最初に断る。
+        if !corroboratesWin(player: player, winningTile: winningTile, winType: winType) {
+            assumptions.insert(.hypotheticalWin(winningTile, winType), at: 0)
+        }
         return .scored(score, yaku: best.yaku, assumptions: assumptions)
+    }
+
+    /// 局面がこの和了を裏づけているか（仕様§7のフェーズと突き合わせる）。
+    ///
+    /// ツモは「その牌をツモった直後」、ロンは「その牌への応答待ち」であることを求める。
+    /// 静止状態はどちらも示さないので、常に仮定扱いになる（「この牌が出たら？」の試算）。
+    private func corroboratesWin(player: Player, winningTile: Tile, winType: WinType) -> Bool {
+        let target = winningTile.normalized
+        switch phase {
+        case .quiescent:
+            return false
+        case let .awaitingDiscard(who, _):
+            guard who == player, winType == .tsumo, let ps = players[who] else { return false }
+            // `draw:` があればその牌と一致するか。14枚形に畳まれていれば手牌に含まれるか。
+            if let draw = ps.draw { return draw.normalized == target }
+            return ps.hand?.contains { $0.normalized == target } ?? false
+        case let .awaitingClaim(tile, from, _):
+            return winType == .ron && from != player && tile.normalized == target
+        }
     }
 
     /// 不明な風のうち、仮定すると答えが変わってしまうものを列挙する。

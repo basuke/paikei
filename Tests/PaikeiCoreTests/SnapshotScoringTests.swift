@@ -7,13 +7,16 @@ struct SnapshotScoringTests {
     func state(
         bakaze: Wind? = .east, honba: Int? = 1, kyotaku: Int? = 1,
         dora: [Tile] = [], seat: Wind? = .west, riichi: Bool? = false,
-        hand: String = "234567m234p45s99p", melds: [Meld] = []
+        hand: String = "234567m234p45s99p", melds: [Meld] = [],
+        draw: Tile? = nil, claim: ClaimTile? = nil
     ) throws -> GameState {
         GameState(
             bakaze: bakaze, kyoku: 1, honba: honba, kyotaku: kyotaku,
             doraMarkers: dora,
             players: [.myself: PlayerState(
-                seat: seat, hand: try Tile.parseHand(hand), melds: melds, riichi: riichi)])
+                seat: seat, hand: try Tile.parseHand(hand), draw: draw,
+                melds: melds, riichi: riichi)],
+            claim: claim)
     }
 
     func scored(_ analysis: ScoreAnalysis) throws -> (Score, [Yaku], [Assumption]) {
@@ -30,7 +33,9 @@ struct SnapshotScoringTests {
 
     @Test("全て既知なら仮定なしで答える")
     func fullyKnown() throws {
-        let s = try state(dora: [try Tile.parse("3p")])  // 4p がドラ、手牌に1枚
+        // ドラ表示3p（4pが手牌に1枚）。下家が6sを打った応答待ち＝ロンの前提も揃っている。
+        let s = try state(dora: [try Tile.parse("3p")],
+                          claim: ClaimTile(tile: try Tile.parse("6s"), from: .shimocha))
         let (score, yaku, assumptions) = try scored(
             s.score(winningTile: try Tile.parse("6s"), winType: .ron))
 
@@ -65,7 +70,8 @@ struct SnapshotScoringTests {
 
     @Test("立直しているのに裏ドラ表示牌が無ければ仮定として注記する")
     func uraUnknownIsAnAssumption() throws {
-        let s = try state(dora: [try Tile.parse("3p")], riichi: true)
+        let s = try state(dora: [try Tile.parse("3p")], riichi: true,
+                          claim: ClaimTile(tile: try Tile.parse("6s"), from: .shimocha))
         let (_, _, assumptions) = try scored(
             s.score(winningTile: try Tile.parse("6s"), winType: .ron))
         #expect(assumptions == [.noUraMarkers])
@@ -81,10 +87,60 @@ struct SnapshotScoringTests {
 
         // 場風は不明のままだが、この手（風牌なし）では答えが変わらないので注記も出ない。
         #expect(assumptions == [
+            .hypotheticalWin(try Tile.parse("6s"), .ron),  // 静止状態での試算
             .seatWind(.south), .notRiichi, .noDoraMarkers, .noHonba, .noKyotaku,
         ])
         #expect(score.han == 1)               // 平和のみ（ドラ0）
         #expect(score.payment == .ron(1000))  // 子の1翻30符、本場も供託もなし
+    }
+
+    // MARK: - 和了の前提を局面と突き合わせる
+
+    @Test("ツモ牌と一致するツモ和了は、局面が裏づけているので仮定に挙げない")
+    func tsumoBackedByDraw() throws {
+        let s = try state(draw: try Tile.parse("6s"))
+        let (_, _, assumptions) = try scored(
+            s.score(winningTile: try Tile.parse("6s"), winType: .tsumo))
+        #expect(!assumptions.contains { if case .hypotheticalWin = $0 { true } else { false } })
+    }
+
+    @Test("応答待ちの対象牌へのロンも局面が裏づけている")
+    func ronBackedByClaim() throws {
+        let s = try state(claim: ClaimTile(tile: try Tile.parse("6s"), from: .shimocha))
+        let (_, _, assumptions) = try scored(
+            s.score(winningTile: try Tile.parse("6s"), winType: .ron))
+        #expect(!assumptions.contains { if case .hypotheticalWin = $0 { true } else { false } })
+    }
+
+    @Test("静止状態での試算は和了そのものが仮定")
+    func quiescentIsHypothetical() throws {
+        let s = try state()  // draw も claim も無い＝静止状態
+        let (_, _, assumptions) = try scored(
+            s.score(winningTile: try Tile.parse("6s"), winType: .ron))
+        #expect(assumptions.first == .hypotheticalWin(try Tile.parse("6s"), .ron))
+    }
+
+    @Test("局面と食い違う和了方法・和了牌は仮定として注記する")
+    func winContradictingPhase() throws {
+        // ツモ直後なのにロンを指定。
+        let drew = try state(draw: try Tile.parse("6s"))
+        let (_, _, ronAssumptions) = try scored(
+            drew.score(winningTile: try Tile.parse("6s"), winType: .ron))
+        #expect(ronAssumptions.first == .hypotheticalWin(try Tile.parse("6s"), .ron))
+
+        // 応答待ちの対象は1zなのに6sのロンを指定。
+        let claimed = try state(claim: ClaimTile(tile: try Tile.parse("1z"), from: .shimocha))
+        let (_, _, otherTile) = try scored(
+            claimed.score(winningTile: try Tile.parse("6s"), winType: .ron))
+        #expect(otherTile.first == .hypotheticalWin(try Tile.parse("6s"), .ron))
+    }
+
+    @Test("自分が出した牌ではロンできない（裏づけにならない）")
+    func cannotRonOwnDiscard() throws {
+        let s = try state(claim: ClaimTile(tile: try Tile.parse("6s"), from: .myself))
+        let (_, _, assumptions) = try scored(
+            s.score(winningTile: try Tile.parse("6s"), winType: .ron))
+        #expect(assumptions.first == .hypotheticalWin(try Tile.parse("6s"), .ron))
     }
 
     // MARK: - 風が答えを変えるときは断る
@@ -131,7 +187,8 @@ struct SnapshotScoringTests {
         let s = GameState(
             bakaze: nil, kyoku: nil, honba: 0, kyotaku: 0,
             players: [.myself: PlayerState(
-                seat: nil, hand: try Tile.parseHand("19m19p19s1234567z"), riichi: false)])
+                seat: nil, hand: try Tile.parseHand("19m19p19s1234567z"), riichi: false)],
+            claim: ClaimTile(tile: try Tile.parse("1z"), from: .toimen))
         let (score, yaku, assumptions) = try scored(
             s.score(winningTile: try Tile.parse("1z"), winType: .ron))
         #expect(yaku == [.国士無双])
