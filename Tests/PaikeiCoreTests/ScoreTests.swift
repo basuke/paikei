@@ -117,6 +117,44 @@ struct HonbaAndRuleTests {
         // 対象外の組み合わせは変わらない
         #expect(on.payment(han: 3, fu: 30, isDealer: false, winType: .ron).total == 3900)
     }
+
+    /// 子の平和ドラ3（平和1翻 + ドラ3 = 4翻、平和ロンで30符）。
+    /// 切り上げ満貫の代表例なので、役とドラから符・翻が積み上がる経路ごと確認する。
+    func pinfuDora3(_ rules: RuleSet, winType: WinType = .ron) throws -> Score {
+        var ctx = WinContext(seatWind: .south, roundWind: .east, winType: winType,
+                             winningTile: try Tile.parse("6s"))
+        // 2m・2p・4s がドラ（手牌に1枚ずつ）。
+        ctx.doraMarkers = try ["1m", "1p", "3s"].map { try Tile.parse($0) }
+        return try #require(ScoreCalculator(rules: rules).score(
+            concealed: try Tile.parseHand("234567m234p456s99p"), melds: [], context: ctx))
+    }
+
+    @Test("子の平和ドラ3ロンは 7700、切り上げ満貫ありなら 8000")
+    func pinfuDora3Ron() throws {
+        let off = try pinfuDora3(RuleSet(roundUpMangan: false))
+        #expect(off.han == 4)          // 平和1 + ドラ3
+        #expect(off.fu == 30)          // 平和ロンは30符
+        #expect(off.dora.dora == 3)
+        #expect(off.payment == .ron(7700))
+        #expect(off.limit == nil)
+
+        let on = try pinfuDora3(RuleSet(roundUpMangan: true))
+        #expect(on.payment == .ron(8000))
+        #expect(on.limit == .満貫)
+    }
+
+    @Test("平和ツモは20符なので切り上げ満貫の対象外")
+    func pinfuDora3Tsumo() throws {
+        // 平和ツモは 平和1 + 門前ツモ1 + ドラ3 = 5翻で、そもそも満貫。
+        let tsumo = try pinfuDora3(RuleSet(roundUpMangan: true), winType: .tsumo)
+        #expect(tsumo.han == 5)
+        #expect(tsumo.fu == 20)
+        #expect(tsumo.limit == .満貫)
+        // 20符4翻（門前ツモが付かない形）は切り上げの対象にならない。
+        let calc = ScoreCalculator(rules: RuleSet(roundUpMangan: true))
+        #expect(calc.payment(han: 4, fu: 20, isDealer: false, winType: .tsumo)
+                == .tsumo(dealer: 2600, nonDealer: 1300))
+    }
 }
 
 @Suite("ドラの計算")

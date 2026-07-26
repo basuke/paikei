@@ -94,6 +94,9 @@ public struct ScoreCalculator: Sendable {
     ///
     /// 役の内容に依らないため、点数表の検証や「もし〜なら」の試算に使える。
     /// `yakumanCount` が1以上なら役満（複合数ぶん倍）として扱う。
+    ///
+    /// ルールは引数ではなくこの評価器の `rules` が効く。翻と符に落ちた後の
+    /// 変換なので、影響するのは切り上げ満貫（`roundUpMangan`）だけ。
     public func payment(
         han: Int, fu: Int, isDealer: Bool, winType: WinType,
         yakumanCount: Int = 0, honba: Int = 0
