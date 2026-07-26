@@ -23,7 +23,7 @@ struct ShantenCommand: ParsableCommand {
             throw ValidationError("自分の手牌が不明のためシャンテン計算ができません")
         }
         let melds = me.melds.count
-        let visible = Self.visibleTiles(in: state)
+        let visible = state.visibleTiles(from: .myself)
         var tiles = hand
         if let draw = me.draw { tiles.append(draw) }
 
@@ -76,14 +76,4 @@ struct ShantenCommand: ParsableCommand {
         }
     }
 
-    /// 自分の手牌以外で場に見えている牌（河・副露・ドラ表示・応答対象牌）。
-    private static func visibleTiles(in state: GameState) -> [Tile] {
-        var tiles = state.doraMarkers
-        for ps in state.players.values {
-            tiles += ps.river.map(\.tile)
-            for meld in ps.melds { tiles += meld.tiles }
-        }
-        if let claim = state.claim { tiles.append(claim.tile) }
-        return tiles
-    }
 }

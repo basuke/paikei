@@ -64,6 +64,106 @@ struct DiscardHistoryTests {
     }
 }
 
+@Suite("安全度 (SafetyAnalyzer)")
+struct SafetyAnalyzerTests {
+    /// 対象=対面。`targetRiver` は対面の河、`wallRiver` は上家の河（壁の枚数用）。
+    func analyzer(
+        targetRiver: [String] = [], wallRiver: [String] = [], myHand: String? = nil
+    ) throws -> SafetyAnalyzer {
+        var players: [Player: PlayerState] = [:]
+        players[.toimen] = PlayerState(
+            river: try targetRiver.map { RiverTile(tile: try Tile.parse($0)) })
+        players[.kamicha] = PlayerState(
+            river: try wallRiver.map { RiverTile(tile: try Tile.parse($0)) })
+        players[.myself] = PlayerState(hand: try myHand.map { try Tile.parseHand($0) })
+        return SafetyAnalyzer(state: GameState(players: players), target: .toimen)
+    }
+
+    func judge(_ analyzer: SafetyAnalyzer, _ tile: String) throws -> TileSafety {
+        analyzer.judge(try Tile.parse(tile))
+    }
+
+    @Test("現物は絶対安全")
+    func genbutsu() throws {
+        let a = try analyzer(targetRiver: ["4p"])
+        let r = try judge(a, "4p")
+        #expect(r.level == .現物)
+        #expect(r.reasons.contains(.現物))
+    }
+
+    @Test("スジ: 4の現物で1と7の両面が否定される")
+    func basicSuji() throws {
+        let a = try analyzer(targetRiver: ["4p"])
+        #expect(try judge(a, "1p").level == .両面否定)
+        #expect(try judge(a, "1p").reasons == [.スジ])
+        #expect(try judge(a, "7p").reasons == [.スジ])
+        #expect(try judge(a, "2p").level == .無スジ)   // 2のスジは5
+        #expect(try judge(a, "1s").level == .無スジ)   // スートが違う
+    }
+
+    @Test("中スジ: 4〜6は両側の現物が必要。片側だけなら片スジ")
+    func nakaSuji() throws {
+        let both = try analyzer(targetRiver: ["1p", "7p"])
+        #expect(try judge(both, "4p").reasons == [.スジ])
+
+        let half = try analyzer(targetRiver: ["1p"])
+        let r = try judge(half, "4p")
+        #expect(r.reasons == [.片スジ])
+        #expect(r.level == .弱い否定)
+    }
+
+    @Test("壁: 8が4枚見えなら9は両面で待てない（ノーチャンス）")
+    func noChance() throws {
+        let a = try analyzer(wallRiver: ["8s", "8s", "8s", "8s"])
+        let r = try judge(a, "9s")
+        #expect(r.reasons == [.ノーチャンス])
+        #expect(r.level == .両面否定)
+        // 7s は (5,6) の両面が残っているので壁にならない。
+        #expect(try judge(a, "7s").level == .無スジ)
+    }
+
+    @Test("壁: 残り1枚ならワンチャンス")
+    func oneChance() throws {
+        let a = try analyzer(wallRiver: ["8s", "8s", "8s"])
+        let r = try judge(a, "9s")
+        #expect(r.reasons == [.ワンチャンス])
+        #expect(r.level == .弱い否定)
+    }
+
+    @Test("壁は自分の手牌の枚数も数える")
+    func kabeCountsOwnHand() throws {
+        // 場に8sが2枚 + 自分の手に2枚 → 残り0でノーチャンス。
+        let a = try analyzer(wallRiver: ["8s", "8s"], myHand: "88s123m456p789m1z")
+        #expect(try judge(a, "9s").reasons == [.ノーチャンス])
+    }
+
+    @Test("字牌: 2枚以上見えでシャンポン不能、生牌は無スジ")
+    func honors() throws {
+        // 場に2枚 + 自分の手に1枚 = 3枚見え → 残り1。
+        let a = try analyzer(wallRiver: ["1z", "1z"], myHand: "123m456p789s11z2z")
+        let r = try judge(a, "1z")
+        #expect(r.reasons == [.字牌シャンポン不能])
+        #expect(r.level == .両面否定)
+        #expect(try judge(a, "7z").level == .無スジ)  // 生牌
+    }
+
+    @Test("赤5は通常5として判定される")
+    func redFive() throws {
+        let a = try analyzer(targetRiver: ["2p", "8p"])
+        let r = try judge(a, "0p")
+        #expect(r.tile == Tile(suit: .pin, rank: 5))
+        #expect(r.reasons == [.スジ])  // 2と8の中スジ
+    }
+
+    @Test("複数牌の判定は安全な順に並ぶ")
+    func sortedJudgement() throws {
+        let a = try analyzer(targetRiver: ["4p", "1s"])
+        let judged = a.judge(try Tile.parseHand("2p1p4p"))
+        #expect(judged.map(\.tile.mpsz) == ["4p", "1p", "2p"])  // 現物 → スジ → 無スジ
+        #expect(judged.map(\.level) == [.現物, .両面否定, .無スジ])
+    }
+}
+
 @Suite("フリテン")
 struct FuritenTests {
     /// 123456789m + 1123p: 1p/4p 待ちのテンパイ形。
