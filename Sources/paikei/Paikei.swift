@@ -7,7 +7,7 @@ struct Paikei: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "paikei",
         abstract: "麻雀局面解析エンジン Paikei",
-        subcommands: [Analyze.self, ShantenCommand.self, Normalize.self]
+        subcommands: [Analyze.self, ShantenCommand.self, ScoreCommand.self, Normalize.self]
     )
 }
 
