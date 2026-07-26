@@ -25,4 +25,15 @@ extension Player {
         let index = all.firstIndex(of: self)!
         return all[(index + offset) % all.count]
     }
+
+    /// `seated` の逆引き: このプレイヤーから見た `other` の方向。自分自身なら nil。
+    ///
+    /// イベントから副露を組み立てるとき（`pon` の `target` → 方向）に使う。
+    public func direction(to other: Player) -> CallDirection? {
+        for direction in [CallDirection.shimocha, .toimen, .kamicha]
+            where seated(direction) == other {
+            return direction
+        }
+        return nil
+    }
 }
