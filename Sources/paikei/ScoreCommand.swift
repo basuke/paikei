@@ -31,10 +31,13 @@ struct ScoreCommand: ParsableCommand {
     @Option(name: .long, help: "対象プレイヤーの席風（E/S/W/N）。スナップショットの値を上書きする")
     var seat: String?
 
+    @Flag(name: .long, help: "立直（スナップショットの riichi を上書きする）")
+    var riichi = false
+
     @Flag(name: .long, help: "ダブル立直")
     var doubleRiichi = false
 
-    @Flag(name: .long, help: "一発")
+    @Flag(name: .long, help: "一発（立直が前提）")
     var ippatsu = false
 
     @Flag(name: .long, help: "海底摸月 / 河底撈魚")
@@ -74,6 +77,24 @@ struct ScoreCommand: ParsableCommand {
         case "tsumo": type = .tsumo
         case "ron": type = .ron
         default: throw ValidationError("tsumo または ron を指定してください: \(winType)")
+        }
+
+        // 立直の指定はスナップショットへ反映する（ダブル立直も立直の一種）。
+        if riichi || doubleRiichi {
+            state.players[target, default: PlayerState()].riichi = true
+        }
+
+        // 定義上あり得ない組み合わせは計算せずにエラーにする（黙って落とさない）。
+        if ippatsu && state.players[target]?.riichi != true {
+            throw ValidationError(
+                "一発には立直が必要です（--riichi / --double-riichi を付けるか、"
+                + "スナップショットに riichi: true が必要です）")
+        }
+        if rinshan && type != .tsumo {
+            throw ValidationError("嶺上開花はツモ和了です（ron と同時には指定できません）")
+        }
+        if chankan && type != .ron {
+            throw ValidationError("槍槓はロン和了です（tsumo と同時には指定できません）")
         }
 
         let options = WinOptions(
