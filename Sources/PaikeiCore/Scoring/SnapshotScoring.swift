@@ -75,6 +75,9 @@ public enum NoWinReason: Sendable, Equatable {
     case notAWinningShape
     /// 形は和了だが役がない（ドラのみでは和了できない）。
     case noYaku
+    /// フリテン（ロンのみ）。`matched` が自分の論理捨て牌にある待ち。
+    /// 待ちのいずれか1つでも捨てていれば全ての待ちでロンできない。
+    case furiten(matched: [Tile])
 }
 
 /// 点数解析の結果。
@@ -157,6 +160,25 @@ extension GameState {
         // 文脈フラグの矛盾は風の選び方によらないので、代表の風で先に検査する。
         // 以降の評価呼び出しが WinContextError を投げることはない。
         try context(round: .east, seat: .east).validate()
+
+        // ロンはフリテンなら成立しない。和了牌が実際に待ちで、かつ待ちのいずれかが
+        // 自分の論理捨て牌（仕様§5: 河 + 鳴かれた牌）にあるときだけ判定する
+        // （待ちですらない牌は「和了形でない」として後段で断る）。
+        if winType == .ron {
+            var thirteen = concealed
+            if let index = thirteen.firstIndex(where: { $0.normalized == winningTile.normalized }) {
+                thirteen.remove(at: index)
+            }
+            let ukeire = Acceptance.ukeire(hand: thirteen, melds: ps.melds.count)
+            if ukeire.shanten == 0 {
+                let waits = ukeire.tiles.map(\.tile)
+                if waits.contains(winningTile.normalized) {
+                    let discarded = Set(logicalDiscards(of: player).map(\.normalized))
+                    let matched = waits.filter { discarded.contains($0.normalized) }
+                    if !matched.isEmpty { return .notAWin(.furiten(matched: matched)) }
+                }
+            }
+        }
 
         // 風が不明なら、候補を総当たりして答えが実際に変わるかを確かめる。
         // 変わらないなら仮定は無害（国士や風牌のない手）。変わるなら仮定せず断る。

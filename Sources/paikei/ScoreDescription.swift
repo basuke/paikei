@@ -10,6 +10,9 @@ enum ScoreDescription {
             switch reason {
             case .notAWinningShape: return "和了形ではありません"
             case .noYaku: return "役がありません（ドラのみでは和了できません）"
+            case .furiten(let matched):
+                return "フリテンです（待ちの \(TileFormatter.tiles(matched)) が自分の捨て牌にあります）。"
+                    + "ロン和了はできません"
             }
         case let .declined(requirements):
             var lines = ["情報が足りないため計算できません:"]
