@@ -45,7 +45,7 @@ enum TileFormatter {
     static func meld(_ meld: Meld) -> String {
         let tilesText = hand(meld.tiles)
         var result = kindName(meld.kind) + tilesText
-        if meld.kind != .chi, let from = meld.from {
+        if meld.kind != .チー, let from = meld.from {
             result += "(\(directionName(from)))"
         }
         return result
@@ -59,11 +59,11 @@ enum TileFormatter {
 
     private static func kindName(_ kind: Meld.Kind) -> String {
         switch kind {
-        case .chi: "チー"
-        case .pon: "ポン"
-        case .daiminkan: "大明槓"
-        case .kakan: "加槓"
-        case .ankan: "暗槓"
+        case .チー: "チー"
+        case .ポン: "ポン"
+        case .大明槓: "大明槓"
+        case .加槓: "加槓"
+        case .暗槓: "暗槓"
         }
     }
 

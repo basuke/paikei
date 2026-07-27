@@ -43,30 +43,30 @@ enum SnapshotDescription {
 
     private static func phase(_ phase: Phase) -> String {
         switch phase {
-        case .quiescent:
+        case .静止:
             return "静止状態"
-        case let .awaitingDiscard(player, context):
+        case let .打牌待ち(player, context):
             return "打牌待ち（\(playerName(player)), \(discardContext(context))）"
-        case let .awaitingClaim(tile, from, context):
+        case let .応答待ち(tile, from, context):
             return "応答待ち（\(playerName(from))が\(TileFormatter.tile(tile))を打牌, \(claimContext(context))）"
         }
     }
 
     private static func discardContext(_ c: DiscardContext) -> String {
         switch c {
-        case .afterDraw: "ツモ直後"
-        case .afterDrawRiichi: "リーチ後ツモ"
-        case .afterCall: "鳴き直後"
-        case .unknown: "由来不明"
+        case .ツモ後: "ツモ直後"
+        case .立直後ツモ: "リーチ後ツモ"
+        case .鳴き後: "鳴き直後"
+        case .不明: "由来不明"
         }
     }
 
     private static func claimContext(_ c: ClaimContext) -> String {
         switch c {
-        case .discard: "ロン/鳴き検討"
-        case .riichiDeclaration: "リーチ宣言牌"
-        case .kakan: "槍槓"
-        case .ankan: "国士の槍槓"
+        case .打牌: "ロン/鳴き検討"
+        case .立直宣言: "リーチ宣言牌"
+        case .加槓: "槍槓"
+        case .暗槓: "国士の槍槓"
         }
     }
 

@@ -1,9 +1,12 @@
 /// 14枚目の由来（`discard_context` フィールド、仕様§3.3 / §7.3）。
 ///
 /// フェーズ導出のヒント。`draw:` があれば `.draw` と同義。nil は不明（`?`）。
+/// rawValue は `.paikei` の表記トークン（仕様§3.3）なので ASCII 固定。
 public enum DiscardOrigin: String, Sendable {
-    case draw   // ツモ牌を手に入れた
-    case call   // 鳴いた直後
+    /// ツモ牌を手に入れた。
+    case ツモ = "draw"
+    /// 鳴いた直後。
+    case 鳴き = "call"
 }
 
 /// 1プレイヤーの状態（仕様§3.3）。「不明」は Optional / 空で表す。

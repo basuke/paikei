@@ -26,7 +26,7 @@ extension Agari {
     public static func winningHands(
         concealed: [Tile], melds: [Meld], context: WinContext
     ) -> [WinningHand] {
-        let isMenzen = melds.allSatisfy { $0.kind == .ankan }
+        let isMenzen = melds.allSatisfy { $0.kind == .暗槓 }
         let source = concealed + melds.flatMap(\.tiles)
         var hands: [WinningHand] = []
 

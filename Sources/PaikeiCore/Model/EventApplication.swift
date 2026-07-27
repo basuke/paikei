@@ -25,15 +25,15 @@ extension GameState {
             try state.applyDahai(actor: actor, tile: tile, tsumogiri: tsumogiri)
 
         case let .チー(actor, tile, consumed):
-            try state.applyCall(kind: .chi, actor: actor, target: actor.seated(.kamicha),
+            try state.applyCall(kind: .チー, actor: actor, target: actor.seated(.kamicha),
                                 tile: tile, consumed: consumed, event: event)
 
         case let .ポン(actor, target, tile, consumed):
-            try state.applyCall(kind: .pon, actor: actor, target: target,
+            try state.applyCall(kind: .ポン, actor: actor, target: target,
                                 tile: tile, consumed: consumed, event: event)
 
         case let .大明槓(actor, target, tile, consumed):
-            try state.applyCall(kind: .daiminkan, actor: actor, target: target,
+            try state.applyCall(kind: .大明槓, actor: actor, target: target,
                                 tile: tile, consumed: consumed, event: event)
 
         case let .加槓(actor, tile):
@@ -47,7 +47,7 @@ extension GameState {
             }
             try state.removeConcealed(consumed, from: actor)
             state.update(actor) {
-                $0.melds.append(Meld(kind: .ankan, tiles: consumed, calledIndex: nil, from: nil))
+                $0.melds.append(Meld(kind: .暗槓, tiles: consumed, calledIndex: nil, from: nil))
             }
 
         case let .立直(actor):
@@ -92,14 +92,14 @@ extension GameState {
         guard let claim else { return }
         self.claim = nil
         switch claim.kind {
-        case .discard, .riichi:
+        case .打牌, .立直:
             update(claim.from) {
                 $0.river.append(RiverTile(tile: claim.tile,
-                                          declaresRiichi: claim.kind == .riichi))
+                                          declaresRiichi: claim.kind == .立直))
                 // 宣言牌が場に出ている＝リーチ宣言済み。安牌・フリテン判定が依存する。
-                if claim.kind == .riichi { $0.riichi = true }
+                if claim.kind == .立直 { $0.riichi = true }
             }
-        case .kakan, .ankan:
+        case .加槓, .暗槓:
             break  // 牌は既に副露の中にある（槍槓の検討だった）
         }
     }
@@ -122,10 +122,10 @@ extension GameState {
                 // その場合はツモ切りでも手牌から抜く。手牌が不明なら何もしない。
                 try removeForTedashi(tile, from: &ps, actor: actor)
             }
-            manner = .tsumogiri
+            manner = .ツモ切り
         case false:
             try removeForTedashi(tile, from: &ps, actor: actor)
-            manner = .tedashi
+            manner = .手出し
         case nil:
             // 出所不明。ツモ牌と一致すればツモ切りとみなし、そうでなければ手牌から。
             if let draw = ps.draw, draw.normalized == tile.normalized {
@@ -133,7 +133,7 @@ extension GameState {
             } else {
                 try removeForTedashi(tile, from: &ps, actor: actor)
             }
-            manner = .unknown
+            manner = .不明
         }
 
         // リーチ宣言牌: riichi が立っていて、まだ河に宣言牌が無い最初の打牌。
@@ -163,7 +163,7 @@ extension GameState {
         kind: Meld.Kind, actor: Player, target: Player,
         tile: Tile, consumed: [Tile], event: Event
     ) throws {
-        let needed = kind == .daiminkan ? 3 : 2
+        let needed = kind == .大明槓 ? 3 : 2
         guard consumed.count == needed else {
             throw EventApplicationError.構成牌の枚数が不正(event)
         }
@@ -173,7 +173,7 @@ extension GameState {
             $0.melds.append(Meld(kind: kind, tiles: [tile] + consumed,
                                  calledIndex: 0, from: actor.direction(to: target)))
             // チー・ポンの直後は打牌待ち。大明槓は嶺上ツモが先に来る。
-            $0.discardOrigin = kind == .daiminkan ? nil : .call
+            $0.discardOrigin = kind == .大明槓 ? nil : .鳴き
         }
     }
 
@@ -200,7 +200,7 @@ extension GameState {
     private mutating func applyKakan(actor: Player, tile: Tile) throws {
         var ps = players[actor] ?? PlayerState()
         guard let index = ps.melds.firstIndex(where: {
-            $0.kind == .pon && $0.tiles[0].normalized == tile.normalized
+            $0.kind == .ポン && $0.tiles[0].normalized == tile.normalized
         }) else {
             throw EventApplicationError.元のポンがない(actor, tile)
         }
@@ -210,7 +210,7 @@ extension GameState {
         ps = players[actor]!
         let pon = ps.melds[index]
         // 加槓で足した牌は牌列の最後に置く（仕様§4）。
-        ps.melds[index] = Meld(kind: .kakan, tiles: pon.tiles + [tile],
+        ps.melds[index] = Meld(kind: .加槓, tiles: pon.tiles + [tile],
                                calledIndex: pon.calledIndex, from: pon.from)
         players[actor] = ps
     }

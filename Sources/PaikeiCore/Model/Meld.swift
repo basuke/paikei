@@ -9,8 +9,13 @@ public enum CallDirection: String, Sendable {
 ///
 /// 牌列の順序は表記上の意味（アポストロフィの位置・赤5の帰属）を持つため**並べ替えない**。
 public struct Meld: Hashable, Sendable {
+    /// rawValue は `.paikei` の表記トークン（仕様§4）なので ASCII 固定。
     public enum Kind: String, Sendable {
-        case chi, pon, daiminkan, kakan, ankan
+        case チー = "chi"
+        case ポン = "pon"
+        case 大明槓 = "daiminkan"
+        case 加槓 = "kakan"
+        case 暗槓 = "ankan"
     }
 
     public let kind: Kind
@@ -71,7 +76,7 @@ extension Meld {
 
         try validate(kind: kind, tiles: tiles, calledIndex: calledIndex, from: from)
         // チーは方向表記を持たないが、意味上は常に上家からの鳴き。
-        let resolvedFrom = (kind == .chi) ? .kamicha : from
+        let resolvedFrom = (kind == .チー) ? .kamicha : from
         return Meld(kind: kind, tiles: tiles, calledIndex: calledIndex, from: resolvedFrom)
     }
 
@@ -125,19 +130,19 @@ extension Meld {
             }
         }
         switch kind {
-        case .chi:
+        case .チー:
             try need(tiles.count == 3, "チーは3枚")
             try need(calledIndex != nil, "チーは鳴き牌の指定が必要")
             try need(from == nil, "チーは方向を書かない（常に上家）")
-        case .pon:
+        case .ポン:
             try need(tiles.count == 3, "ポンは3枚")
             try need(calledIndex != nil, "ポンは鳴き牌の指定が必要")
             try need(from != nil, "ポンは方向が必要")
-        case .daiminkan, .kakan:
+        case .大明槓, .加槓:
             try need(tiles.count == 4, "槓は4枚")
             try need(calledIndex != nil, "\(kind.rawValue)は鳴き牌の指定が必要")
             try need(from != nil, "\(kind.rawValue)は方向が必要")
-        case .ankan:
+        case .暗槓:
             try need(tiles.count == 4, "暗槓は4枚")
             try need(calledIndex == nil, "暗槓に鳴き牌の指定は不要")
             try need(from == nil, "暗槓に方向は不要")
@@ -157,7 +162,7 @@ extension Meld {
         if let suit { spec.append(suit.letter) }
 
         // チーは方向を書かない（常に上家）。暗槓は from が nil。
-        if kind != .chi, let from {
+        if kind != .チー, let from {
             return "\(kind.rawValue)(\(spec),\(from.rawValue))"
         }
         return "\(kind.rawValue)(\(spec))"

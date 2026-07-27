@@ -2,11 +2,15 @@
 ///
 /// 「いま `from` が `tile` を出した直後」を表す。この牌はまだ誰の河にも確定していない。
 public struct ClaimTile: Sendable, Equatable {
+    /// rawValue は `.paikei` の表記トークン（仕様§3.4）なので ASCII 固定。
     public enum Kind: String, Sendable {
-        case discard  // 通常の打牌
-        case riichi   // リーチ宣言牌
-        case kakan    // 加槓（槍槓ロンのみ）
-        case ankan    // 暗槓（国士の槍槓のみ）
+        case 打牌 = "discard"
+        /// リーチ宣言牌。
+        case 立直 = "riichi"
+        /// 槍槓ロンのみが検討対象。
+        case 加槓 = "kakan"
+        /// 国士無双の槍槓のみが検討対象。
+        case 暗槓 = "ankan"
     }
 
     public var tile: Tile
@@ -14,7 +18,7 @@ public struct ClaimTile: Sendable, Equatable {
     public var from: Player
     public var kind: Kind
 
-    public init(tile: Tile, from: Player, kind: Kind = .discard) {
+    public init(tile: Tile, from: Player, kind: Kind = .打牌) {
         self.tile = tile
         self.from = from
         self.kind = kind

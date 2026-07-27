@@ -42,7 +42,7 @@ struct スナップショットパース {
         #expect(shimo.river.contains { $0.declaresRiichi })
 
         let toimen = try #require(state.players[.toimen])
-        #expect(toimen.melds.first?.kind == .pon)
+        #expect(toimen.melds.first?.kind == .ポン)
     }
 
     @Test("部分観測: ? は不明として nil / 空になる")
@@ -64,10 +64,10 @@ struct スナップショットパース {
         let claim = try #require(state.claim)
         #expect(claim.tile == Tile(suit: .man, rank: 1))
         #expect(claim.from == .toimen)
-        #expect(claim.kind == .discard)
+        #expect(claim.kind == .打牌)
 
         let shimo = try #require(state.players[.shimocha])
-        #expect(shimo.melds.first?.kind == .chi)
+        #expect(shimo.melds.first?.kind == .チー)
         #expect(shimo.river.contains { $0.wasCalledAway })  // 7p+^
     }
 

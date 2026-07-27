@@ -147,7 +147,7 @@ public enum SnapshotParser {
         do { tile = try Tile.parse(first) } catch { throw fail() }
 
         var from: Player?
-        var kind: ClaimTile.Kind = .discard
+        var kind: ClaimTile.Kind = .打牌
         for token in tokens.dropFirst() {
             let pair = token.split(separator: "=", maxSplits: 1)
             guard pair.count == 2 else { throw fail() }

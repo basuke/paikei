@@ -6,7 +6,7 @@ struct 副露の表記 {
     @Test("ポン: 鳴き牌の位置と方向")
     func ポン鳴き牌の位置と方向() throws {
         let meld = try Meld.parse("pon(5'55p,L)")
-        #expect(meld.kind == .pon)
+        #expect(meld.kind == .ポン)
         #expect(meld.tiles == [Tile(suit: .pin, rank: 5)!, Tile(suit: .pin, rank: 5)!, Tile(suit: .pin, rank: 5)!])
         #expect(meld.calledIndex == 0)
         #expect(meld.from == .kamicha)
@@ -27,7 +27,7 @@ struct 副露の表記 {
     @Test("チー: 方向は常に上家、表記には方向を書かない")
     func チーは方向を書かない() throws {
         let meld = try Meld.parse("chi(6'78p)")
-        #expect(meld.kind == .chi)
+        #expect(meld.kind == .チー)
         #expect(meld.calledIndex == 0)
         #expect(meld.from == .kamicha)
         #expect(meld.notation == "chi(6'78p)")
@@ -36,7 +36,7 @@ struct 副露の表記 {
     @Test("暗槓: 方向も鳴き牌指定も無い")
     func 暗槓は方向も鳴き牌指定も無い() throws {
         let meld = try Meld.parse("ankan(9999s)")
-        #expect(meld.kind == .ankan)
+        #expect(meld.kind == .暗槓)
         #expect(meld.tiles.count == 4)
         #expect(meld.calledIndex == nil)
         #expect(meld.from == nil)
@@ -45,7 +45,7 @@ struct 副露の表記 {
     @Test("加槓: 4枚、' は元のポン牌、方向あり")
     func 加槓の鳴き牌は元のポン牌() throws {
         let meld = try Meld.parse("kakan(5'555p,L)")
-        #expect(meld.kind == .kakan)
+        #expect(meld.kind == .加槓)
         #expect(meld.tiles.count == 4)
         #expect(meld.calledIndex == 0)
         #expect(meld.from == .kamicha)
@@ -54,7 +54,7 @@ struct 副露の表記 {
     @Test("大明槓: 4枚、方向あり")
     func 大明槓は方向あり() throws {
         let meld = try Meld.parse("daiminkan(9'999s,C)")
-        #expect(meld.kind == .daiminkan)
+        #expect(meld.kind == .大明槓)
         #expect(meld.from == .toimen)
     }
 
@@ -81,7 +81,7 @@ struct 副露の表記 {
     @Test("外周・方向前後の空白を許容する")
     func 前後の空白を許容する() throws {
         let meld = try Meld.parse("  pon(5'55p, L)  ")
-        #expect(meld.kind == .pon)
+        #expect(meld.kind == .ポン)
         #expect(meld.from == .kamicha)
     }
 
@@ -101,26 +101,26 @@ struct 副露の表記 {
 struct 河の表記 {
     @Test("打牌属性: 手出し/ツモ切り/不明")
     func 打牌属性の手出しとツモ切り() throws {
-        #expect(try RiverTile.parse("9m+").manner == .tedashi)
-        #expect(try RiverTile.parse("1z-").manner == .tsumogiri)
-        #expect(try RiverTile.parse("6p").manner == .unknown)
+        #expect(try RiverTile.parse("9m+").manner == .手出し)
+        #expect(try RiverTile.parse("1z-").manner == .ツモ切り)
+        #expect(try RiverTile.parse("6p").manner == .不明)
     }
 
     @Test("状態属性: リーチ宣言と被鳴き")
     func 状態属性のリーチ宣言と被鳴き() throws {
         let riichi = try RiverTile.parse("4m+*")
-        #expect(riichi.manner == .tedashi)
+        #expect(riichi.manner == .手出し)
         #expect(riichi.declaresRiichi)
 
         let called = try RiverTile.parse("5p-^")
-        #expect(called.manner == .tsumogiri)
+        #expect(called.manner == .ツモ切り)
         #expect(called.wasCalledAway)
     }
 
     @Test func 赤5の河() throws {
         let red = try RiverTile.parse("0s-")
         #expect(red.tile.isRed)
-        #expect(red.manner == .tsumogiri)
+        #expect(red.manner == .ツモ切り)
     }
 
     @Test("河の行をまとめてパース（仕様§5の例）")
@@ -129,7 +129,7 @@ struct 河の表記 {
         #expect(river.count == 5)
         #expect(river[2].wasCalledAway)
         #expect(river[3].declaresRiichi)
-        #expect(river[4].manner == .unknown)
+        #expect(river[4].manner == .不明)
     }
 
     @Test func 属性の重複はエラー() {
@@ -158,7 +158,7 @@ struct 河の表記 {
         // 仕様§5は状態属性の複数付与順を明示しないため * → ^ を正規形と定める。
         // パースは順不同を受理する。
         let a = try RiverTile.parse("4m+*^")
-        #expect(a.declaresRiichi && a.wasCalledAway && a.manner == .tedashi)
+        #expect(a.declaresRiichi && a.wasCalledAway && a.manner == .手出し)
         #expect(a.notation == "4m+*^")
         #expect(try RiverTile.parse("4m+^*") == a)  // 逆順入力も同一
     }

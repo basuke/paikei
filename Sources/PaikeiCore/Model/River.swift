@@ -2,9 +2,12 @@
 public struct RiverTile: Hashable, Sendable {
     /// 打牌属性（履歴層）。ソースが知らなければ `.unknown`。
     public enum Manner: Sendable {
-        case tedashi    // 手出し (+)
-        case tsumogiri  // ツモ切り (-)
-        case unknown    // 無印
+        /// `+`
+        case 手出し
+        /// `-`
+        case ツモ切り
+        /// 無印。
+        case 不明
     }
 
     public let tile: Tile
@@ -16,7 +19,7 @@ public struct RiverTile: Hashable, Sendable {
 
     public init(
         tile: Tile,
-        manner: Manner = .unknown,
+        manner: Manner = .不明,
         declaresRiichi: Bool = false,
         wasCalledAway: Bool = false
     ) {
@@ -51,18 +54,18 @@ extension RiverTile {
         let tilePart = token[token.startIndex...suitIndex]
         let tile = try Tile.parse(tilePart)
 
-        var manner: Manner = .unknown
+        var manner: Manner = .不明
         var riichi = false
         var calledAway = false
 
         for char in token[token.index(after: suitIndex)...] {
             switch char {
             case "+":
-                guard manner == .unknown else { throw RiverNotationError.duplicateManner(String(text)) }
-                manner = .tedashi
+                guard manner == .不明 else { throw RiverNotationError.duplicateManner(String(text)) }
+                manner = .手出し
             case "-":
-                guard manner == .unknown else { throw RiverNotationError.duplicateManner(String(text)) }
-                manner = .tsumogiri
+                guard manner == .不明 else { throw RiverNotationError.duplicateManner(String(text)) }
+                manner = .ツモ切り
             case "*":
                 guard !riichi else { throw RiverNotationError.duplicateState(String(text)) }
                 riichi = true
@@ -80,9 +83,9 @@ extension RiverTile {
     public var notation: String {
         var result = tile.mpsz
         switch manner {
-        case .tedashi: result.append("+")
-        case .tsumogiri: result.append("-")
-        case .unknown: break
+        case .手出し: result.append("+")
+        case .ツモ切り: result.append("-")
+        case .不明: break
         }
         if declaresRiichi { result.append("*") }
         if wasCalledAway { result.append("^") }

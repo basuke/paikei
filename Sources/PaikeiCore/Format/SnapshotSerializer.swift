@@ -29,7 +29,7 @@ extension GameState {
         if let claim {
             lines.append("")
             var line = "claim_tile: \(claim.tile.mpsz) from=\(claim.from.rawValue)"
-            if claim.kind != .discard { line += " kind=\(claim.kind.rawValue)" }
+            if claim.kind != .打牌 { line += " kind=\(claim.kind.rawValue)" }
             lines.append(line)
         }
 

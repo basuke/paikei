@@ -218,14 +218,14 @@ extension GameState {
     private func corroboratesWin(player: Player, winningTile: Tile, winType: WinType) -> Bool {
         let target = winningTile.normalized
         switch phase {
-        case .quiescent:
+        case .静止:
             return false
-        case let .awaitingDiscard(who, _):
+        case let .打牌待ち(who, _):
             guard who == player, winType == .ツモ, let ps = players[who] else { return false }
             // `draw:` があればその牌と一致するか。14枚形に畳まれていれば手牌に含まれるか。
             if let draw = ps.draw { return draw.normalized == target }
             return ps.hand?.contains { $0.normalized == target } ?? false
-        case let .awaitingClaim(tile, from, _):
+        case let .応答待ち(tile, from, _):
             return winType == .ロン && from != player && tile.normalized == target
         }
     }

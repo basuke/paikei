@@ -8,19 +8,19 @@ extension GameState {
         if let claim {
             let context: ClaimContext
             switch claim.kind {
-            case .discard: context = .discard
-            case .riichi: context = .riichiDeclaration
-            case .kakan: context = .kakan
-            case .ankan: context = .ankan
+            case .打牌: context = .打牌
+            case .立直: context = .立直宣言
+            case .加槓: context = .加槓
+            case .暗槓: context = .暗槓
             }
-            return .awaitingClaim(claim.tile, from: claim.from, context)
+            return .応答待ち(claim.tile, 打牌者: claim.from, context)
         }
 
         // 2a. draw: があるプレイヤーは打牌待ち（ツモ直後）。
         for player in Player.allCases {
             guard let ps = players[player], ps.draw != nil else { continue }
-            let context: DiscardContext = (ps.riichi == true) ? .afterDrawRiichi : .afterDraw
-            return .awaitingDiscard(player, context)
+            let context: DiscardContext = (ps.riichi == true) ? .立直後ツモ : .ツモ後
+            return .打牌待ち(player, context)
         }
 
         // 2b. draw: が無くても手牌が「14枚目相当」なら打牌待ち。文脈は discard_context ヒントから。
@@ -29,15 +29,15 @@ extension GameState {
             if hand.count == 13 - 3 * ps.melds.count + 1 {
                 let context: DiscardContext
                 switch ps.discardOrigin {
-                case .draw: context = (ps.riichi == true) ? .afterDrawRiichi : .afterDraw
-                case .call: context = .afterCall
-                case nil: context = .unknown
+                case .ツモ: context = (ps.riichi == true) ? .立直後ツモ : .ツモ後
+                case .鳴き: context = .鳴き後
+                case nil: context = .不明
                 }
-                return .awaitingDiscard(player, context)
+                return .打牌待ち(player, context)
             }
         }
 
         // 3. どちらでもなければ静止状態。
-        return .quiescent
+        return .静止
     }
 }
