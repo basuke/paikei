@@ -12,9 +12,9 @@ func loadFixture(_ name: String) throws -> String {
 let fixtureNames = ["minimal", "east2-1", "partial", "from-mjai"]
 
 @Suite("スナップショット パース")
-struct SnapshotParseTests {
+struct スナップショットパース {
     @Test("最小形: 手牌とツモのみ")
-    func minimal() throws {
+    func 最小形手牌とツモのみ() throws {
         let state = try SnapshotParser.parse(loadFixture("minimal"))
         let me = try #require(state.players[.myself])
         #expect(me.hand?.count == 13)
@@ -23,7 +23,7 @@ struct SnapshotParseTests {
     }
 
     @Test("全景: 卓フィールドと4プレイヤー")
-    func fullBoard() throws {
+    func 全景卓フィールドと4プレイヤー() throws {
         let state = try SnapshotParser.parse(loadFixture("east2-1"))
         #expect(state.bakaze == .east)
         #expect(state.kyoku == 2)
@@ -46,7 +46,7 @@ struct SnapshotParseTests {
     }
 
     @Test("部分観測: ? は不明として nil / 空になる")
-    func partial() throws {
+    func 部分観測は不明としてnil空になる() throws {
         let state = try SnapshotParser.parse(loadFixture("partial"))
         #expect(state.kyoku == nil)
         #expect(state.honba == nil)
@@ -59,7 +59,7 @@ struct SnapshotParseTests {
     }
 
     @Test("牌譜由来: claim_tile と被鳴き ^")
-    func fromMjai() throws {
+    func 牌譜由来claim_tileと被鳴き() throws {
         let state = try SnapshotParser.parse(loadFixture("from-mjai"))
         let claim = try #require(state.claim)
         #expect(claim.tile == Tile(suit: .man, rank: 1))
@@ -82,23 +82,20 @@ struct SnapshotParseTests {
 }
 
 @Suite("スナップショット パースのエラー")
-struct SnapshotErrorTests {
-    @Test("未知のセクション")
-    func unknownSection() {
+struct スナップショットパースのエラー {
+    @Test func 未知のセクション() {
         #expect(throws: SnapshotParseError.self) {
             try SnapshotParser.parse("[opponent]\nscore: 25000")
         }
     }
 
-    @Test("未知のフィールド")
-    func unknownField() {
+    @Test func 未知のフィールド() {
         #expect(throws: SnapshotParseError.self) {
             try SnapshotParser.parse("nonsense: 3")
         }
     }
 
-    @Test("不正な値")
-    func invalidValue() {
+    @Test func 不正な値() {
         #expect(throws: SnapshotParseError.self) {
             try SnapshotParser.parse("kyoku: abc")
         }
@@ -107,15 +104,13 @@ struct SnapshotErrorTests {
         }
     }
 
-    @Test("コロンの無い行")
-    func malformedLine() {
+    @Test func コロンの無い行() {
         #expect(throws: SnapshotParseError.self) {
             try SnapshotParser.parse("[self]\ngarbage")
         }
     }
 
-    @Test("コメントと空行は無視される")
-    func commentsAndBlanks() throws {
+    @Test func コメントと空行は無視される() throws {
         let state = try SnapshotParser.parse("""
         # 先頭コメント
         bakaze: E   # 行末コメント

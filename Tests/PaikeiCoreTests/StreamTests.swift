@@ -2,9 +2,9 @@ import Testing
 @testable import PaikeiCore
 
 @Suite("ストリーム: イベントの JSON Lines (§8.1)")
-struct EventCodingTests {
+struct ストリームのJSONLines {
     @Test("全イベント種別が paikei 方言でラウンドトリップする")
-    func roundTrip() throws {
+    func 全イベント種別がpaikei方言でラウンドトリップする() throws {
         let events: [Event] = [
             .ツモ(手番: .myself, 牌: try Tile.parse("6s")),
             .ツモ(手番: .toimen, 牌: nil),
@@ -33,7 +33,7 @@ struct EventCodingTests {
     }
 
     @Test("仕様§8の例をパースする")
-    func specExamples() throws {
+    func 仕様8の例をパースする() throws {
         let line = #"{"type":"pon","actor":"toimen","target":"self","pai":"1z","consumed":["1z","1z"]}"#
         let event = try EventCoding.event(fromLine: line, format: .paikei)
         #expect(event == .ポン(手番: .toimen, 相手: .myself,
@@ -41,8 +41,7 @@ struct EventCodingTests {
                               手牌から: try Tile.parseHand("11z")))
     }
 
-    @Test("不正な行は型付きエラー")
-    func errors() throws {
+    @Test func 不正な行は型付きエラー() throws {
         #expect(throws: StreamParseError.self) {
             _ = try EventCoding.event(fromLine: "not json", format: .paikei)
         }
@@ -56,9 +55,8 @@ struct EventCodingTests {
 }
 
 @Suite("ストリーム: mjai 方言 (§8.2)")
-struct MjaiDialectTests {
-    @Test("MJAI牌表記の相互変換")
-    func tileConversion() throws {
+struct ストリームmjai方言 {
+    @Test func MJAI牌表記の相互変換() throws {
         let pairs: [(String, String)] = [
             ("1m", "1m"), ("9s", "9s"), ("5mr", "0m"), ("5pr", "0p"),
             ("E", "1z"), ("S", "2z"), ("W", "3z"), ("N", "4z"),
@@ -74,7 +72,7 @@ struct MjaiDialectTests {
     }
 
     @Test("絶対座席がカメラ相対に解決される（仕様§8.2の例）")
-    func seatMapping() throws {
+    func 絶対座席がカメラ相対に解決される() throws {
         let format = StreamFormat.mjai(selfActor: 2)
         let tsumo = try EventCoding.event(
             fromLine: #"{"type":"tsumo","actor":2,"pai":"W"}"#, format: format)
@@ -90,7 +88,7 @@ struct MjaiDialectTests {
 }
 
 @Suite("ストリーム: ドキュメント (§8)")
-struct PaikeiDocumentTests {
+struct ストリームドキュメント {
     let snapshotText = """
         wall: 42
 
@@ -100,14 +98,14 @@ struct PaikeiDocumentTests {
         """
 
     @Test("[stream] が無ければイベントは空")
-    func noStream() throws {
+    func streamが無ければイベントは空() throws {
         let doc = try PaikeiDocument.parse(snapshotText)
         #expect(doc.events.isEmpty)
         #expect(try doc.state() == doc.snapshot)
     }
 
     @Test("パース → 適用。コメントと空行は無視")
-    func parseAndApply() throws {
+    func パース適用コメントと空行は無視() throws {
         let text = snapshotText + """
 
 
@@ -129,16 +127,14 @@ struct PaikeiDocumentTests {
         #expect(final.wall == 41)
     }
 
-    @Test("範囲外のステップは型付きエラー")
-    func stepOutOfRange() throws {
+    @Test func 範囲外のステップは型付きエラー() throws {
         let doc = try PaikeiDocument.parse(snapshotText)
         #expect(throws: PaikeiDocument.StepOutOfRange(requested: 5, available: 0)) {
             _ = try doc.state(at: 5)
         }
     }
 
-    @Test("ドキュメント全体がラウンドトリップする")
-    func roundTrip() throws {
+    @Test func ドキュメント全体がラウンドトリップする() throws {
         let text = snapshotText + """
 
 
@@ -154,7 +150,7 @@ struct PaikeiDocumentTests {
     }
 
     @Test("[stream] ヘッダの行末コメントは無視する（§3のコメント規則）")
-    func headerTrailingComment() throws {
+    func streamヘッダの行末コメントは無視する() throws {
         let doc = try PaikeiDocument.parse(snapshotText + """
 
 
@@ -165,7 +161,7 @@ struct PaikeiDocumentTests {
     }
 
     @Test("mjai は self_actor が必須、未知の format はエラー")
-    func headerValidation() throws {
+    func ヘッダのformat検証() throws {
         #expect(throws: StreamParseError.missingSelfActor) {
             _ = try PaikeiDocument.parse(snapshotText + "\n[stream] format=mjai\n")
         }
@@ -175,7 +171,7 @@ struct PaikeiDocumentTests {
     }
 
     @Test("from-mjai フィクスチャ: mjai ストリームを再生できる")
-    func fromMjaiFixture() throws {
+    func mjaiストリームを再生できる() throws {
         let doc = try PaikeiDocument.parse(loadFixture("from-mjai"))
         #expect(!doc.events.isEmpty)
 

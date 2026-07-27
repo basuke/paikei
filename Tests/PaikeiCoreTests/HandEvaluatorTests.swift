@@ -2,7 +2,7 @@ import Testing
 @testable import PaikeiCore
 
 @Suite("高点法 (HandEvaluator)")
-struct HandEvaluatorTests {
+struct 高点法 {
     func context(
         seat: Wind = .east, round: Wind = .east,
         winType: WinType = .tsumo, winTile: String
@@ -11,8 +11,7 @@ struct HandEvaluatorTests {
                    winningTile: try Tile.parse(winTile))
     }
 
-    @Test("複数の読み方があるとき翻の高い方を選ぶ")
-    func picksHighestHan() throws {
+    @Test func 複数の読み方があるとき翻の高い方を選ぶ() throws {
         // 111222333m は「刻子3つ」とも「順子3つ」とも読める。
         // 刻子読み: 三暗刻(2翻) + 門前ツモ(1翻) = 3翻
         // 順子読み: 一盃口(1翻) + 門前ツモ(1翻) = 2翻
@@ -25,8 +24,7 @@ struct HandEvaluatorTests {
         #expect(!best.yaku.contains(.一盃口))
     }
 
-    @Test("翻が同じなら符の高い方を選ぶ")
-    func picksHighestFuOnTie() throws {
+    @Test func 翻が同じなら符の高い方を選ぶ() throws {
         // 22334455m は「234m 234m + 55m雀頭」とも「345m 345m + 22m雀頭」とも読める。
         // 5mツモ和了だと前者は単騎(2符)、後者は両面(0符)。役はどちらも一盃口で同翻。
         let tiles = try Tile.parseHand("22334455m678p999s")
@@ -39,7 +37,7 @@ struct HandEvaluatorTests {
     }
 
     @Test("同じ入力なら常に同じ読み方を返す（分解の列挙順に依らない）")
-    func deterministic() throws {
+    func 同じ入力なら常に同じ読み方を返す() throws {
         let tiles = try Tile.parseHand("111222333m456p99s")
         let ctx = try context(winTile: "9s")
         let first = try #require(try HandEvaluator().best(concealed: tiles, melds: [], context: ctx))
@@ -52,14 +50,14 @@ struct HandEvaluatorTests {
     }
 
     @Test("和了していなければ nil")
-    func notAgari() throws {
+    func 和了していなければnil() throws {
         let tiles = try Tile.parseHand("123456789m2355p")  // 13枚テンパイ
         #expect(try HandEvaluator().best(concealed: tiles, melds: [],
                                      context: try context(winTile: "5p")) == nil)
     }
 
     @Test("役なしの和了形も評価は返る（yaku が空）")
-    func noYaku() throws {
+    func 役なしの和了形も評価は返る() throws {
         // 喰いタンなしルールでの鳴き断么九。和了形ではあるが役が付かない。
         let tiles = try Tile.parseHand("345m678p456s55p")
         let melds = [try Meld.parse("pon(2'22m,L)")]
@@ -77,7 +75,7 @@ struct HandEvaluatorTests {
     }
 
     @Test("役満は13翻、複合役満は加算される")
-    func yakuman() throws {
+    func 役満は13翻で複合は加算() throws {
         let suuankou = try Tile.parseHand("111222m333p555s77z")
         let single = try #require(
             try HandEvaluator().best(concealed: suuankou, melds: [],
@@ -96,7 +94,7 @@ struct HandEvaluatorTests {
     }
 
     @Test("評価器はルールを注入して使う（一発なしルール）")
-    func rulesAreInjected() throws {
+    func 評価器はルールを注入して使う() throws {
         let tiles = try Tile.parseHand("234567m234p55p678s")
         let ctx = WinContext(seatWind: .east, roundWind: .east, winType: .tsumo,
                              winningTile: try Tile.parse("8s"),

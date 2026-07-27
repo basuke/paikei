@@ -2,10 +2,9 @@ import Testing
 @testable import PaikeiCore
 
 @Suite("受け入れ (ukeire)")
-struct UkeireTests {
+struct 受け入れ {
     // 123456789m + 1123p: 3順子 + 11p雀頭 + 23p搭子 → 1p/4p待ち
-    @Test("テンパイの待ち牌と枚数")
-    func waits() throws {
+    @Test func テンパイの待ち牌と枚数() throws {
         let uke = Acceptance.ukeire(hand: try Tile.parseHand("123456789m1123p"))
         #expect(uke.shanten == 0)
         #expect(uke.tiles.map(\.tile) == [Tile(suit: .pin, rank: 1)!, Tile(suit: .pin, rank: 4)!])
@@ -13,8 +12,7 @@ struct UkeireTests {
         #expect(uke.total == 6)
     }
 
-    @Test("可視牌は残り枚数から差し引かれる")
-    func visibleReducesRemaining() throws {
+    @Test func 可視牌は残り枚数から差し引かれる() throws {
         let uke = Acceptance.ukeire(
             hand: try Tile.parseHand("123456789m1123p"),
             visible: try Tile.parseHand("44p")  // 4p が2枚見えている
@@ -24,7 +22,7 @@ struct UkeireTests {
     }
 
     @Test("暗槓ありの待ち（槓の4枚は可視牌として引かれる）")
-    func waitsWithKan() throws {
+    func 暗槓ありの待ち() throws {
         // 暗槓1111m + 234567p 77z 99s → 7z/9s のシャンポン待ち。
         let uke = Acceptance.ukeire(
             hand: try Tile.parseHand("234567p77z99s"),
@@ -37,7 +35,7 @@ struct UkeireTests {
     }
 
     @Test("1シャンテンの受け入れ")
-    func oneShantenUkeire() throws {
+    func _1シャンテンの受け入れ() throws {
         // 123456789m + 2358p は 1シャンテン
         let uke = Acceptance.ukeire(hand: try Tile.parseHand("123456789m2358p"))
         #expect(uke.shanten == 1)
@@ -46,9 +44,8 @@ struct UkeireTests {
 }
 
 @Suite("何切る (discards)")
-struct DiscardTests {
-    @Test("孤立牌を切るのが最善に並ぶ")
-    func bestDiscardFirst() throws {
+struct 何切る {
+    @Test func 孤立牌を切るのが最善に並ぶ() throws {
         // 123456789m1123p + 孤立の4s。4s を切ればテンパイ(受け入れ6枚)。
         let options = Acceptance.discards(hand: try Tile.parseHand("123456789m1123p4s"))
         let best = try #require(options.first)
@@ -57,8 +54,7 @@ struct DiscardTests {
         #expect(best.ukeire.total == 6)
     }
 
-    @Test("全打牌候補が列挙される")
-    func allDiscardsListed() throws {
+    @Test func 全打牌候補が列挙される() throws {
         let hand = try Tile.parseHand("123456789m1123p4s")
         let options = Acceptance.discards(hand: hand)
         // 手牌の牌種数だけ候補が出る（1m..9m, 1p,2p,3p, 4s = 13種）

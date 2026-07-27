@@ -1,8 +1,7 @@
 import Testing
 @testable import PaikeiCore
 
-@Suite("役判定")
-struct YakuTests {
+@Suite struct 役判定 {
     /// 手牌文字列と文脈から、最高翻になる分解の役集合を返すヘルパ。
     func best(
         _ concealed: String,
@@ -29,17 +28,16 @@ struct YakuTests {
     }
 
     @Test("断么九 + 門前清自摸和")
-    func tanyaoTsumo() throws {
+    func 断么九と門前清自摸和() throws {
         #expect(try best("234567m234p55p678s").isSuperset(of: [.断么九, .門前清自摸和]))
     }
 
-    @Test("立直")
-    func riichi() throws {
+    @Test func 立直() throws {
         #expect(try best("234567m234p55p678s", riichi: true).contains(.立直))
     }
 
     @Test("一発は立直が前提（立直なしは矛盾としてエラー）")
-    func ippatsuRequiresRiichi() throws {
+    func 一発は立直が前提() throws {
         #expect(throws: WinContextError(contradictions: [.ippatsuRequiresRiichi])) {
             _ = try self.best("234567m234p55p678s", ippatsu: true)
         }
@@ -48,7 +46,7 @@ struct YakuTests {
     }
 
     @Test("嶺上開花はツモ限定（ロンとの併用は矛盾としてエラー）")
-    func rinshanIsTsumoOnly() throws {
+    func 嶺上開花はツモ限定() throws {
         #expect(try best("234567m234p55p678s", winType: .tsumo, afterKan: true).contains(.嶺上開花))
         #expect(throws: WinContextError(contradictions: [.afterKanRequiresTsumo])) {
             _ = try self.best("234567m234p55p678s", winType: .ron, afterKan: true)
@@ -56,7 +54,7 @@ struct YakuTests {
     }
 
     @Test("槍槓はロン限定（ツモとの併用は矛盾としてエラー）")
-    func chankanIsRonOnly() throws {
+    func 槍槓はロン限定() throws {
         #expect(try best("234567m234p55p678s", winType: .ron, robbingKan: true).contains(.槍槓))
         #expect(throws: WinContextError(contradictions: [.robbingKanRequiresRon])) {
             _ = try self.best("234567m234p55p678s", winType: .tsumo, robbingKan: true)
@@ -64,33 +62,30 @@ struct YakuTests {
     }
 
     @Test("役牌: 場風と自風")
-    func windYakuhai() throws {
+    func 役牌場風と自風() throws {
         #expect(try best("111222z234m567p99s", seat: .south, round: .east).isSuperset(of: [.場風, .自風]))
     }
 
-    @Test("三色同順")
-    func sanshoku() throws {
+    @Test func 三色同順() throws {
         #expect(try best("234678m234p234s55z").contains(.三色同順))
     }
 
-    @Test("一気通貫")
-    func ittsu() throws {
+    @Test func 一気通貫() throws {
         #expect(try best("123456789m234p55s").contains(.一気通貫))
     }
 
-    @Test("七対子")
-    func sevenPairs() throws {
+    @Test func 七対子() throws {
         #expect(try best("1188m2299p3377s11z").contains(.七対子))
     }
 
     @Test("対々和 + 三暗刻（1つ副露）")
-    func toitoiSanankou() throws {
+    func 対々和と三暗刻() throws {
         let yaku = try best("111m222m333p77z", melds: [try Meld.parse("pon(5'55s,L)")], winTile: "1m")
         #expect(yaku.isSuperset(of: [.対々和, .三暗刻]))
     }
 
     @Test("二盃口は3翻、七対子形より優先される")
-    func ryanpeikou() throws {
+    func 二盃口は七対子形より優先される() throws {
         #expect(Yaku.二盃口.han(menzen: true) == 3)
         // 112233m445566p77s は七対子形でもあるが、二盃口(3翻)が選ばれる
         let yaku = try best("112233m445566p77s")
@@ -98,31 +93,29 @@ struct YakuTests {
         #expect(!yaku.contains(.七対子))
     }
 
-    @Test("混一色")
-    func honitsu() throws {
+    @Test func 混一色() throws {
         #expect(try best("123456789m111z22z", seat: .west, round: .south).contains(.混一色))
     }
 
-    @Test("清一色")
-    func chinitsu() throws {
+    @Test func 清一色() throws {
         #expect(try best("111234567m888m99m").contains(.清一色))
     }
 
     @Test("三槓子（暗槓3つは三暗刻も兼ねる）")
-    func sankantsu() throws {
+    func 三槓子() throws {
         let melds = try ["ankan(1111m)", "ankan(2222m)", "ankan(3333m)"].map { try Meld.parse($0) }
         let yaku = try best("234p99s", melds: melds, winTile: "9s")
         #expect(yaku.isSuperset(of: [.三槓子, .三暗刻, .門前清自摸和]))
     }
 
     @Test("暗槓は面前を保つ（門前ツモが成立する）")
-    func ankanKeepsMenzen() throws {
+    func 暗槓は面前を保つ() throws {
         let yaku = try best("234567p777z99s", melds: [try Meld.parse("ankan(1111m)")], winTile: "9s")
         #expect(yaku.isSuperset(of: [.門前清自摸和, .中]))
     }
 
     @Test("大明槓は面前を崩す（門前ツモが消える）")
-    func daiminkanBreaksMenzen() throws {
+    func 大明槓は面前を崩す() throws {
         let yaku = try best("234567p777z99s",
                             melds: [try Meld.parse("daiminkan(1'111m,C)")], winTile: "9s")
         #expect(yaku.contains(.中))
@@ -130,15 +123,14 @@ struct YakuTests {
     }
 
     @Test("食い下がり: 三色は面前2翻・鳴き1翻")
-    func kuisagari() {
+    func 食い下がりの三色と清一色() {
         #expect(Yaku.三色同順.han(menzen: true) == 2)
         #expect(Yaku.三色同順.han(menzen: false) == 1)
         #expect(Yaku.清一色.han(menzen: false) == 5)
     }
 }
 
-@Suite("役満")
-struct YakumanTests {
+@Suite struct 役満 {
     func best(_ concealed: String) throws -> Set<Yaku> {
         let tiles = try Tile.parseHand(concealed)
         let ctx = WinContext(seatWind: .east, roundWind: .east, winType: .tsumo, winningTile: tiles[0])
@@ -147,45 +139,40 @@ struct YakumanTests {
         return try Set(hands.flatMap { try detector.detect($0) })
     }
 
-    @Test("国士無双")
-    func kokushi() throws {
+    @Test func 国士無双() throws {
         #expect(try best("19m19p19s11234567z") == [.国士無双])
     }
 
     @Test("大三元（役満のみ返る）")
-    func daisangen() throws {
+    func 大三元() throws {
         let yaku = try best("555z666z777z234m99p")
         #expect(yaku.contains(.大三元))
         let onlyYakuman = yaku.allSatisfy(\.isYakuman)
         #expect(onlyYakuman)
     }
 
-    @Test("四暗刻")
-    func suuankou() throws {
+    @Test func 四暗刻() throws {
         #expect(try best("111222m333p555s77z").contains(.四暗刻))
     }
 
-    @Test("九蓮宝燈")
-    func chuuren() throws {
+    @Test func 九蓮宝燈() throws {
         // 1112345678999 + 5m（14枚）。清一色より役満が優先される。
         #expect(try best("11123455678999m") == [.九蓮宝燈])
     }
 
-    @Test("清一色でも九蓮の形でなければ九蓮宝燈にならない")
-    func chinitsuIsNotChuuren() throws {
+    @Test func 清一色でも九蓮の形でなければ九蓮宝燈にならない() throws {
         // 123 234 456 789 + 99 の清一色。1が1枚しかない。
         let yaku = try best("12323445678999m")
         #expect(yaku.contains(.清一色))
         #expect(!yaku.contains(.九蓮宝燈))
     }
 
-    @Test("字一色")
-    func tsuuiisou() throws {
+    @Test func 字一色() throws {
         #expect(try best("111z222z333z444z55z").contains(.字一色))
     }
 
     @Test("四槓子（暗槓4つは四暗刻も兼ねる）")
-    func suukantsu() throws {
+    func 四槓子() throws {
         let concealed = try Tile.parseHand("99s")
         let melds = try ["ankan(1111m)", "ankan(2222m)", "ankan(3333m)", "ankan(4444m)"]
             .map { try Meld.parse($0) }
@@ -198,8 +185,7 @@ struct YakumanTests {
         #expect(onlyYakuman)  // 役満成立時は役満のみ返る
     }
 
-    @Test("大明槓を含む四槓子は四暗刻にならない")
-    func suukantsuWithOpenKan() throws {
+    @Test func 大明槓を含む四槓子は四暗刻にならない() throws {
         let concealed = try Tile.parseHand("99s")
         let melds = try ["ankan(1111m)", "ankan(2222m)", "ankan(3333m)", "daiminkan(4'444m,C)"]
             .map { try Meld.parse($0) }

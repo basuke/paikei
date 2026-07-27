@@ -1,8 +1,7 @@
 import Testing
 @testable import PaikeiCore
 
-@Suite("スナップショットからの点数解析")
-struct SnapshotScoringTests {
+@Suite struct スナップショットからの点数解析 {
     /// 平和形（234567m 234p 45s + 99p雀頭）で 6s の両面待ちテンパイの局面を組み立てる。
     func state(
         bakaze: Wind? = .east, honba: Int? = 1, kyotaku: Int? = 1,
@@ -31,8 +30,7 @@ struct SnapshotScoringTests {
 
     // MARK: - 情報が揃っているとき
 
-    @Test("全て既知なら仮定なしで答える")
-    func fullyKnown() throws {
+    @Test func 全て既知なら仮定なしで答える() throws {
         // ドラ表示3p（4pが手牌に1枚）。下家が6sを打った応答待ち＝ロンの前提も揃っている。
         let s = try state(dora: [try Tile.parse("3p")],
                           claim: ClaimTile(tile: try Tile.parse("6s"), from: .shimocha))
@@ -48,15 +46,14 @@ struct SnapshotScoringTests {
         #expect(score.total == 2300 + 1000)          // 供託1本
     }
 
-    @Test("席風が親なら支払いが親のものになる")
-    func dealer() throws {
+    @Test func 席風が親なら支払いが親のものになる() throws {
         let s = try state(seat: .east)
         let (score, _, _) = try scored(try s.score(winningTile: try Tile.parse("6s"), winType: .ron))
         #expect(score.payment == .ron(1500 + 300))   // 親の1翻30符 + 1本場
     }
 
     @Test("履歴依存の情報はオプションで与える（一発・裏ドラ）")
-    func historyOptions() throws {
+    func 履歴依存の情報はオプションで与える() throws {
         let s = try state(riichi: true)
         let options = WinOptions(ippatsu: true, uraMarkers: [try Tile.parse("3p")])
         let (score, yaku, assumptions) = try scored(
@@ -68,8 +65,7 @@ struct SnapshotScoringTests {
         #expect(!assumptions.contains(.noUraMarkers))
     }
 
-    @Test("立直しているのに裏ドラ表示牌が無ければ仮定として注記する")
-    func uraUnknownIsAnAssumption() throws {
+    @Test func 裏ドラ表示牌が無ければ仮定() throws {
         let s = try state(dora: [try Tile.parse("3p")], riichi: true,
                           claim: ClaimTile(tile: try Tile.parse("6s"), from: .shimocha))
         let (_, _, assumptions) = try scored(
@@ -80,7 +76,7 @@ struct SnapshotScoringTests {
     // MARK: - 不明を仮定で埋める
 
     @Test("立直・ドラ・本場・供託の不明は仮定して答える（答えが低めに出るだけ）")
-    func assumptions() throws {
+    func 立直ドラ本場供託の不明は仮定して答える() throws {
         let s = try state(bakaze: nil, honba: nil, kyotaku: nil, seat: nil, riichi: nil)
         let (score, _, assumptions) = try scored(
             try s.score(winningTile: try Tile.parse("6s"), winType: .ron))
@@ -97,7 +93,7 @@ struct SnapshotScoringTests {
     // MARK: - 矛盾した入力は型付きエラーで拒む
 
     @Test("矛盾したオプションは WinContextError（不足の declined とは別扱い）")
-    func contradictoryOptionsThrow() throws {
+    func 矛盾したオプションはWinContextError() throws {
         let s = try state()
         #expect(throws: WinContextError(contradictions: [.ippatsuRequiresRiichi])) {
             _ = try s.score(winningTile: try Tile.parse("6s"), winType: .ron,
@@ -109,8 +105,7 @@ struct SnapshotScoringTests {
                                           options: WinOptions(ippatsu: true)))
     }
 
-    @Test("複数の矛盾は全て列挙される")
-    func multipleContradictions() throws {
+    @Test func 複数の矛盾は全て列挙される() throws {
         let s = try state()
         #expect(throws: WinContextError(
             contradictions: [.ippatsuRequiresRiichi, .afterKanRequiresTsumo])) {
@@ -122,23 +117,21 @@ struct SnapshotScoringTests {
     // MARK: - 和了の前提を局面と突き合わせる
 
     @Test("ツモ牌と一致するツモ和了は、局面が裏づけているので仮定に挙げない")
-    func tsumoBackedByDraw() throws {
+    func ツモ牌と一致するツモ和了は裏づけあり() throws {
         let s = try state(draw: try Tile.parse("6s"))
         let (_, _, assumptions) = try scored(
             try s.score(winningTile: try Tile.parse("6s"), winType: .tsumo))
         #expect(!assumptions.contains { if case .hypotheticalWin = $0 { true } else { false } })
     }
 
-    @Test("応答待ちの対象牌へのロンも局面が裏づけている")
-    func ronBackedByClaim() throws {
+    @Test func 応答待ちの対象牌へのロンも局面が裏づけている() throws {
         let s = try state(claim: ClaimTile(tile: try Tile.parse("6s"), from: .shimocha))
         let (_, _, assumptions) = try scored(
             try s.score(winningTile: try Tile.parse("6s"), winType: .ron))
         #expect(!assumptions.contains { if case .hypotheticalWin = $0 { true } else { false } })
     }
 
-    @Test("静止状態での試算は和了そのものが仮定")
-    func quiescentIsHypothetical() throws {
+    @Test func 静止状態での試算は和了そのものが仮定() throws {
         let s = try state()  // draw も claim も無い＝静止状態
         let (_, _, assumptions) = try scored(
             try s.score(winningTile: try Tile.parse("6s"), winType: .ron))
@@ -146,7 +139,7 @@ struct SnapshotScoringTests {
     }
 
     @Test("局面と食い違う和了方法・和了牌は仮定として注記する")
-    func winContradictingPhase() throws {
+    func 局面と食い違う和了は仮定() throws {
         // ツモ直後なのにロンを指定。
         let drew = try state(draw: try Tile.parse("6s"))
         let (_, _, ronAssumptions) = try scored(
@@ -161,7 +154,7 @@ struct SnapshotScoringTests {
     }
 
     @Test("自分が出した牌ではロンできない（裏づけにならない）")
-    func cannotRonOwnDiscard() throws {
+    func 自分が出した牌ではロンできない() throws {
         let s = try state(claim: ClaimTile(tile: try Tile.parse("6s"), from: .myself))
         let (_, _, assumptions) = try scored(
             try s.score(winningTile: try Tile.parse("6s"), winType: .ron))
@@ -177,14 +170,14 @@ struct SnapshotScoringTests {
     }
 
     @Test("風で役が変わる手は、風が不明なら仮定せずに断る")
-    func windMattersSoDecline() throws {
+    func 風で役が変わる手は風が不明なら仮定せずに断る() throws {
         let s = try windTripletState()
         #expect(try s.score(winningTile: try Tile.parse("1z"), winType: .ron)
                 == .declined([.roundWind, .seatWind(.myself)]))
     }
 
     @Test("片方だけ不明なら、足りない方だけを挙げる")
-    func onlyMissingWindIsReported() throws {
+    func 片方だけ不明なら足りない方だけを挙げる() throws {
         let noBakaze = try windTripletState(seat: .west)
         #expect(try noBakaze.score(winningTile: try Tile.parse("1z"), winType: .ron)
                 == .declined([.roundWind]))
@@ -195,7 +188,7 @@ struct SnapshotScoringTests {
     }
 
     @Test("風を与えれば答えが出る。与える値で結果が変わることも確認")
-    func windSupplied() throws {
+    func 風を与えれば答えが出る() throws {
         // 東場・東家以外 → 1z は役牌でないので役なし。
         #expect(try windTripletState(bakaze: .south, seat: .west)
             .score(winningTile: try Tile.parse("1z"), winType: .ron) == .notAWin(.noYaku))
@@ -208,7 +201,7 @@ struct SnapshotScoringTests {
     }
 
     @Test("風牌だらけでも答えが変わらないなら答える（国士無双）")
-    func kokushiAnswersWithoutWinds() throws {
+    func 風牌だらけでも答えが変わらないなら答える() throws {
         let s = GameState(
             bakaze: nil, kyoku: nil, honba: 0, kyotaku: 0,
             players: [.myself: PlayerState(
@@ -222,7 +215,7 @@ struct SnapshotScoringTests {
     }
 
     @Test("席風の仮定は子（南家）— 親と決めつけない")
-    func seatAssumptionIsNonDealer() throws {
+    func 席風の仮定は子親と決めつけない() throws {
         let s = try state(seat: nil)
         let (score, _, assumptions) = try scored(
             try s.score(winningTile: try Tile.parse("6s"), winType: .ron))
@@ -232,22 +225,20 @@ struct SnapshotScoringTests {
 
     // MARK: - 断る
 
-    @Test("手牌が不明なら必要な情報を宣言して断る")
-    func handUnknown() throws {
+    @Test func 手牌が不明なら必要な情報を宣言して断る() throws {
         let s = GameState(players: [.myself: PlayerState(seat: .west, hand: nil)])
         #expect(try s.score(winningTile: try Tile.parse("6s"), winType: .ron)
                 == .declined([.hand(.myself)]))
     }
 
-    @Test("そもそもプレイヤーが観測されていなければ断る")
-    func playerUnknown() throws {
+    @Test func そもそもプレイヤーが観測されていなければ断る() throws {
         let s = try state()
         #expect(try s.score(for: .toimen, winningTile: try Tile.parse("6s"), winType: .ron)
                 == .declined([.hand(.toimen)]))
     }
 
     @Test("枚数が合わない手牌は多牌・少牌として和了放棄")
-    func wrongHandSize() throws {
+    func 枚数が合わない手牌は多牌少牌として和了放棄() throws {
         // 情報の不足（declined）ではなく、判明済みの状態（和了できない）として答える。
         let s = try state(hand: "234567m234p456s")  // 12枚
         #expect(try s.score(winningTile: try Tile.parse("6s"), winType: .ron)
@@ -255,7 +246,7 @@ struct SnapshotScoringTests {
     }
 
     @Test("14枚形なら和了牌が手牌に含まれている必要がある")
-    func fourteenTileHand() throws {
+    func 和了牌を含む14枚形() throws {
         // 和了牌を含む14枚形。二重に足さず、そのまま14枚として扱う。
         let ok = try state(hand: "234567m234p456s99p")  // 6s を含む14枚
         let (score, yaku, _) = try scored(
@@ -271,15 +262,13 @@ struct SnapshotScoringTests {
 
     // MARK: - 和了していない
 
-    @Test("和了形でなければそう答える")
-    func notAWinningShape() throws {
+    @Test func 和了形でなければそう答える() throws {
         let s = try state(hand: "234567m234p456s93p")
         #expect(try s.score(winningTile: try Tile.parse("6s"), winType: .ron)
                 == .notAWin(.notAWinningShape))
     }
 
-    @Test("形は和了でも役がなければ和了できない")
-    func noYaku() throws {
+    @Test func 形は和了でも役がなければ和了できない() throws {
         // 喰いタンなしルールでの鳴き断么九。ドラがあっても役にはならない。
         let s = GameState(
             bakaze: .east, honba: 0, kyotaku: 0,
@@ -300,7 +289,7 @@ struct SnapshotScoringTests {
     // MARK: - パース経由
 
     @Test("`.paikei` テキストから解析できる（副露込み）")
-    func fromSnapshotText() throws {
+    func paikeiテキストから解析できる() throws {
         let text = """
             bakaze: E
             kyoku: 1

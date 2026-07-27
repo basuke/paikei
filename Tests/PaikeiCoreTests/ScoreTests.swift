@@ -2,7 +2,7 @@ import Testing
 @testable import PaikeiCore
 
 @Suite("点数表: 子（非親）")
-struct NonDealerScoreTests {
+struct 子の点数表 {
     let calc = ScoreCalculator()
 
     func ron(_ han: Int, _ fu: Int) -> Int {
@@ -13,8 +13,7 @@ struct NonDealerScoreTests {
         calc.payment(han: han, fu: fu, isDealer: false, winType: .tsumo)
     }
 
-    @Test("子ロンの古典的な組み合わせ")
-    func classicRon() {
+    @Test func 子ロンの古典的な組み合わせ() {
         #expect(ron(1, 30) == 1000)
         #expect(ron(1, 40) == 1300)
         #expect(ron(1, 50) == 1600)
@@ -30,7 +29,7 @@ struct NonDealerScoreTests {
     }
 
     @Test("子ツモの古典的な組み合わせ（子払い / 親払い）")
-    func classicTsumo() {
+    func 子ツモの古典的な組み合わせ() {
         #expect(tsumo(3, 20) == .tsumo(dealer: 1300, nonDealer: 700))   // 平和ツモ
         #expect(tsumo(1, 30) == .tsumo(dealer: 500, nonDealer: 300))
         #expect(tsumo(2, 30) == .tsumo(dealer: 1000, nonDealer: 500))
@@ -39,13 +38,12 @@ struct NonDealerScoreTests {
         #expect(tsumo(2, 40) == .tsumo(dealer: 1300, nonDealer: 700))
     }
 
-    @Test("平和ツモ20符3翻の合計は2700点")
-    func pinfuTsumoTotal() {
+    @Test func 平和ツモ20符3翻の合計は2700点() {
         #expect(tsumo(3, 20).total == 2700)  // 700 + 700 + 1300
     }
 
     @Test("満貫以上（子）")
-    func limits() {
+    func 満貫以上() {
         #expect(ron(5, 30) == 8000)    // 満貫
         #expect(ron(4, 40) == 8000)    // 4翻40符は満貫止まり
         #expect(ron(3, 70) == 8000)    // 3翻70符も満貫止まり
@@ -64,15 +62,14 @@ struct NonDealerScoreTests {
 }
 
 @Suite("点数表: 親")
-struct DealerScoreTests {
+struct 親の点数表 {
     let calc = ScoreCalculator()
 
     func ron(_ han: Int, _ fu: Int) -> Int {
         calc.payment(han: han, fu: fu, isDealer: true, winType: .ron).total
     }
 
-    @Test("親ロンの古典的な組み合わせ")
-    func classicRon() {
+    @Test func 親ロンの古典的な組み合わせ() {
         #expect(ron(1, 30) == 1500)
         #expect(ron(2, 30) == 2900)
         #expect(ron(3, 30) == 5800)
@@ -85,8 +82,7 @@ struct DealerScoreTests {
         #expect(ron(13, 30) == 48000)  // 数え役満
     }
 
-    @Test("親ツモは全員が同額を払う")
-    func dealerTsumo() {
+    @Test func 親ツモは全員が同額を払う() {
         let p = calc.payment(han: 4, fu: 30, isDealer: true, winType: .tsumo)
         #expect(p == .tsumo(dealer: nil, nonDealer: 3900))
         #expect(p.total == 11700)
@@ -95,9 +91,9 @@ struct DealerScoreTests {
 }
 
 @Suite("本場・供託と切り上げ満貫")
-struct HonbaAndRuleTests {
+struct 本場供託と切り上げ満貫 {
     @Test("本場はロンで300点、ツモで各100点")
-    func honba() {
+    func 本場はロンで300点ツモで各100点() {
         let calc = ScoreCalculator()
         #expect(calc.payment(han: 1, fu: 30, isDealer: false, winType: .ron, honba: 2).total
                 == 1000 + 600)
@@ -106,8 +102,7 @@ struct HonbaAndRuleTests {
         #expect(t.total == 1700)
     }
 
-    @Test("切り上げ満貫はルールで切り替わる")
-    func roundUpMangan() {
+    @Test func 切り上げ満貫はルールで切り替わる() {
         let off = ScoreCalculator(rules: RuleSet(roundUpMangan: false))
         let on = ScoreCalculator(rules: RuleSet(roundUpMangan: true))
         #expect(off.payment(han: 4, fu: 30, isDealer: false, winType: .ron).total == 7700)
@@ -130,7 +125,7 @@ struct HonbaAndRuleTests {
     }
 
     @Test("子の平和ドラ3ロンは 7700、切り上げ満貫ありなら 8000")
-    func pinfuDora3Ron() throws {
+    func 平和ドラ3ロンと切り上げ満貫() throws {
         let off = try pinfuDora3(RuleSet(roundUpMangan: false))
         #expect(off.han == 4)          // 平和1 + ドラ3
         #expect(off.fu == 30)          // 平和ロンは30符
@@ -143,8 +138,7 @@ struct HonbaAndRuleTests {
         #expect(on.limit == .満貫)
     }
 
-    @Test("平和ツモは20符なので切り上げ満貫の対象外")
-    func pinfuDora3Tsumo() throws {
+    @Test func 平和ツモは20符なので切り上げ満貫の対象外() throws {
         // 平和ツモは 平和1 + 門前ツモ1 + ドラ3 = 5翻で、そもそも満貫。
         let tsumo = try pinfuDora3(RuleSet(roundUpMangan: true), winType: .tsumo)
         #expect(tsumo.han == 5)
@@ -157,17 +151,16 @@ struct HonbaAndRuleTests {
     }
 }
 
-@Suite("ドラの計算")
-struct DoraTests {
+@Suite struct ドラの計算 {
     @Test("表示牌の次の牌がドラ（数牌は9→1で循環）")
-    func indicatedDora() throws {
+    func 表示牌の次の牌がドラ() throws {
         #expect(try Tile.parse("3p").indicatedDora == Tile(suit: .pin, rank: 4))
         #expect(try Tile.parse("9m").indicatedDora == Tile(suit: .man, rank: 1))
         #expect(try Tile.parse("0s").indicatedDora == Tile(suit: .sou, rank: 6))  // 赤5も5扱い
     }
 
     @Test("風牌は東南西北、三元牌は白發中で循環する")
-    func honorDora() throws {
+    func 風牌と三元牌の循環() throws {
         #expect(try Tile.parse("1z").indicatedDora == Tile(suit: .honor, rank: 2))  // 東→南
         #expect(try Tile.parse("4z").indicatedDora == Tile(suit: .honor, rank: 1))  // 北→東
         #expect(try Tile.parse("5z").indicatedDora == Tile(suit: .honor, rank: 6))  // 白→發
@@ -188,7 +181,7 @@ struct DoraTests {
     }
 
     @Test("表ドラ・赤ドラ・裏ドラを数える")
-    func counting() throws {
+    func 表ドラ赤ドラ裏ドラを数える() throws {
         // 手牌に 5p が2枚（うち1枚は赤）、ドラ表示 4p → 5p がドラ。
         let h = try hand("234m55678p234567s", dora: "4p", ura: "1m", riichi: true, win: "8p")
         let count = DoraCounter().count(h)
@@ -199,7 +192,7 @@ struct DoraTests {
     }
 
     @Test("赤5は赤ドラとして数え、表ドラとしても数える")
-    func redFive() throws {
+    func 赤5は赤ドラとして数え表ドラとしても数える() throws {
         let h = try hand("234m05678p234567s", dora: "4p", win: "8p")
         let count = DoraCounter().count(h)
         #expect(count.red == 1)   // 0p
@@ -207,14 +200,12 @@ struct DoraTests {
         #expect(count.total == 3)
     }
 
-    @Test("赤なしルールでは赤を数えない")
-    func redDisabled() throws {
+    @Test func 赤なしルールでは赤を数えない() throws {
         let h = try hand("234m05678p234567s", dora: "4p", win: "8p")
         #expect(DoraCounter(rules: RuleSet(redFives: false)).count(h).red == 0)
     }
 
-    @Test("裏ドラは立直しているときだけ数える")
-    func uraOnlyWithRiichi() throws {
+    @Test func 裏ドラは立直しているときだけ数える() throws {
         let withRiichi = try hand("234m55678p234567s", ura: "4p", riichi: true, win: "8p")
         #expect(DoraCounter().count(withRiichi).ura == 2)
 
@@ -226,16 +217,15 @@ struct DoraTests {
     }
 
     @Test("副露の牌もドラに数える（槓は4枚とも）")
-    func meldTilesCounted() throws {
+    func 副露の牌もドラに数える() throws {
         let h = try hand("234567p777z99s", melds: ["ankan(1111m)"], dora: "9m", win: "9s")
         #expect(DoraCounter().count(h).dora == 4)  // 9m表示 → 1m がドラ、暗槓の4枚
     }
 }
 
-@Suite("和了から点数まで")
-struct ScoringIntegrationTests {
+@Suite struct 和了から点数まで {
     @Test("平和ツモ（20符3翻）は 700/1300")
-    func pinfuTsumo() throws {
+    func 平和ツモの支払い() throws {
         let ctx = WinContext(seatWind: .south, roundWind: .east, winType: .tsumo,
                              winningTile: try Tile.parse("6s"), riichi: true)
         let score = try #require(try ScoreCalculator().score(
@@ -247,8 +237,7 @@ struct ScoringIntegrationTests {
         #expect(score.limit == nil)
     }
 
-    @Test("ドラは翻に加算される")
-    func doraAddsHan() throws {
+    @Test func ドラは翻に加算される() throws {
         let base = WinContext(seatWind: .south, roundWind: .east, winType: .tsumo,
                               winningTile: try Tile.parse("6s"), riichi: true)
         var withDora = base
@@ -263,7 +252,7 @@ struct ScoringIntegrationTests {
     }
 
     @Test("役なしは点数にならない（ドラだけでは和了できない）")
-    func noYakuIsNotAWin() throws {
+    func 役なしは点数にならない() throws {
         // 喰いタンなしルールでの鳴き断么九。ドラがあっても和了できない。
         var ctx = WinContext(seatWind: .south, roundWind: .east, winType: .ron,
                              winningTile: try Tile.parse("5p"))
@@ -274,15 +263,14 @@ struct ScoringIntegrationTests {
     }
 
     @Test("和了していなければ nil")
-    func notAgari() throws {
+    func 和了していなければnil() throws {
         let ctx = WinContext(seatWind: .south, roundWind: .east, winType: .ron,
                              winningTile: try Tile.parse("5p"))
         #expect(try ScoreCalculator().score(concealed: try Tile.parseHand("123456789m2355p"),
                                         melds: [], context: ctx) == nil)
     }
 
-    @Test("役満はドラを加算しない")
-    func yakumanIgnoresDora() throws {
+    @Test func 役満はドラを加算しない() throws {
         var ctx = WinContext(seatWind: .south, roundWind: .east, winType: .tsumo,
                              winningTile: try Tile.parse("7z"))
         ctx.doraMarkers = [try Tile.parse("9m")]  // 1m がドラ（手牌に3枚）
@@ -294,8 +282,7 @@ struct ScoringIntegrationTests {
         #expect(score.total == 32000)
     }
 
-    @Test("供託は和了者の総取り")
-    func kyotaku() throws {
+    @Test func 供託は和了者の総取り() throws {
         // 立直のみ（1翻40符）の子ロン。么九暗刻で 20+門前ロン10+8 = 38 → 40符。
         let ctx = WinContext(seatWind: .south, roundWind: .east, winType: .ron,
                              winningTile: try Tile.parse("4s"), riichi: true)

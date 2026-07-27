@@ -7,7 +7,7 @@ import Foundation
 /// データは あら氏の10000手×4種（Fixtures/shanten/README.md 参照）。
 /// 各行: 牌ID×14 + 期待シャンテン数（一般形 / 国士 / 七対子）。
 @Suite("シャンテン数: 正解データセット照合")
-struct ShantenDatasetTests {
+struct シャンテン数正解データセット照合 {
     struct Case {
         let line: Int
         let tiles: [Tile]
@@ -52,14 +52,14 @@ struct ShantenDatasetTests {
     }
 
     @Test("無作為な手牌 10000")
-    func normal() throws { try Self.verify("p_normal_10000") }
+    func 無作為な手牌10000() throws { try Self.verify("p_normal_10000") }
 
     @Test("混一色寄りの手牌 10000")
-    func honitsu() throws { try Self.verify("p_hon_10000") }
+    func 混一色寄りの手牌10000() throws { try Self.verify("p_hon_10000") }
 
     @Test("清一色寄りの手牌 10000（分解が最も複雑）")
-    func chinitsu() throws { try Self.verify("p_tin_10000") }
+    func 清一色寄りの手牌10000() throws { try Self.verify("p_tin_10000") }
 
     @Test("么九牌寄りの手牌 10000")
-    func kokushi() throws { try Self.verify("p_koku_10000") }
+    func 么九牌寄りの手牌10000() throws { try Self.verify("p_koku_10000") }
 }

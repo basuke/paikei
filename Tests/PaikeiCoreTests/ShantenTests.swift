@@ -2,7 +2,7 @@ import Testing
 @testable import PaikeiCore
 
 @Suite("シャンテン数: 一般形")
-struct StandardShantenTests {
+struct シャンテン数一般形 {
     // 和了形（14枚）。分解して 4面子1雀頭になる。
     let agariHands = [
         "123456789m23455p",   // 3順子 + 234p + 55p
@@ -11,7 +11,7 @@ struct StandardShantenTests {
     ]
 
     @Test("和了形は -1")
-    func agariIsMinusOne() throws {
+    func 和了形はマイナス1() throws {
         for hand in agariHands {
             let tiles = try Tile.parseHand(hand)
             #expect(Shanten.value(tiles) == -1, "expected -1 for \(hand)")
@@ -19,7 +19,7 @@ struct StandardShantenTests {
     }
 
     @Test("和了形から1枚抜けば必ずテンパイ(0)")
-    func removeOneGivesTenpai() throws {
+    func 和了形から1枚抜けば必ずテンパイ() throws {
         for hand in agariHands {
             let tiles = try Tile.parseHand(hand)
             for removeIndex in tiles.indices {
@@ -32,20 +32,19 @@ struct StandardShantenTests {
     }
 
     @Test("明示的な n シャンテン")
-    func explicitValues() throws {
+    func 明示的なnシャンテン() throws {
         #expect(try Shanten.standard(Tile.parseHand("123456789m2355p")) == 0)   // テンパイ
         #expect(try Shanten.standard(Tile.parseHand("123456789m2358p")) == 1)   // 1シャンテン
         #expect(try Shanten.standard(Tile.parseHand("123456789m258p1s")) == 2)  // 2シャンテン
     }
 
-    @Test("副露ありのシャンテン")
-    func withMelds() throws {
+    @Test func 副露ありのシャンテン() throws {
         #expect(try Shanten.standard(Tile.parseHand("123456789m11p"), melds: 1) == -1)  // 和了
         #expect(try Shanten.standard(Tile.parseHand("123m456m11p23p"), melds: 1) == 0)  // テンパイ
     }
 
     @Test("槓も副露1つとして数える（手牌は 13 − 3×副露 枚）")
-    func withKan() throws {
+    func 槓も副露1つとして数える() throws {
         // 暗槓1つ + 手牌10枚。77z/99sのシャンポン待ちテンパイ。
         #expect(try Shanten.value(Tile.parseHand("234567p77z99s"), melds: 1) == 0)
         // 和了形（11枚）
@@ -56,38 +55,34 @@ struct StandardShantenTests {
 }
 
 @Suite("シャンテン数: 七対子")
-struct SevenPairsShantenTests {
-    @Test("七対子テンパイ")
-    func tenpai() throws {
+struct シャンテン数七対子 {
+    @Test func 七対子テンパイ() throws {
         #expect(try Shanten.sevenPairs(Tile.parseHand("1188m2299p3377s1z")) == 0)
     }
 
-    @Test("七対子1シャンテン")
-    func oneShanten() throws {
+    @Test func 七対子1シャンテン() throws {
         #expect(try Shanten.sevenPairs(Tile.parseHand("1188m2299p3367s1z")) == 1)
     }
 
     @Test("value は七対子形を拾う")
-    func valuePicksSevenPairs() throws {
+    func valueは七対子形を拾う() throws {
         let tiles = try Tile.parseHand("1188m2299p3377s1z")
         #expect(Shanten.value(tiles) == 0)
     }
 }
 
 @Suite("シャンテン数: 国士無双")
-struct ThirteenOrphansShantenTests {
-    @Test("国士13面待ちテンパイ")
-    func thirteenWait() throws {
+struct シャンテン数国士無双 {
+    @Test func 国士13面待ちテンパイ() throws {
         #expect(try Shanten.thirteenOrphans(Tile.parseHand("19m19p19s1234567z")) == 0)
     }
 
-    @Test("国士1シャンテン")
-    func oneShanten() throws {
+    @Test func 国士1シャンテン() throws {
         #expect(try Shanten.thirteenOrphans(Tile.parseHand("159m19p19s123456z")) == 1)
     }
 
     @Test("value は国士形を拾う")
-    func valuePicksKokushi() throws {
+    func valueは国士形を拾う() throws {
         let tiles = try Tile.parseHand("19m19p19s1234567z")
         #expect(Shanten.value(tiles) == 0)
     }

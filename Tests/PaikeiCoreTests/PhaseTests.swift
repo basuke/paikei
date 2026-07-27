@@ -2,15 +2,15 @@ import Testing
 @testable import PaikeiCore
 
 @Suite("フェーズ導出 (§7.1)")
-struct PhaseDerivationTests {
+struct フェーズ導出 {
     @Test("draw があれば打牌待ち（ツモ直後）")
-    func drawGivesAwaitingDiscard() throws {
+    func drawがあれば打牌待ち() throws {
         let state = try SnapshotParser.parse(loadFixture("minimal"))
         #expect(state.phase == .awaitingDiscard(.myself, .afterDraw))
     }
 
     @Test("リーチ後のツモは afterDrawRiichi")
-    func riichiDraw() {
+    func リーチ後のツモはafterDrawRiichi() {
         let ps = PlayerState(hand: try! Tile.parseHand("123m456m789p123s1z").sorted(),  // 13枚
                              draw: Tile(suit: .honor, rank: 1), riichi: true)
         let state = GameState(players: [.myself: ps])
@@ -18,13 +18,13 @@ struct PhaseDerivationTests {
     }
 
     @Test("claim_tile があれば応答待ち")
-    func claimGivesAwaitingClaim() throws {
+    func claim_tileがあれば応答待ち() throws {
         let state = try SnapshotParser.parse(loadFixture("from-mjai"))
         #expect(state.phase == .awaitingClaim(Tile(suit: .man, rank: 1)!, from: .toimen, .discard))
     }
 
     @Test("claim の kind が ClaimContext に対応する")
-    func claimKindMapping() {
+    func claimのkindがClaimContextに対応する() {
         let tile = Tile(suit: .pin, rank: 5)!
         for (kind, ctx): (ClaimTile.Kind, ClaimContext) in [
             (.discard, .discard), (.riichi, .riichiDeclaration),
@@ -36,14 +36,14 @@ struct PhaseDerivationTests {
     }
 
     @Test("13枚形（draw なし・claim なし）は静止状態")
-    func quiescent() {
+    func 静止状態は13枚形() {
         let ps = PlayerState(hand: try! Tile.parseHand("123m456m789p55s1z").sorted())
         let state = GameState(players: [.myself: ps])
         #expect(state.phase == .quiescent)
     }
 
     @Test("draw 無しで14枚形 + discard_context=call は afterCall")
-    func fourteenthByCall() {
+    func discard_contextがcallならafterCall() {
         // 副露1つ（3枚）+ 純手牌11枚 = 14枚目相当（13 − 3 + 1 = 11）
         let meld = try! Meld.parse("pon(5'55p,L)")
         let ps = PlayerState(hand: try! Tile.parseHand("123m456m789p99s").sorted(),
@@ -54,7 +54,7 @@ struct PhaseDerivationTests {
     }
 
     @Test("draw 無し14枚形で discard_context 不明なら context も unknown")
-    func fourteenthUnknown() {
+    func discard_context不明ならunknown() {
         let ps = PlayerState(hand: try! Tile.parseHand("123m456m789p55s111z").sorted())  // 14枚
         #expect(ps.hand?.count == 14)
         let state = GameState(players: [.myself: ps])

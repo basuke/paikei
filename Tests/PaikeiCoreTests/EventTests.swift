@@ -2,7 +2,7 @@ import Testing
 @testable import PaikeiCore
 
 @Suite("イベント適用 (§8.3)")
-struct EventApplicationTests {
+struct イベント適用 {
     /// 自分の手牌が既知（123m456m789p55s11z の13枚）、山42枚の静止状態。
     func base() throws -> GameState {
         GameState(
@@ -13,15 +13,14 @@ struct EventApplicationTests {
     }
 
     @Test("ツモ: draw が立ち、山が減り、打牌待ちになる")
-    func tsumo() throws {
+    func ツモでdrawが立ち山が減る() throws {
         let s = try base().applying(.ツモ(手番: .myself, 牌: try Tile.parse("6s")))
         #expect(s.players[.myself]?.draw == Tile(suit: .sou, rank: 6))
         #expect(s.wall == 41)
         #expect(s.phase == .awaitingDiscard(.myself, .afterDraw))
     }
 
-    @Test("山が0でツモは矛盾")
-    func tsumoFromEmptyWall() throws {
+    @Test func 山が0でツモは矛盾() throws {
         var s = try base()
         s.wall = 0
         #expect(throws: EventApplicationError.山が空) {
@@ -30,7 +29,7 @@ struct EventApplicationTests {
     }
 
     @Test("ツモ切り: 河に付き、手牌は変わらない")
-    func tsumogiri() throws {
+    func ツモ切りは手牌が変わらない() throws {
         let s = try base()
             .applying(.ツモ(手番: .myself, 牌: try Tile.parse("6s")))
             .applying(.打牌(手番: .myself, 牌: try Tile.parse("6s"), ツモ切り: true))
@@ -42,7 +41,7 @@ struct EventApplicationTests {
     }
 
     @Test("手出し: 手牌から抜け、ツモ牌が手に入る")
-    func tedashi() throws {
+    func 手出しでツモ牌が手に入る() throws {
         let s = try base()
             .applying(.ツモ(手番: .myself, 牌: try Tile.parse("6s")))
             .applying(.打牌(手番: .myself, 牌: try Tile.parse("1z"), ツモ切り: false))
@@ -53,16 +52,14 @@ struct EventApplicationTests {
         #expect(me.river.last?.manner == .tedashi)
     }
 
-    @Test("手牌に無い牌の打牌は矛盾")
-    func dahaiNotInHand() throws {
+    @Test func 手牌に無い牌の打牌は矛盾() throws {
         let s = try base()
         #expect(throws: EventApplicationError.手牌にない(.myself, Tile(suit: .pin, rank: 1)!)) {
             _ = try s.applying(.打牌(手番: .myself, 牌: try Tile.parse("1p"), ツモ切り: false))
         }
     }
 
-    @Test("ツモ切り宣言なのにツモ牌と違えば矛盾")
-    func tsumogiriMismatch() throws {
+    @Test func ツモ切り宣言なのにツモ牌と違えば矛盾() throws {
         let drawn = try base().applying(.ツモ(手番: .myself, 牌: try Tile.parse("6s")))
         #expect(throws: EventApplicationError.self) {
             _ = try drawn.applying(.打牌(手番: .myself, 牌: try Tile.parse("1z"), ツモ切り: true))
@@ -70,7 +67,7 @@ struct EventApplicationTests {
     }
 
     @Test("14枚形に畳まれた手牌からのツモ切りも手牌から抜く")
-    func tsumogiriFromFoldedHand() throws {
+    func 畳まれた14枚形からのツモ切り() throws {
         // draw を持たず手牌が14枚（仕様§7.3 の 2b。カメラ由来の形）。
         let state = GameState(players: [.myself: PlayerState(
             hand: try Tile.parseHand("123m456m789p55s11z6s"))])
@@ -84,8 +81,7 @@ struct EventApplicationTests {
         #expect(s.phase == .quiescent)
     }
 
-    @Test("ツモも14枚形でもない状態のツモ切りは矛盾")
-    func tsumogiriWithoutFourteenth() throws {
+    @Test func ツモも14枚形でもない状態のツモ切りは矛盾() throws {
         let state = GameState(players: [.myself: PlayerState(
             hand: try Tile.parseHand("123m456m789p55s11z"))])  // 13枚、draw なし
         #expect(throws: EventApplicationError.手牌にない(.myself, Tile(suit: .sou, rank: 9)!)) {
@@ -95,7 +91,7 @@ struct EventApplicationTests {
     }
 
     @Test("手牌が不明な他家は検証せずに通す（不明を増やさない）")
-    func unknownHandIsLenient() throws {
+    func 手牌が不明な他家は検証せずに通す() throws {
         let s = try base()
             .applying(.ツモ(手番: .toimen, 牌: nil))
             .applying(.打牌(手番: .toimen, 牌: try Tile.parse("5p"), ツモ切り: nil))
@@ -106,7 +102,7 @@ struct EventApplicationTests {
     }
 
     @Test("リーチ: 次の打牌が宣言牌になり、成立で供託+1・持ち点-1000")
-    func riichiFlow() throws {
+    func リーチ宣言から成立まで() throws {
         let s = try GameState(
             kyotaku: 0,
             players: [.myself: PlayerState(
@@ -129,7 +125,7 @@ struct EventApplicationTests {
     }
 
     @Test("ポン: 河の牌に ^ が付き、副露が増え、鳴いた側は打牌待ち")
-    func pon() throws {
+    func ポンで河の牌が被鳴きになる() throws {
         var state = try base()
         state.players[.myself]?.hand = try Tile.parseHand("123m456m789p55p11z")
         let s = try state
@@ -146,8 +142,7 @@ struct EventApplicationTests {
         #expect(s.phase == .awaitingDiscard(.myself, .afterCall))
     }
 
-    @Test("チーは常に上家から")
-    func chi() throws {
+    @Test func チーは常に上家から() throws {
         var state = try base()
         state.players[.myself]?.hand = try Tile.parseHand("135m456m789p55s11z")
         let s = try state
@@ -161,8 +156,7 @@ struct EventApplicationTests {
         #expect(meld.notation == "chi(4'35m)")
     }
 
-    @Test("河に無い牌は鳴けない")
-    func callWithoutDiscard() throws {
+    @Test func 河に無い牌は鳴けない() throws {
         var state = try base()
         state.players[.myself]?.hand = try Tile.parseHand("123m456m789p55p11z")
         #expect(throws: EventApplicationError.捨てられていない(打牌者: .toimen, 牌: Tile(suit: .pin, rank: 5)!)) {
@@ -172,8 +166,7 @@ struct EventApplicationTests {
         }
     }
 
-    @Test("暗槓と加槓")
-    func kans() throws {
+    @Test func 暗槓と加槓() throws {
         var state = try base()
         state.players[.myself]?.hand = try Tile.parseHand("1111m456m789p55s1z")
 
@@ -200,15 +193,14 @@ struct EventApplicationTests {
         }
     }
 
-    @Test("新ドラ表示")
-    func dora() throws {
+    @Test func 新ドラ表示() throws {
         let s = try base().applying(.新ドラ(表示牌: try Tile.parse("3p")))
         #expect(s.doraMarkers == [Tile(suit: .pin, rank: 3)!])
     }
 }
 
 @Suite("イベント適用: 応答対象 (claim_tile) の解決")
-struct ClaimResolutionTests {
+struct 応答対象の解決 {
     /// 対面が 5p を打った直後の応答待ち局面。
     func claimed(kind: ClaimTile.Kind = .discard) throws -> GameState {
         GameState(
@@ -220,7 +212,7 @@ struct ClaimResolutionTests {
     }
 
     @Test("鳴かれたら河に入らない（^ も付かない）")
-    func consumedByCall() throws {
+    func 鳴かれたら河に入らない() throws {
         let s = try claimed().applying(.ポン(
             手番: .myself, 相手: .toimen,
             牌: try Tile.parse("5p"), 手牌から: try Tile.parseHand("55p")))
@@ -229,15 +221,14 @@ struct ClaimResolutionTests {
         #expect(s.players[.myself]?.melds.count == 1)
     }
 
-    @Test("スルーされたら打牌者の河に確定する")
-    func passedIntoRiver() throws {
+    @Test func スルーされたら打牌者の河に確定する() throws {
         let s = try claimed().applying(.ツモ(手番: .kamicha, 牌: nil))
         #expect(s.claim == nil)
         #expect(s.players[.toimen]?.river.map(\.tile.mpsz) == ["9m", "5p"])
     }
 
     @Test("リーチ宣言牌のスルーは * 付きで河に入り、riichi が立つ")
-    func riichiClaimPassed() throws {
+    func リーチ宣言牌のスルー() throws {
         let s = try claimed(kind: .riichi).applying(.立直成立(手番: .toimen))
         let toimen = try #require(s.players[.toimen])
         let last = try #require(toimen.river.last)
@@ -248,7 +239,7 @@ struct ClaimResolutionTests {
     }
 
     @Test("reach_accepted 単独でも riichi が立つ（MJAI由来のログ対策）")
-    func reachAcceptedSetsFlag() throws {
+    func reach_accepted単独でもriichiが立つ() throws {
         var state = GameState(kyotaku: 0)
         state.players[.toimen] = PlayerState(score: 25000)
         let s = try state.applying(.立直成立(手番: .toimen))
@@ -256,8 +247,7 @@ struct ClaimResolutionTests {
         #expect(s.kyotaku == 1)
     }
 
-    @Test("ロンは応答対象を消費して終局")
-    func ronConsumesClaim() throws {
+    @Test func ロンは応答対象を消費して終局() throws {
         let s = try claimed().applying(.和了(
             手番: .myself, 相手: .toimen, 牌: try Tile.parse("5p")))
         #expect(s.claim == nil)
@@ -265,7 +255,7 @@ struct ClaimResolutionTests {
     }
 
     @Test("加槓の応答（槍槓検討）のスルーは河に何も足さない")
-    func kakanClaimPassed() throws {
+    func 加槓の応答のスルーは河に何も足さない() throws {
         var state = try claimed(kind: .kakan)
         state.players[.toimen]?.melds = [try Meld.parse("kakan(5'555p,L)")]
         let s = try state.applying(.ツモ(手番: .toimen, 牌: nil))
