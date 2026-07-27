@@ -18,12 +18,12 @@ public struct WinningHand: Sendable {
     public let context: WinContext
 }
 
-extension Agari {
-    /// 和了手を全ての読み方で束ねて返す。和了していなければ空。
+extension WinningHand {
+    /// 和了手の全ての読み方（面子分解）を列挙する。和了していなければ空。
     ///
     /// `concealed` は純手牌 + 和了牌（14 − 3×副露 枚）。
     /// ルールは手牌データに持たせず、役・符・点の評価器へ注入する。
-    public static func winningHands(
+    public static func readings(
         concealed: [Tile], melds: [Meld], context: WinContext
     ) -> [WinningHand] {
         let isMenzen = melds.allSatisfy { $0.kind == .暗槓 }
@@ -51,6 +51,3 @@ extension Agari {
         return hands
     }
 }
-
-/// 和了計算の名前空間。
-public enum Agari {}

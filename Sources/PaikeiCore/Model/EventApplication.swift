@@ -25,23 +25,28 @@ extension GameState {
             try state.applyDahai(actor: actor, tile: tile, tsumogiri: tsumogiri)
 
         case let .チー(actor, tile, consumed):
+            try state.requireValidHand(actor)
             try state.applyCall(kind: .チー, actor: actor, target: actor.seated(.kamicha),
                                 tile: tile, consumed: consumed, event: event)
 
         case let .ポン(actor, target, tile, consumed):
+            try state.requireValidHand(actor)
             try state.applyCall(kind: .ポン, actor: actor, target: target,
                                 tile: tile, consumed: consumed, event: event)
 
         case let .大明槓(actor, target, tile, consumed):
+            try state.requireValidHand(actor)
             try state.applyCall(kind: .大明槓, actor: actor, target: target,
                                 tile: tile, consumed: consumed, event: event)
 
         case let .加槓(actor, tile):
             state.resolveClaim()
+            try state.requireValidHand(actor)
             try state.applyKakan(actor: actor, tile: tile)
 
         case let .暗槓(actor, consumed):
             state.resolveClaim()
+            try state.requireValidHand(actor)
             guard consumed.count == 4 else {
                 throw EventApplicationError.構成牌の枚数不正(event)
             }
@@ -52,6 +57,7 @@ extension GameState {
 
         case let .立直(actor):
             state.resolveClaim()
+            try state.requireValidHand(actor)
             state.update(actor) { $0.riichi = true }
 
         case let .立直成立(actor):
@@ -240,6 +246,15 @@ extension GameState {
     }
 
     // MARK: - 補助
+
+    /// 多牌・少牌の手では立直も鳴きもできない（和了放棄）。
+    ///
+    /// 手牌が不明なら検証しない（既知の状態としか矛盾を見ない、仕様§8.3）。
+    private func requireValidHand(_ player: Player) throws {
+        if let defect = players[player]?.handDefect {
+            throw EventApplicationError.枚数異常での宣言(player, defect)
+        }
+    }
 
     private mutating func update(_ player: Player, _ body: (inout PlayerState) -> Void) {
         var ps = players[player] ?? PlayerState()

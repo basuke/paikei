@@ -55,7 +55,7 @@ public struct HandEvaluator: Sendable {
 
     /// 手牌から直接、最良の読み方を求める。和了していなければ nil。
     public func best(concealed: [Tile], melds: [Meld], context: WinContext) throws -> HandEvaluation? {
-        try best(Agari.winningHands(concealed: concealed, melds: melds, context: context))
+        try best(WinningHand.readings(concealed: concealed, melds: melds, context: context))
     }
 
     /// 同点時の決着用キー。面子を正規化表記で並べた文字列。

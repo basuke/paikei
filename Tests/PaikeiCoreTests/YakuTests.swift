@@ -134,7 +134,7 @@ import Testing
     func best(_ concealed: String) throws -> Set<Yaku> {
         let tiles = try Tile.parseHand(concealed)
         let ctx = WinContext(seatWind: .東, roundWind: .東, winType: .ツモ, winningTile: tiles[0])
-        let hands = Agari.winningHands(concealed: tiles, melds: [], context: ctx)
+        let hands = WinningHand.readings(concealed: tiles, melds: [], context: ctx)
         let detector = YakuDetector(rules: .standard)
         return try Set(hands.flatMap { try detector.detect($0) })
     }
@@ -178,7 +178,7 @@ import Testing
             .map { try Meld.parse($0) }
         let ctx = WinContext(seatWind: .東, roundWind: .東, winType: .ツモ,
                              winningTile: try Tile.parse("9s"))
-        let hands = Agari.winningHands(concealed: concealed, melds: melds, context: ctx)
+        let hands = WinningHand.readings(concealed: concealed, melds: melds, context: ctx)
         let yaku = try Set(hands.flatMap { try YakuDetector().detect($0) })
         #expect(yaku.isSuperset(of: [.四槓子, .四暗刻]))
         let onlyYakuman = yaku.allSatisfy(\.isYakuman)
@@ -191,7 +191,7 @@ import Testing
             .map { try Meld.parse($0) }
         let ctx = WinContext(seatWind: .東, roundWind: .東, winType: .ツモ,
                              winningTile: try Tile.parse("9s"))
-        let hands = Agari.winningHands(concealed: concealed, melds: melds, context: ctx)
+        let hands = WinningHand.readings(concealed: concealed, melds: melds, context: ctx)
         let yaku = try Set(hands.flatMap { try YakuDetector().detect($0) })
         #expect(yaku.contains(.四槓子))
         #expect(!yaku.contains(.四暗刻))

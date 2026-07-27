@@ -174,7 +174,7 @@ struct 本場供託と切り上げ満貫 {
             seatWind: .南, roundWind: .東, winType: .ツモ,
             winningTile: try Tile.parse(win), riichi: riichi,
             doraMarkers: try Tile.parseHand(dora), uraMarkers: try Tile.parseHand(ura))
-        let hands = Agari.winningHands(
+        let hands = WinningHand.readings(
             concealed: try Tile.parseHand(concealed),
             melds: try melds.map { try Meld.parse($0) }, context: ctx)
         return try #require(hands.first)

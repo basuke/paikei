@@ -42,4 +42,6 @@ public enum EventApplicationError: Error, Equatable, Sendable {
     case ポンなしの加槓(Player, Tile)
     /// チー・ポン・槓の構成牌の枚数不正。
     case 構成牌の枚数不正(Event)
+    /// 多牌・少牌の手では立直も鳴きもできない（和了放棄）。
+    case 枚数異常での宣言(Player, HandDefect)
 }

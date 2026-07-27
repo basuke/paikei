@@ -72,6 +72,35 @@ enum ReplCommands {
             guard let text = args.first else { throw ReplError("使い方: dora <表示牌>") }
             try transition(&session, .新ドラ(表示牌: try Tile.parse(text)))
 
+        // MARK: 鳴き（構成牌は手牌から自動で選ぶ）
+        case "pon":
+            let (actor, rest) = actorPrefix(args)
+            let (tile, target) = try 鳴きの対象(rest, session, actor: actor, usage: "pon")
+            try transition(&session, .ポン(手番: actor, 相手: target, 牌: tile,
+                                          手牌から: try 手牌から同種(tile, 2, session, actor)))
+        case "kan", "daiminkan":
+            let (actor, rest) = actorPrefix(args)
+            let (tile, target) = try 鳴きの対象(rest, session, actor: actor, usage: "kan")
+            try transition(&session, .大明槓(手番: actor, 相手: target, 牌: tile,
+                                            手牌から: try 手牌から同種(tile, 3, session, actor)))
+        case "chi":
+            let (actor, rest) = actorPrefix(args)
+            guard rest.count >= 2 else {
+                throw ReplError("使い方: chi <牌> <手牌から>（例: chi 4m 35m）")
+            }
+            try transition(&session, .チー(手番: actor, 牌: try Tile.parse(rest[0]),
+                                          手牌から: try Tile.parseHand(rest[1])))
+        case "ankan":
+            let (actor, rest) = actorPrefix(args)
+            guard let text = rest.first else { throw ReplError("使い方: ankan <牌>") }
+            let tile = try Tile.parse(text)
+            try transition(&session, .暗槓(手番: actor,
+                                          手牌から: try 手牌から同種(tile, 4, session, actor)))
+        case "kakan":
+            let (actor, rest) = actorPrefix(args)
+            guard let text = rest.first else { throw ReplError("使い方: kakan <牌>") }
+            try transition(&session, .加槓(手番: actor, 牌: try Tile.parse(text)))
+
         default:
             throw ReplError("未知のコマンド: \(name)（`help` で一覧）")
         }
@@ -86,6 +115,49 @@ enum ReplCommands {
             return (.myself, args)
         }
         return (player, Array(args.dropFirst()))
+    }
+
+    /// 鳴く牌と相手を決める。相手は明示 > 応答対象（claim_tile）の打牌者の順で解決する。
+    private static func 鳴きの対象(
+        _ args: [String], _ session: Session, actor: Player, usage: String
+    ) throws -> (tile: Tile, target: Player) {
+        let claim = session.state.claim
+        guard let text = args.first else {
+            // 引数なしなら応答対象の牌をそのまま鳴く。
+            guard let claim, claim.from != actor else {
+                throw ReplError("使い方: \(usage) <牌> [打牌者]")
+            }
+            return (claim.tile, claim.from)
+        }
+        let tile = try Tile.parse(text)
+
+        if let name = args.dropFirst().first {
+            guard let target = Player(rawValue: name), target != actor else {
+                throw ReplError("打牌者が不正です: \(name)")
+            }
+            return (tile, target)
+        }
+        guard let claim, claim.from != actor,
+              claim.tile.normalized == tile.normalized else {
+            throw ReplError("誰の打牌を鳴くか指定してください（例: \(usage) \(text) toimen）")
+        }
+        return (tile, claim.from)
+    }
+
+    /// 手牌から同種の牌を `count` 枚選ぶ（赤ドラは表記どおり手牌にあるものを使う）。
+    private static func 手牌から同種(
+        _ tile: Tile, _ count: Int, _ session: Session, _ actor: Player
+    ) throws -> [Tile] {
+        guard let hand = session.state.players[actor]?.hand else {
+            // 手牌が不明な他家は検証できないので、代表牌で埋める。
+            return Array(repeating: tile.normalized, count: count)
+        }
+        let matching = hand.filter { $0.normalized == tile.normalized }
+        guard matching.count >= count else {
+            throw ReplError("手牌に \(TileFormatter.tile(tile)) が\(count)枚ありません"
+                + "（\(matching.count)枚）")
+        }
+        return Array(matching.prefix(count))
     }
 
     private static func move(_ session: inout Session, by delta: Int) throws {
@@ -142,6 +214,11 @@ enum ReplCommands {
                   discard [家] <牌> [tsumogiri]  打牌
                   riichi [家]              リーチ宣言
                   dora <表示牌>            新ドラ表示
+        鳴き      pon [家] [牌] [打牌者]   ポン（構成牌は手牌から自動）
+                  kan [家] [牌] [打牌者]   大明槓
+                  chi [家] <牌> <手牌から> チー（例: chi 4m 35m）
+                  ankan [家] <牌>          暗槓
+                  kakan [家] <牌>          加槓
         その他    help / quit
         """
 }

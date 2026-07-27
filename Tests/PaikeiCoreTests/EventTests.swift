@@ -193,6 +193,33 @@ struct イベント適用 {
         }
     }
 
+    @Test("多牌・少牌の手では立直も鳴きもできない")
+    func 枚数異常では宣言できない() throws {
+        // 12枚の少牌。和了放棄なので立直も鳴きも通らない。
+        var state = try base()
+        state.players[.myself]?.hand = try Tile.parseHand("123m456m789p55s1z")
+        state.players[.toimen] = PlayerState(
+            river: [RiverTile(tile: try Tile.parse("5s"))])
+
+        #expect(throws: EventApplicationError.枚数異常での宣言(.myself, .少牌(不足: 1))) {
+            _ = try state.applying(.立直(手番: .myself))
+        }
+        #expect(throws: EventApplicationError.枚数異常での宣言(.myself, .少牌(不足: 1))) {
+            _ = try state.applying(.ポン(手番: .myself, 相手: .toimen,
+                                       牌: try Tile.parse("5s"),
+                                       手牌から: try Tile.parseHand("55s")))
+        }
+        #expect(throws: EventApplicationError.枚数異常での宣言(.myself, .少牌(不足: 1))) {
+            _ = try state.applying(.暗槓(手番: .myself, 手牌から: try Tile.parseHand("1111m")))
+        }
+    }
+
+    @Test func 手牌が不明な他家の宣言は枚数を検証しない() throws {
+        // 「既知の状態としか矛盾を見ない」（仕様§8.3）。
+        let s = try base().applying(.立直(手番: .toimen))
+        #expect(s.players[.toimen]?.riichi == true)
+    }
+
     @Test func 新ドラ表示() throws {
         let s = try base().applying(.新ドラ(表示牌: try Tile.parse("3p")))
         #expect(s.doraMarkers == [Tile(suit: .筒子, rank: 3)!])
