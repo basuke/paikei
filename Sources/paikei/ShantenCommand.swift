@@ -20,68 +20,10 @@ struct ShantenCommand: ParsableCommand {
 
     func run() throws {
         let state = try DocumentLoading.state(at: path, steps: at)
-
-        guard let me = state.players[.myself], let hand = me.hand else {
-            throw ValidationError("自分の手牌が不明のためシャンテン計算ができません")
-        }
-        // 多牌・少牌にシャンテン数を出しても意味がない（和了放棄）。数字を出さずに断る。
-        if let defect = me.handDefect {
-            throw ValidationError(
-                "\(SnapshotDescription.defectName(defect))です"
-                + "（手牌\(hand.count)枚、副露\(me.melds.count)組）。和了放棄のため解析しません")
-        }
-        let melds = me.melds.count
-        let visible = state.visibleTiles(from: .myself)
-        var tiles = hand
-        if let draw = me.draw { tiles.append(draw) }
-
-        let target = 13 - 3 * melds
-        if tiles.count == target {
-            let uke = Acceptance.ukeire(hand: tiles, melds: melds, visible: visible)
-            print(Self.formatUkeire(uke))
-        } else if tiles.count == target + 1 {
-            if Shanten.value(tiles, melds: melds) <= -1 {
-                print("和了（ツモ和了可能）")
-            } else {
-                let options = Acceptance.discards(hand: tiles, melds: melds, visible: visible)
-                print(Self.formatDiscards(options, limit: top))
-            }
-        } else {
-            let s = Shanten.value(tiles, melds: melds)
-            print("\(Self.shantenLabel(s))（手牌枚数 \(tiles.count) が想定外）")
+        do {
+            print(try ShantenReport.text(for: state, top: top))
+        } catch let error as ReportError {
+            throw ValidationError(error.description)
         }
     }
-
-    // MARK: - 表示
-
-    private static func formatUkeire(_ uke: Ukeire) -> String {
-        if uke.shanten <= -1 { return "和了" }
-        let noun = uke.shanten == 0 ? "待ち" : "受け入れ"
-        return "\(shantenLabel(uke.shanten))\n\(noun): \(ukeireTiles(uke))"
-    }
-
-    private static func formatDiscards(_ options: [DiscardOption], limit: Int) -> String {
-        var lines = ["何切る:"]
-        for option in options.prefix(limit) {
-            lines.append("  打 \(TileFormatter.tile(option.discard)) → "
-                + "\(shantenLabel(option.ukeire.shanten)) 受け入れ \(ukeireTiles(option.ukeire))")
-        }
-        return lines.joined(separator: "\n")
-    }
-
-    private static func ukeireTiles(_ uke: Ukeire) -> String {
-        let live = uke.tiles.filter { $0.remaining > 0 }
-        guard !live.isEmpty else { return "なし" }
-        let names = live.map { TileFormatter.tile($0.tile) }.joined(separator: " ")
-        return "\(names) = \(uke.total)枚"
-    }
-
-    private static func shantenLabel(_ n: Int) -> String {
-        switch n {
-        case ..<0: "和了"
-        case 0: "テンパイ"
-        default: "\(n)シャンテン"
-        }
-    }
-
 }

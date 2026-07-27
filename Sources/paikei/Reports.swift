@@ -1,0 +1,194 @@
+import Foundation
+import PaikeiCore
+
+/// 1発実行のサブコマンドと REPL が共有する解析レポート。
+///
+/// どちらも「`GameState` を受け取ってテキストを返す」形に統一し、
+/// 入出力（ファイル読み込み・print）は呼び出し側が持つ。
+
+// MARK: - シャンテン / 何切る
+
+enum ShantenReport {
+    /// `top` が 0 なら受け入れのみ、1以上なら14枚形で何切るを `top` 件表示する。
+    static func text(for state: GameState, top: Int) throws -> String {
+        guard let me = state.players[.myself], let hand = me.hand else {
+            throw ReportError("自分の手牌が不明のためシャンテン計算ができません")
+        }
+        // 多牌・少牌にシャンテン数を出しても意味がない（和了放棄）。数字を出さずに断る。
+        if let defect = me.handDefect {
+            throw ReportError(
+                "\(SnapshotDescription.defectName(defect))です"
+                + "（手牌\(hand.count)枚、副露\(me.melds.count)組）。和了放棄のため解析しません")
+        }
+        let melds = me.melds.count
+        let visible = state.visibleTiles(from: .myself)
+        var tiles = hand
+        if let draw = me.draw { tiles.append(draw) }
+
+        let target = 13 - 3 * melds
+        if tiles.count == target {
+            return ukeireText(Acceptance.ukeire(hand: tiles, melds: melds, visible: visible))
+        }
+        if Shanten.value(tiles, melds: melds) <= -1 { return "和了（ツモ和了可能）" }
+        let options = Acceptance.discards(hand: tiles, melds: melds, visible: visible)
+        return discardsText(options, limit: top > 0 ? top : 6)
+    }
+
+    private static func ukeireText(_ uke: Ukeire) -> String {
+        if uke.shanten <= -1 { return "和了" }
+        let noun = uke.shanten == 0 ? "待ち" : "受け入れ"
+        return "\(label(uke.shanten))\n\(noun): \(tiles(uke))"
+    }
+
+    private static func discardsText(_ options: [DiscardOption], limit: Int) -> String {
+        var lines = ["何切る:"]
+        for option in options.prefix(limit) {
+            lines.append("  打 \(TileFormatter.tile(option.discard)) → "
+                + "\(label(option.ukeire.shanten)) 受け入れ \(tiles(option.ukeire))")
+        }
+        return lines.joined(separator: "\n")
+    }
+
+    private static func tiles(_ uke: Ukeire) -> String {
+        let live = uke.tiles.filter { $0.remaining > 0 }
+        guard !live.isEmpty else { return "なし" }
+        return "\(live.map { TileFormatter.tile($0.tile) }.joined(separator: " ")) = \(uke.total)枚"
+    }
+
+    static func label(_ n: Int) -> String {
+        switch n {
+        case ..<0: "和了"
+        case 0: "テンパイ"
+        default: "\(n)シャンテン"
+        }
+    }
+}
+
+// MARK: - 安全度
+
+enum SafetyReport {
+    /// `target` が nil ならリーチしている他家を対象にする。
+    static func text(for state: GameState, target: String?) throws -> String {
+        let targets: [Player]
+        if let target {
+            guard let player = Player(rawValue: target), player != .myself else {
+                throw ReportError("対象は shimocha/toimen/kamicha で指定してください: \(target)")
+            }
+            targets = [player]
+        } else {
+            targets = Player.allCases.filter { $0 != .myself && state.players[$0]?.riichi == true }
+            guard !targets.isEmpty else {
+                throw ReportError("リーチ者がいません。対象プレイヤーを指定してください")
+            }
+        }
+
+        guard let me = state.players[.myself], let hand = me.hand else {
+            throw ReportError("自分の手牌が不明のため安全度を判定できません")
+        }
+        var tiles = hand
+        if let draw = me.draw { tiles.append(draw) }
+
+        return targets.map { player in
+            SafetyDescription.text(
+                SafetyAnalyzer(state: state, target: player).judge(tiles),
+                target: player, isRiichi: state.players[player]?.riichi == true)
+        }.joined(separator: "\n\n")
+    }
+}
+
+// MARK: - フリテン
+
+enum FuritenReport {
+    static func text(for state: GameState) -> String {
+        guard let status = state.furiten(of: .myself) else {
+            return "手牌が不明、または打牌前の14枚形のため判定できません"
+        }
+        switch status {
+        case let .フリテン(waits, matched):
+            return "フリテンです（待ち: \(TileFormatter.tiles(waits))、"
+                + "うち捨てた牌: \(TileFormatter.tiles(matched))）。ロン和了はできません"
+        case let .フリテンなし(waits):
+            return "フリテンではありません（待ち: \(TileFormatter.tiles(waits))）"
+        case let .テンパイなし(shanten):
+            return "テンパイしていません（\(ShantenReport.label(shanten))）"
+        case let .枚数異常(defect):
+            return "\(SnapshotDescription.defectName(defect))です。聴牌とみなしません"
+        }
+    }
+}
+
+// MARK: - 点数
+
+enum ScoreReport {
+    static func text(
+        for state: GameState, player: Player = .myself,
+        winningTile: Tile, winType: WinType, options: WinOptions,
+        bakaze: Wind? = nil, seat: Wind? = nil
+    ) throws -> String {
+        var state = state
+        if let bakaze { state.bakaze = bakaze }
+        if let seat { state.players[player, default: PlayerState()].seat = seat }
+        if options.doubleRiichi { state.players[player, default: PlayerState()].riichi = true }
+
+        let analysis = try state.score(
+            for: player, winningTile: winningTile, winType: winType, options: options)
+        return ScoreDescription.text(analysis, player: player)
+    }
+
+    /// REPL 用: `score 5s tsumo ippatsu ura=1m` のような語の並びを解釈する。
+    static func text(for state: GameState, args: [String]) throws -> String {
+        guard args.count >= 2 else {
+            throw ReportError("使い方: score <牌> tsumo|ron [ippatsu haitei ...]")
+        }
+        let tile = try Tile.parse(args[0])
+        let winType: WinType
+        switch args[1] {
+        case "tsumo", "ツモ": winType = .ツモ
+        case "ron", "ロン": winType = .ロン
+        default: throw ReportError("tsumo または ron を指定してください: \(args[1])")
+        }
+
+        var options = WinOptions()
+        var bakaze: Wind?
+        var seat: Wind?
+        var riichi = false
+
+        for word in args.dropFirst(2) {
+            let pair = word.split(separator: "=", maxSplits: 1).map(String.init)
+            switch pair[0] {
+            case "ippatsu": options.ippatsu = true
+            case "haitei", "houtei": options.lastTile = true
+            case "rinshan": options.afterKan = true
+            case "chankan": options.robbingKan = true
+            case "riichi": riichi = true
+            case "double-riichi", "wriichi": options.doubleRiichi = true
+            case "ura":
+                guard pair.count == 2 else { throw ReportError("使い方: ura=<牌列>") }
+                options.uraMarkers = try Tile.parseHand(pair[1])
+            case "bakaze":
+                guard pair.count == 2, let wind = Wind(rawValue: pair[1]) else {
+                    throw ReportError("使い方: bakaze=E|S|W|N")
+                }
+                bakaze = wind
+            case "seat":
+                guard pair.count == 2, let wind = Wind(rawValue: pair[1]) else {
+                    throw ReportError("使い方: seat=E|S|W|N")
+                }
+                seat = wind
+            default:
+                throw ReportError("未知の指定: \(word)")
+            }
+        }
+
+        var state = state
+        if riichi { state.players[.myself, default: PlayerState()].riichi = true }
+        return try text(for: state, winningTile: tile, winType: winType,
+                        options: options, bakaze: bakaze, seat: seat)
+    }
+}
+
+/// レポート生成が answer を出せないときのエラー。CLI では ValidationError に変換する。
+struct ReportError: Error, CustomStringConvertible {
+    let description: String
+    init(_ description: String) { self.description = description }
+}

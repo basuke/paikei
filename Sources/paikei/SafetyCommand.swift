@@ -25,31 +25,10 @@ struct SafetyCommand: ParsableCommand {
     func run() throws {
         let state = try DocumentLoading.state(at: path, steps: at)
 
-        let targets: [Player]
-        if let target {
-            guard let player = Player(rawValue: target), player != .myself else {
-                throw ValidationError("対象は shimocha/toimen/kamicha で指定してください: \(target)")
-            }
-            targets = [player]
-        } else {
-            targets = Player.allCases.filter { $0 != .myself && state.players[$0]?.riichi == true }
-            guard !targets.isEmpty else {
-                throw ValidationError("リーチ者がいません。対象プレイヤーを指定してください")
-            }
-        }
-
-        guard let me = state.players[.myself], let hand = me.hand else {
-            throw ValidationError("自分の手牌が不明のため安全度を判定できません")
-        }
-        var tiles = hand
-        if let draw = me.draw { tiles.append(draw) }
-
-        for (index, player) in targets.enumerated() {
-            if index > 0 { print() }
-            let analyzer = SafetyAnalyzer(state: state, target: player)
-            print(SafetyDescription.text(
-                analyzer.judge(tiles), target: player,
-                isRiichi: state.players[player]?.riichi == true))
+        do {
+            print(try SafetyReport.text(for: state, target: target))
+        } catch let error as ReportError {
+            throw ValidationError(error.description)
         }
     }
 }
