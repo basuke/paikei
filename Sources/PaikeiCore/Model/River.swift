@@ -32,13 +32,13 @@ public struct RiverTile: Hashable, Sendable {
 
 /// 河表記のパース・シリアライズに関するエラー。
 public enum RiverNotationError: Error, Equatable, Sendable {
-    case malformed(String)
+    case 不正な表記(String)
     /// 打牌属性（+/-）が複数付いている。
-    case duplicateManner(String)
+    case 打牌属性の重複(String)
     /// 状態属性（*/^）が重複している。
-    case duplicateState(String)
+    case 状態属性の重複(String)
     /// 属性の後に牌本体が無い、など。
-    case missingTile(String)
+    case 牌の欠落(String)
 }
 
 extension RiverTile {
@@ -49,7 +49,7 @@ extension RiverTile {
         let token = text.trimmingWhitespace()
         // 牌本体はスート文字まで. スート文字の位置を探す。
         guard let suitIndex = token.firstIndex(where: { Suit(letter: $0) != nil }) else {
-            throw RiverNotationError.missingTile(String(text))
+            throw RiverNotationError.牌の欠落(String(text))
         }
         let tilePart = token[token.startIndex...suitIndex]
         let tile = try Tile.parse(tilePart)
@@ -61,19 +61,19 @@ extension RiverTile {
         for char in token[token.index(after: suitIndex)...] {
             switch char {
             case "+":
-                guard manner == .不明 else { throw RiverNotationError.duplicateManner(String(text)) }
+                guard manner == .不明 else { throw RiverNotationError.打牌属性の重複(String(text)) }
                 manner = .手出し
             case "-":
-                guard manner == .不明 else { throw RiverNotationError.duplicateManner(String(text)) }
+                guard manner == .不明 else { throw RiverNotationError.打牌属性の重複(String(text)) }
                 manner = .ツモ切り
             case "*":
-                guard !riichi else { throw RiverNotationError.duplicateState(String(text)) }
+                guard !riichi else { throw RiverNotationError.状態属性の重複(String(text)) }
                 riichi = true
             case "^":
-                guard !calledAway else { throw RiverNotationError.duplicateState(String(text)) }
+                guard !calledAway else { throw RiverNotationError.状態属性の重複(String(text)) }
                 calledAway = true
             default:
-                throw RiverNotationError.malformed(String(text))
+                throw RiverNotationError.不正な表記(String(text))
             }
         }
         return RiverTile(tile: tile, manner: manner, declaresRiichi: riichi, wasCalledAway: calledAway)

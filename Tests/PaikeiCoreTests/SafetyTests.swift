@@ -192,7 +192,7 @@ struct 安全度 {
 
     @Test func テンパイしていなければフリテンの概念なし() throws {
         let s = try state(river: ["4p"], hand: "123456789m147p2s")
-        #expect(try #require(s.furiten(of: .myself)) == .テンパイでない(シャンテン: 2))
+        #expect(try #require(s.furiten(of: .myself)) == .テンパイなし(シャンテン: 2))
     }
 
     @Test("手牌が不明・14枚形なら判定しない")
@@ -219,12 +219,12 @@ struct 安全度 {
         let s = try state(river: ["4p"])
         // 待ちは 1p/4p。4p が河にあるので 1p のロンもできない。
         #expect(try s.score(winningTile: try Tile.parse("1p"), winType: .ロン)
-                == .notAWin(.フリテン(捨てた待ち: [Tile(suit: .筒子, rank: 4)!])))
+                == .和了できない(.フリテン(捨てた待ち: [Tile(suit: .筒子, rank: 4)!])))
     }
 
     @Test func フリテンでもツモは和了できる() throws {
         let s = try state(river: ["4p"])
-        guard case .scored? = try? s.score(winningTile: try Tile.parse("1p"), winType: .ツモ) else {
+        guard case .点数? = try? s.score(winningTile: try Tile.parse("1p"), winType: .ツモ) else {
             Issue.record("ツモは成立するはず")
             return
         }
@@ -233,6 +233,6 @@ struct 安全度 {
     @Test func 待ちでない牌のロン() throws {
         let s = try state(river: ["4p"])
         #expect(try s.score(winningTile: try Tile.parse("5s"), winType: .ロン)
-                == .notAWin(.和了形でない))
+                == .和了できない(.和了形なし))
     }
 }

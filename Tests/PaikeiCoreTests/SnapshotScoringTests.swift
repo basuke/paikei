@@ -19,7 +19,7 @@ import Testing
     }
 
     func scored(_ analysis: ScoreAnalysis) throws -> (Score, [Yaku], [Assumption]) {
-        guard case let .scored(score, yaku, assumptions) = analysis else {
+        guard case let .点数(score, yaku, assumptions) = analysis else {
             Issue.record("scored ではありません: \(analysis)")
             throw TestFailure()
         }
@@ -62,7 +62,7 @@ import Testing
         #expect(yaku.isSuperset(of: [.立直, .一発, .平和]))
         #expect(score.dora.ura == 1)          // 裏ドラ表示3p → 4p が1枚
         #expect(score.han == 4)               // 立直 + 一発 + 平和 + 裏1
-        #expect(!assumptions.contains(.noUraMarkers))
+        #expect(!assumptions.contains(.裏ドラ表示牌不明))
     }
 
     @Test func 裏ドラ表示牌が無ければ仮定() throws {
@@ -70,7 +70,7 @@ import Testing
                           claim: ClaimTile(tile: try Tile.parse("6s"), from: .shimocha))
         let (_, _, assumptions) = try scored(
             try s.score(winningTile: try Tile.parse("6s"), winType: .ロン))
-        #expect(assumptions == [.noUraMarkers])
+        #expect(assumptions == [.裏ドラ表示牌不明])
     }
 
     // MARK: - 不明を仮定で埋める
@@ -83,8 +83,8 @@ import Testing
 
         // 場風は不明のままだが、この手（風牌なし）では答えが変わらないので注記も出ない。
         #expect(assumptions == [
-            .hypotheticalWin(try Tile.parse("6s"), .ロン),  // 静止状態での試算
-            .seatWind(.南), .notRiichi, .noDoraMarkers, .noHonba, .noKyotaku,
+            .仮定した和了(try Tile.parse("6s"), .ロン),  // 静止状態での試算
+            .席風不明(仮定: .南), .立直不明, .ドラ表示牌不明, .本場不明, .供託不明,
         ])
         #expect(score.han == 1)               // 平和のみ（ドラ0）
         #expect(score.payment == .ロン(1000))  // 子の1翻30符、本場も供託もなし
@@ -95,7 +95,7 @@ import Testing
     @Test("矛盾したオプションは WinContextError（不足の declined とは別扱い）")
     func 矛盾したオプションはWinContextError() throws {
         let s = try state()
-        #expect(throws: WinContextError(contradictions: [.ippatsuRequiresRiichi])) {
+        #expect(throws: WinContextError(contradictions: [.立直なしの一発])) {
             _ = try s.score(winningTile: try Tile.parse("6s"), winType: .ロン,
                             options: WinOptions(ippatsu: true))
         }
@@ -108,7 +108,7 @@ import Testing
     @Test func 複数の矛盾は全て列挙される() throws {
         let s = try state()
         #expect(throws: WinContextError(
-            contradictions: [.ippatsuRequiresRiichi, .afterKanRequiresTsumo])) {
+            contradictions: [.立直なしの一発, .ロンの嶺上開花])) {
             _ = try s.score(winningTile: try Tile.parse("6s"), winType: .ロン,
                             options: WinOptions(ippatsu: true, afterKan: true))
         }
@@ -121,21 +121,21 @@ import Testing
         let s = try state(draw: try Tile.parse("6s"))
         let (_, _, assumptions) = try scored(
             try s.score(winningTile: try Tile.parse("6s"), winType: .ツモ))
-        #expect(!assumptions.contains { if case .hypotheticalWin = $0 { true } else { false } })
+        #expect(!assumptions.contains { if case .仮定した和了 = $0 { true } else { false } })
     }
 
     @Test func 応答待ちの対象牌へのロンも局面が裏づけている() throws {
         let s = try state(claim: ClaimTile(tile: try Tile.parse("6s"), from: .shimocha))
         let (_, _, assumptions) = try scored(
             try s.score(winningTile: try Tile.parse("6s"), winType: .ロン))
-        #expect(!assumptions.contains { if case .hypotheticalWin = $0 { true } else { false } })
+        #expect(!assumptions.contains { if case .仮定した和了 = $0 { true } else { false } })
     }
 
     @Test func 静止状態での試算は和了そのものが仮定() throws {
         let s = try state()  // draw も claim も無い＝静止状態
         let (_, _, assumptions) = try scored(
             try s.score(winningTile: try Tile.parse("6s"), winType: .ロン))
-        #expect(assumptions.first == .hypotheticalWin(try Tile.parse("6s"), .ロン))
+        #expect(assumptions.first == .仮定した和了(try Tile.parse("6s"), .ロン))
     }
 
     @Test("局面と食い違う和了方法・和了牌は仮定として注記する")
@@ -144,13 +144,13 @@ import Testing
         let drew = try state(draw: try Tile.parse("6s"))
         let (_, _, ronAssumptions) = try scored(
             try drew.score(winningTile: try Tile.parse("6s"), winType: .ロン))
-        #expect(ronAssumptions.first == .hypotheticalWin(try Tile.parse("6s"), .ロン))
+        #expect(ronAssumptions.first == .仮定した和了(try Tile.parse("6s"), .ロン))
 
         // 応答待ちの対象は1zなのに6sのロンを指定。
         let claimed = try state(claim: ClaimTile(tile: try Tile.parse("1z"), from: .shimocha))
         let (_, _, otherTile) = try scored(
             try claimed.score(winningTile: try Tile.parse("6s"), winType: .ロン))
-        #expect(otherTile.first == .hypotheticalWin(try Tile.parse("6s"), .ロン))
+        #expect(otherTile.first == .仮定した和了(try Tile.parse("6s"), .ロン))
     }
 
     @Test("自分が出した牌ではロンできない（裏づけにならない）")
@@ -158,7 +158,7 @@ import Testing
         let s = try state(claim: ClaimTile(tile: try Tile.parse("6s"), from: .myself))
         let (_, _, assumptions) = try scored(
             try s.score(winningTile: try Tile.parse("6s"), winType: .ロン))
-        #expect(assumptions.first == .hypotheticalWin(try Tile.parse("6s"), .ロン))
+        #expect(assumptions.first == .仮定した和了(try Tile.parse("6s"), .ロン))
     }
 
     // MARK: - 風が答えを変えるときは断る
@@ -173,25 +173,25 @@ import Testing
     func 風で役が変わる手は風が不明なら仮定せずに断る() throws {
         let s = try windTripletState()
         #expect(try s.score(winningTile: try Tile.parse("1z"), winType: .ロン)
-                == .declined([.roundWind, .seatWind(.myself)]))
+                == .情報不足([.場風, .席風(.myself)]))
     }
 
     @Test("片方だけ不明なら、足りない方だけを挙げる")
     func 片方だけ不明なら足りない方だけを挙げる() throws {
         let noBakaze = try windTripletState(seat: .西)
         #expect(try noBakaze.score(winningTile: try Tile.parse("1z"), winType: .ロン)
-                == .declined([.roundWind]))
+                == .情報不足([.場風]))
 
         let noSeat = try windTripletState(bakaze: .南)
         #expect(try noSeat.score(winningTile: try Tile.parse("1z"), winType: .ロン)
-                == .declined([.seatWind(.myself)]))
+                == .情報不足([.席風(.myself)]))
     }
 
     @Test("風を与えれば答えが出る。与える値で結果が変わることも確認")
     func 風を与えれば答えが出る() throws {
         // 東場・東家以外 → 1z は役牌でないので役なし。
         #expect(try windTripletState(bakaze: .南, seat: .西)
-            .score(winningTile: try Tile.parse("1z"), winType: .ロン) == .notAWin(.役なし))
+            .score(winningTile: try Tile.parse("1z"), winType: .ロン) == .和了できない(.役なし))
 
         // 東場 → 1z が場風になる。
         let (score, yaku, _) = try scored(try windTripletState(bakaze: .東, seat: .南)
@@ -211,7 +211,7 @@ import Testing
             try s.score(winningTile: try Tile.parse("1z"), winType: .ロン))
         #expect(yaku == [.国士無双])
         #expect(score.total == 32000)              // 子の役満
-        #expect(assumptions == [.seatWind(.南)]) // 残るのは親子の仮定だけ
+        #expect(assumptions == [.席風不明(仮定: .南)]) // 残るのは親子の仮定だけ
     }
 
     @Test("席風の仮定は子（南家）— 親と決めつけない")
@@ -219,7 +219,7 @@ import Testing
         let s = try state(seat: nil)
         let (score, _, assumptions) = try scored(
             try s.score(winningTile: try Tile.parse("6s"), winType: .ロン))
-        #expect(assumptions.contains(.seatWind(.南)))
+        #expect(assumptions.contains(.席風不明(仮定: .南)))
         #expect(score.payment == .ロン(1000 + 300))  // 子の支払い
     }
 
@@ -228,13 +228,13 @@ import Testing
     @Test func 手牌が不明なら必要な情報を宣言して断る() throws {
         let s = GameState(players: [.myself: PlayerState(seat: .西, hand: nil)])
         #expect(try s.score(winningTile: try Tile.parse("6s"), winType: .ロン)
-                == .declined([.hand(.myself)]))
+                == .情報不足([.手牌(.myself)]))
     }
 
     @Test func そもそもプレイヤーが観測されていなければ断る() throws {
         let s = try state()
         #expect(try s.score(for: .toimen, winningTile: try Tile.parse("6s"), winType: .ロン)
-                == .declined([.hand(.toimen)]))
+                == .情報不足([.手牌(.toimen)]))
     }
 
     @Test("枚数が合わない手牌は多牌・少牌として和了放棄")
@@ -242,7 +242,7 @@ import Testing
         // 情報の不足（declined）ではなく、判明済みの状態（和了できない）として答える。
         let s = try state(hand: "234567m234p456s")  // 12枚
         #expect(try s.score(winningTile: try Tile.parse("6s"), winType: .ロン)
-                == .notAWin(.枚数異常(.少牌(不足: 1))))
+                == .和了できない(.枚数異常(.少牌(不足: 1))))
     }
 
     @Test("14枚形なら和了牌が手牌に含まれている必要がある")
@@ -257,7 +257,7 @@ import Testing
         // 14枚形なのに和了牌が入っていない場合は断る。
         let ng = try state(hand: "234567m234p45s99p1z")
         #expect(try ng.score(winningTile: try Tile.parse("6s"), winType: .ロン)
-                == .declined([.winningTileInHand(try Tile.parse("6s"))]))
+                == .情報不足([.和了牌の欠落(try Tile.parse("6s"))]))
     }
 
     // MARK: - 和了していない
@@ -265,7 +265,7 @@ import Testing
     @Test func 和了形でなければそう答える() throws {
         let s = try state(hand: "234567m234p456s93p")
         #expect(try s.score(winningTile: try Tile.parse("6s"), winType: .ロン)
-                == .notAWin(.和了形でない))
+                == .和了できない(.和了形なし))
     }
 
     @Test func 形は和了でも役がなければ和了できない() throws {
@@ -277,9 +277,9 @@ import Testing
                 seat: .西, hand: try Tile.parseHand("345m678p456s55p"),
                 melds: [try Meld.parse("pon(2'22m,L)")], riichi: false)])
         #expect(try s.score(winningTile: try Tile.parse("5p"), winType: .ロン,
-                        rules: RuleSet(kuitan: false)) == .notAWin(.役なし))
+                        rules: RuleSet(kuitan: false)) == .和了できない(.役なし))
         // 喰いタンありなら断么九で和了できる。
-        guard case .scored = try s.score(winningTile: try Tile.parse("5p"), winType: .ロン,
+        guard case .点数 = try s.score(winningTile: try Tile.parse("5p"), winType: .ロン,
                                      rules: RuleSet(kuitan: true)) else {
             Issue.record("喰いタンありなら和了できるはず")
             return

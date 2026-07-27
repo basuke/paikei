@@ -23,7 +23,7 @@ struct イベント適用 {
     @Test func 山が0でツモは矛盾() throws {
         var s = try base()
         s.wall = 0
-        #expect(throws: EventApplicationError.山が空) {
+        #expect(throws: EventApplicationError.山切れ) {
             _ = try s.applying(.ツモ(手番: .myself, 牌: nil))
         }
     }
@@ -54,7 +54,7 @@ struct イベント適用 {
 
     @Test func 手牌に無い牌の打牌は矛盾() throws {
         let s = try base()
-        #expect(throws: EventApplicationError.手牌にない(.myself, Tile(suit: .筒子, rank: 1)!)) {
+        #expect(throws: EventApplicationError.手牌にない牌(.myself, Tile(suit: .筒子, rank: 1)!)) {
             _ = try s.applying(.打牌(手番: .myself, 牌: try Tile.parse("1p"), ツモ切り: false))
         }
     }
@@ -84,7 +84,7 @@ struct イベント適用 {
     @Test func ツモも14枚形でもない状態のツモ切りは矛盾() throws {
         let state = GameState(players: [.myself: PlayerState(
             hand: try Tile.parseHand("123m456m789p55s11z"))])  // 13枚、draw なし
-        #expect(throws: EventApplicationError.手牌にない(.myself, Tile(suit: .索子, rank: 9)!)) {
+        #expect(throws: EventApplicationError.手牌にない牌(.myself, Tile(suit: .索子, rank: 9)!)) {
             _ = try state.applying(
                 .打牌(手番: .myself, 牌: try Tile.parse("9s"), ツモ切り: true))
         }
@@ -159,7 +159,7 @@ struct イベント適用 {
     @Test func 河に無い牌は鳴けない() throws {
         var state = try base()
         state.players[.myself]?.hand = try Tile.parseHand("123m456m789p55p11z")
-        #expect(throws: EventApplicationError.捨てられていない(打牌者: .toimen, 牌: Tile(suit: .筒子, rank: 5)!)) {
+        #expect(throws: EventApplicationError.河にない牌(打牌者: .toimen, 牌: Tile(suit: .筒子, rank: 5)!)) {
             _ = try state.applying(.ポン(手番: .myself, 相手: .toimen,
                                        牌: try Tile.parse("5p"),
                                        手牌から: try Tile.parseHand("55p")))
@@ -188,7 +188,7 @@ struct イベント適用 {
         #expect(kakan.players[.myself]?.draw == nil)  // ツモ牌を槓に使った
 
         // ポンが無ければ加槓できない。
-        #expect(throws: EventApplicationError.元のポンがない(.myself, Tile(suit: .索子, rank: 9)!)) {
+        #expect(throws: EventApplicationError.ポンなしの加槓(.myself, Tile(suit: .索子, rank: 9)!)) {
             _ = try ponned.applying(.加槓(手番: .myself, 牌: try Tile.parse("9s")))
         }
     }

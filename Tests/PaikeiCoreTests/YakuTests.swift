@@ -38,7 +38,7 @@ import Testing
 
     @Test("一発は立直が前提（立直なしは矛盾としてエラー）")
     func 一発は立直が前提() throws {
-        #expect(throws: WinContextError(contradictions: [.ippatsuRequiresRiichi])) {
+        #expect(throws: WinContextError(contradictions: [.立直なしの一発])) {
             _ = try self.best("234567m234p55p678s", ippatsu: true)
         }
         #expect(try best("234567m234p55p678s", riichi: true, ippatsu: true).contains(.一発))
@@ -48,7 +48,7 @@ import Testing
     @Test("嶺上開花はツモ限定（ロンとの併用は矛盾としてエラー）")
     func 嶺上開花はツモ限定() throws {
         #expect(try best("234567m234p55p678s", winType: .ツモ, afterKan: true).contains(.嶺上開花))
-        #expect(throws: WinContextError(contradictions: [.afterKanRequiresTsumo])) {
+        #expect(throws: WinContextError(contradictions: [.ロンの嶺上開花])) {
             _ = try self.best("234567m234p55p678s", winType: .ロン, afterKan: true)
         }
     }
@@ -56,7 +56,7 @@ import Testing
     @Test("槍槓はロン限定（ツモとの併用は矛盾としてエラー）")
     func 槍槓はロン限定() throws {
         #expect(try best("234567m234p55p678s", winType: .ロン, robbingKan: true).contains(.槍槓))
-        #expect(throws: WinContextError(contradictions: [.robbingKanRequiresRon])) {
+        #expect(throws: WinContextError(contradictions: [.ツモの槍槓])) {
             _ = try self.best("234567m234p55p678s", winType: .ツモ, robbingKan: true)
         }
     }

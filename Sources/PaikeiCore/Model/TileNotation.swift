@@ -1,11 +1,11 @@
 /// MPSZ 表記のパース・シリアライズに関するエラー。
 public enum TileNotationError: Error, Equatable, Sendable {
     /// スート文字が続かない数字が残った（例: 末尾の `123`）。
-    case danglingDigits(String)
+    case スート文字の欠落(String)
     /// 数字でもスート文字でもない文字が現れた。
-    case unexpectedCharacter(Character)
+    case 不正な文字(Character)
     /// スートに対して不正な数値（例: `8z`、赤の `0z`）。
-    case invalidTile(suit: Suit, digit: Character)
+    case 不正な牌(スート: Suit, 数字: Character)
 }
 
 extension Suit {
@@ -41,18 +41,18 @@ extension Tile {
             } else if let suit = Suit(letter: char) {
                 for digit in pendingDigits {
                     guard let tile = Tile(digit: digit, suit: suit) else {
-                        throw TileNotationError.invalidTile(suit: suit, digit: digit)
+                        throw TileNotationError.不正な牌(スート: suit, 数字: digit)
                     }
                     tiles.append(tile)
                 }
                 pendingDigits.removeAll(keepingCapacity: true)
             } else {
-                throw TileNotationError.unexpectedCharacter(char)
+                throw TileNotationError.不正な文字(char)
             }
         }
 
         guard pendingDigits.isEmpty else {
-            throw TileNotationError.danglingDigits(String(pendingDigits))
+            throw TileNotationError.スート文字の欠落(String(pendingDigits))
         }
         return tiles
     }
@@ -61,7 +61,7 @@ extension Tile {
     public static func parse(_ text: some StringProtocol) throws -> Tile {
         let tiles = try parseHand(text)
         guard tiles.count == 1 else {
-            throw TileNotationError.danglingDigits(String(text))
+            throw TileNotationError.スート文字の欠落(String(text))
         }
         return tiles[0]
     }

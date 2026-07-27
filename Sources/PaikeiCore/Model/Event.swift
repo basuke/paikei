@@ -31,15 +31,15 @@ public enum Event: Sendable, Equatable {
 /// 不明な値は検証しない（「イベントは不明を減らすことはあっても増やさない」）。
 public enum EventApplicationError: Error, Equatable, Sendable {
     /// `wall: 0` なのにツモした。
-    case 山が空
+    case 山切れ
     /// 手牌にあるはずの牌が無い（打牌・鳴きの構成牌・暗槓）。
-    case 手牌にない(Player, Tile)
+    case 手牌にない牌(Player, Tile)
     /// ツモ切りと言っているのにツモ牌と一致しない。
     case ツモ切りの不一致(ツモ牌: Tile, 打牌: Tile)
     /// 鳴き・ロンの対象牌が、応答対象（claim_tile）にも対象者の河にも無い。
-    case 捨てられていない(打牌者: Player, 牌: Tile)
+    case 河にない牌(打牌者: Player, 牌: Tile)
     /// 加槓に対応するポンが無い。
-    case 元のポンがない(Player, Tile)
-    /// チー・ポン・槓の構成牌の枚数が不正。
-    case 構成牌の枚数が不正(Event)
+    case ポンなしの加槓(Player, Tile)
+    /// チー・ポン・槓の構成牌の枚数不正。
+    case 構成牌の枚数不正(Event)
 }

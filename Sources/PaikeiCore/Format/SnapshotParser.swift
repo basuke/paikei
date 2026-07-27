@@ -1,10 +1,10 @@
 /// スナップショットのパースに関するエラー（仕様§3〜§6）。
 public enum SnapshotParseError: Error, Equatable, Sendable {
-    case unknownSection(String)
-    case unknownField(key: String, section: String)
-    case invalidValue(key: String, value: String)
-    case malformedLine(String)
-    case malformedHeader(String)
+    case 未知のセクション(String)
+    case 未知のフィールド(キー: String, セクション: String)
+    case 不正な値(キー: String, 値: String)
+    case 不正な行(String)
+    case 不正なヘッダ(String)
 }
 
 /// `.paikei` テキスト（スナップショット部）を `GameState` にパースする。
@@ -28,7 +28,7 @@ public enum SnapshotParser {
             }
 
             guard let colon = line.firstIndex(of: ":") else {
-                throw SnapshotParseError.malformedLine(String(line))
+                throw SnapshotParseError.不正な行(String(line))
             }
             let key = String(line[..<colon].trimmingWhitespace())
             let value = line[line.index(after: colon)...].trimmingWhitespace()
@@ -62,24 +62,24 @@ public enum SnapshotParser {
     /// `[shimocha] seat=N` 形式を解釈し、対象プレイヤーを返す。
     private static func applyHeader(_ line: Substring, into state: inout GameState) throws -> Player {
         guard let close = line.firstIndex(of: "]"), line.first == "[" else {
-            throw SnapshotParseError.malformedHeader(String(line))
+            throw SnapshotParseError.不正なヘッダ(String(line))
         }
         let name = String(line[line.index(after: line.startIndex)..<close])
         guard let player = Player(rawValue: name) else {
-            throw SnapshotParseError.unknownSection(name)
+            throw SnapshotParseError.未知のセクション(name)
         }
 
         var ps = state.players[player] ?? PlayerState()
         for token in line[line.index(after: close)...].split(whereSeparator: { $0.isWhitespace }) {
             let pair = token.split(separator: "=", maxSplits: 1)
             guard pair.count == 2 else {
-                throw SnapshotParseError.malformedHeader(String(line))
+                throw SnapshotParseError.不正なヘッダ(String(line))
             }
             switch String(pair[0]) {
             case "seat":
                 ps.seat = try parseWind(key: "seat", value: pair[1])
             default:
-                throw SnapshotParseError.unknownField(key: String(pair[0]), section: name)
+                throw SnapshotParseError.未知のフィールド(キー: String(pair[0]), セクション: name)
             }
         }
         state.players[player] = ps
@@ -99,7 +99,7 @@ public enum SnapshotParser {
         case "rule": state.rule = isUnknown(value) ? nil : String(value)
         case "claim_tile": state.claim = try parseClaim(value)
         default:
-            throw SnapshotParseError.unknownField(key: key, section: "table")
+            throw SnapshotParseError.未知のフィールド(キー: key, セクション: "table")
         }
     }
 
@@ -117,11 +117,11 @@ public enum SnapshotParser {
         case "melds":
             ps.melds = try value.split(whereSeparator: { $0.isWhitespace }).map {
                 do { return try Meld.parse($0) }
-                catch { throw SnapshotParseError.invalidValue(key: key, value: String(value)) }
+                catch { throw SnapshotParseError.不正な値(キー: key, 値: String(value)) }
             }
         case "river":
             do { ps.river = try RiverTile.parseLine(value) }
-            catch { throw SnapshotParseError.invalidValue(key: key, value: String(value)) }
+            catch { throw SnapshotParseError.不正な値(キー: key, 値: String(value)) }
         case "riichi":
             ps.riichi = try parseBool(key: key, value: value)
         case "score":
@@ -129,9 +129,9 @@ public enum SnapshotParser {
         case "discard_context":
             if isUnknown(value) { ps.discardOrigin = nil }
             else if let origin = DiscardOrigin(rawValue: String(value)) { ps.discardOrigin = origin }
-            else { throw SnapshotParseError.invalidValue(key: key, value: String(value)) }
+            else { throw SnapshotParseError.不正な値(キー: key, 値: String(value)) }
         default:
-            throw SnapshotParseError.unknownField(key: key, section: player.rawValue)
+            throw SnapshotParseError.未知のフィールド(キー: key, セクション: player.rawValue)
         }
         state.players[player] = ps
     }
@@ -140,7 +140,7 @@ public enum SnapshotParser {
 
     /// `6p from=shimocha kind=discard` を解釈する。
     private static func parseClaim(_ value: Substring) throws -> ClaimTile {
-        func fail() -> SnapshotParseError { .invalidValue(key: "claim_tile", value: String(value)) }
+        func fail() -> SnapshotParseError { .不正な値(キー: "claim_tile", 値: String(value)) }
         let tokens = value.split(whereSeparator: { $0.isWhitespace })
         guard let first = tokens.first else { throw fail() }
         let tile: Tile
@@ -172,7 +172,7 @@ public enum SnapshotParser {
     private static func parseWind(key: String, value: Substring) throws -> Wind? {
         if isUnknown(value) { return nil }
         guard let wind = Wind(rawValue: String(value)) else {
-            throw SnapshotParseError.invalidValue(key: key, value: String(value))
+            throw SnapshotParseError.不正な値(キー: key, 値: String(value))
         }
         return wind
     }
@@ -180,7 +180,7 @@ public enum SnapshotParser {
     private static func parseInt(key: String, value: Substring) throws -> Int? {
         if isUnknown(value) { return nil }
         guard let n = Int(value) else {
-            throw SnapshotParseError.invalidValue(key: key, value: String(value))
+            throw SnapshotParseError.不正な値(キー: key, 値: String(value))
         }
         return n
     }
@@ -190,7 +190,7 @@ public enum SnapshotParser {
         case "?": return nil
         case "true": return true
         case "false": return false
-        default: throw SnapshotParseError.invalidValue(key: key, value: String(value))
+        default: throw SnapshotParseError.不正な値(キー: key, 値: String(value))
         }
     }
 
@@ -198,7 +198,7 @@ public enum SnapshotParser {
         if isUnknown(value) { return [] }
         return try value.split(whereSeparator: { $0.isWhitespace }).map {
             do { return try Tile.parse($0) }
-            catch { throw SnapshotParseError.invalidValue(key: key, value: String(value)) }
+            catch { throw SnapshotParseError.不正な値(キー: key, 値: String(value)) }
         }
     }
 
@@ -207,6 +207,6 @@ public enum SnapshotParser {
         key: String, value: Substring, _ body: (Substring) throws -> T
     ) throws -> T {
         do { return try body(value) }
-        catch { throw SnapshotParseError.invalidValue(key: key, value: String(value)) }
+        catch { throw SnapshotParseError.不正な値(キー: key, 値: String(value)) }
     }
 }

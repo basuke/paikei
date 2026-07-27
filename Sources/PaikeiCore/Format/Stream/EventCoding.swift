@@ -10,10 +10,10 @@ enum EventCoding {
     static func event(fromLine line: String, format: StreamFormat) throws -> Event {
         guard let object = try? JSONSerialization.jsonObject(with: Data(line.utf8)),
               let fields = object as? [String: Any] else {
-            throw StreamParseError.malformedJSON(line)
+            throw StreamParseError.不正なJSON(line)
         }
         guard let type = fields["type"] as? String else {
-            throw StreamParseError.missingField("type", eventType: "?")
+            throw StreamParseError.フィールド欠落("type", イベント種別: "?")
         }
         let decoder = Decoder(fields: fields, format: format, type: type)
 
@@ -57,7 +57,7 @@ enum EventCoding {
         case "ryukyoku":
             return .流局
         default:
-            throw StreamParseError.unknownEventType(type)
+            throw StreamParseError.未知のイベント種別(type)
         }
     }
 
@@ -69,17 +69,17 @@ enum EventCoding {
 
         func player(_ key: String) throws -> Player {
             guard let value = fields[key] else {
-                throw StreamParseError.missingField(key, eventType: type)
+                throw StreamParseError.フィールド欠落(key, イベント種別: type)
             }
             switch format {
             case .paikei:
                 guard let name = value as? String, let player = Player(rawValue: name) else {
-                    throw StreamParseError.invalidValue(field: key, value: "\(value)")
+                    throw StreamParseError.不正な値(フィールド: key, 値: "\(value)")
                 }
                 return player
             case .mjai:
                 guard let seat = value as? Int else {
-                    throw StreamParseError.invalidValue(field: key, value: "\(value)")
+                    throw StreamParseError.不正な値(フィールド: key, 値: "\(value)")
                 }
                 return try format.player(fromSeat: seat)
             }
@@ -87,7 +87,7 @@ enum EventCoding {
 
         func tile(_ key: String) throws -> Tile {
             guard let tile = try tileIfPresent(key) else {
-                throw StreamParseError.missingField(key, eventType: type)
+                throw StreamParseError.フィールド欠落(key, イベント種別: type)
             }
             return tile
         }
@@ -95,7 +95,7 @@ enum EventCoding {
         /// `"?"`（観測できない牌）を nil として受理する。
         func tileOrUnknown(_ key: String) throws -> Tile? {
             guard let text = fields[key] as? String else {
-                throw StreamParseError.missingField(key, eventType: type)
+                throw StreamParseError.フィールド欠落(key, イベント種別: type)
             }
             if text == "?" { return nil }
             return try parseTile(text, key: key)
@@ -104,14 +104,14 @@ enum EventCoding {
         func tileIfPresent(_ key: String) throws -> Tile? {
             guard let value = fields[key] else { return nil }
             guard let text = value as? String else {
-                throw StreamParseError.invalidValue(field: key, value: "\(value)")
+                throw StreamParseError.不正な値(フィールド: key, 値: "\(value)")
             }
             return try parseTile(text, key: key)
         }
 
         func tiles(_ key: String) throws -> [Tile] {
             guard let texts = fields[key] as? [String] else {
-                throw StreamParseError.missingField(key, eventType: type)
+                throw StreamParseError.フィールド欠落(key, イベント種別: type)
             }
             return try texts.map { try parseTile($0, key: key) }
         }
@@ -123,7 +123,7 @@ enum EventCoding {
             case .mjai: tile = Tile(mjai: text)
             }
             guard let tile else {
-                throw StreamParseError.invalidValue(field: key, value: text)
+                throw StreamParseError.不正な値(フィールド: key, 値: text)
             }
             return tile
         }

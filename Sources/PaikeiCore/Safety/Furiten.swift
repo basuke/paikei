@@ -9,7 +9,7 @@ public enum FuritenStatus: Sendable, Equatable {
     /// テンパイしており、待ちは捨て牌にない（ロン可能）。
     case フリテンなし(待ち: [Tile])
     /// テンパイしていない（フリテンの概念が適用されない）。
-    case テンパイでない(シャンテン: Int)
+    case テンパイなし(シャンテン: Int)
     /// 多牌・少牌。和了放棄なので聴牌ともみなさない。
     case 枚数異常(HandDefect)
 }
@@ -25,7 +25,7 @@ extension GameState {
         guard hand.count == 13 - 3 * ps.melds.count else { return nil }
 
         let ukeire = Acceptance.ukeire(hand: hand, melds: ps.melds.count)
-        guard ukeire.shanten == 0 else { return .テンパイでない(シャンテン: ukeire.shanten) }
+        guard ukeire.shanten == 0 else { return .テンパイなし(シャンテン: ukeire.shanten) }
 
         let waits = ukeire.tiles.map(\.tile)
         let discarded = Set(logicalDiscards(of: player).map(\.normalized))

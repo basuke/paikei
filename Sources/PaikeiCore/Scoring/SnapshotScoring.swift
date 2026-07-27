@@ -39,38 +39,38 @@ public enum Assumption: Sendable, Equatable {
     ///
     /// 静止状態での試算（「この牌が出たら？」）や、`draw:` / `claim_tile:` と
     /// 食い違う指定がこれにあたる。
-    case hypotheticalWin(Tile, WinType)
+    case 仮定した和了(Tile, WinType)
     /// 席風が不明なので子（南家）とした。役・符は風によらず同じだが、
     /// 実際が親なら支払いが変わる。
-    case seatWind(Wind)
+    case 席風不明(仮定: Wind)
     /// 立直の有無が不明なので「していない」とした。
-    case notRiichi
+    case 立直不明
     /// ドラ表示牌が不明なのでドラ0枚として計算した。
-    case noDoraMarkers
+    case ドラ表示牌不明
     /// 立直しているが裏ドラ表示牌が与えられていないので0枚とした。
-    case noUraMarkers
+    case 裏ドラ表示牌不明
     /// 本場が不明なので0本場とした。
-    case noHonba
+    case 本場不明
     /// 供託が不明なので0本とした。
-    case noKyotaku
+    case 供託不明
 }
 
 /// 答えるために足りない情報（仕様§1「必要な情報を宣言して断る」）。
 public enum Requirement: Sendable, Equatable {
     /// 手牌が不明。
-    case hand(Player)
+    case 手牌(Player)
     /// 場風が不明で、どれと仮定するかで役・符が変わってしまう。
-    case roundWind
+    case 場風
     /// 席風が不明で、どれと仮定するかで役・符が変わってしまう。
-    case seatWind(Player)
+    case 席風(Player)
     /// 手牌が14枚形なのに、和了牌がその中に無い。
-    case winningTileInHand(Tile)
+    case 和了牌の欠落(Tile)
 }
 
 /// 和了していない理由。
 public enum NoWinReason: Sendable, Equatable {
     /// 和了形になっていない。
-    case 和了形でない
+    case 和了形なし
     /// 形は和了だが役がない（ドラのみでは和了できない）。
     case 役なし
     /// フリテン（ロンのみ）。`matched` が自分の論理捨て牌にある待ち。
@@ -82,12 +82,12 @@ public enum NoWinReason: Sendable, Equatable {
 
 /// 点数解析の結果。
 public enum ScoreAnalysis: Sendable, Equatable {
-    /// 計算できた。`assumptions` が空でなければ仮定つきの答え。
-    case scored(Score, yaku: [Yaku], assumptions: [Assumption])
+    /// 計算できた。`仮定` が空でなければ仮定つきの答え。
+    case 点数(Score, 役: [Yaku], 仮定: [Assumption])
     /// 和了していない。
-    case notAWin(NoWinReason)
+    case 和了できない(NoWinReason)
     /// 情報が足りないので答えられない。
-    case declined([Requirement])
+    case 情報不足([Requirement])
 }
 
 extension GameState {
@@ -108,18 +108,18 @@ extension GameState {
         rules: RuleSet = .standard
     ) throws -> ScoreAnalysis {
         guard let ps = players[player], let hand = ps.hand else {
-            return .declined([.hand(player)])
+            return .情報不足([.手牌(player)])
         }
 
         // 多牌・少牌は和了放棄。形がどうであれ和了できない。
-        if let defect = ps.handDefect { return .notAWin(.枚数異常(defect)) }
+        if let defect = ps.handDefect { return .和了できない(.枚数異常(defect)) }
 
         // 和了牌を含む手牌を組み立てる。`hand:` が14枚形なら既に含まれている。
         // 枚数は上の検査で「基準」か「基準+1」に絞られている。
         let concealed: [Tile]
         if hand.count == 13 - 3 * ps.melds.count + 1 {
             guard hand.contains(where: { $0.normalized == winningTile.normalized }) else {
-                return .declined([.winningTileInHand(winningTile)])
+                return .情報不足([.和了牌の欠落(winningTile)])
             }
             concealed = hand
         } else {
@@ -135,13 +135,13 @@ extension GameState {
             return value
         }
 
-        let riichi = assume(ps.riichi, false, .notRiichi)
-        if doraMarkers.isEmpty { assumptions.append(.noDoraMarkers) }
+        let riichi = assume(ps.riichi, false, .立直不明)
+        if doraMarkers.isEmpty { assumptions.append(.ドラ表示牌不明) }
         if riichi && rules.uraDora && options.uraMarkers.isEmpty {
-            assumptions.append(.noUraMarkers)
+            assumptions.append(.裏ドラ表示牌不明)
         }
-        let honbaCount = assume(honba, 0, .noHonba)
-        let kyotakuCount = assume(kyotaku, 0, .noKyotaku)
+        let honbaCount = assume(honba, 0, .本場不明)
+        let kyotakuCount = assume(kyotaku, 0, .供託不明)
 
         func context(round: Wind, seat: Wind) -> WinContext {
             WinContext(
@@ -175,7 +175,7 @@ extension GameState {
                 if waits.contains(winningTile.normalized) {
                     let discarded = Set(logicalDiscards(of: player).map(\.normalized))
                     let matched = waits.filter { discarded.contains($0.normalized) }
-                    if !matched.isEmpty { return .notAWin(.フリテン(捨てた待ち: matched)) }
+                    if !matched.isEmpty { return .和了できない(.フリテン(捨てた待ち: matched)) }
                 }
             }
         }
@@ -184,31 +184,31 @@ extension GameState {
         // 変わらないなら仮定は無害（国士や風牌のない手）。変わるなら仮定せず断る。
         let missingWinds = try unresolvableWinds(
             for: player, concealed: concealed, melds: ps.melds, rules: rules, context: context)
-        guard missingWinds.isEmpty else { return .declined(missingWinds) }
+        guard missingWinds.isEmpty else { return .情報不足(missingWinds) }
 
         let roundWind = bakaze ?? .東
         // 役・符は風によらないと確かめた上での仮定。残るのは親子（＝支払い）だけ。
         let seatWind = ps.seat ?? .南
-        if ps.seat == nil { assumptions.insert(.seatWind(.南), at: 0) }
+        if ps.seat == nil { assumptions.insert(.席風不明(仮定: .南), at: 0) }
 
         guard let best = try HandEvaluator(rules: rules)
             .best(concealed: concealed, melds: ps.melds, context: context(round: roundWind, seat: seatWind)) else {
-            return .notAWin(.和了形でない)
+            return .和了できない(.和了形なし)
         }
         guard let score = ScoreCalculator(rules: rules).score(
             best, dora: DoraCounter(rules: rules).count(best.hand),
             honba: honbaCount, kyotaku: kyotakuCount) else {
-            return .notAWin(.役なし)
+            return .和了できない(.役なし)
         }
         // 役満はドラを加算しないため、ドラ不明は答えに影響しない＝仮定として挙げない。
         if case .役満 = score.limit {
-            assumptions.removeAll { $0 == .noDoraMarkers || $0 == .noUraMarkers }
+            assumptions.removeAll { $0 == .ドラ表示牌不明 || $0 == .裏ドラ表示牌不明 }
         }
         // 和了そのものが局面に裏づけられていないなら、それを最初に断る。
         if !corroboratesWin(player: player, winningTile: winningTile, winType: winType) {
-            assumptions.insert(.hypotheticalWin(winningTile, winType), at: 0)
+            assumptions.insert(.仮定した和了(winningTile, winType), at: 0)
         }
-        return .scored(score, yaku: best.yaku, assumptions: assumptions)
+        return .点数(score, 役: best.yaku, 仮定: assumptions)
     }
 
     /// 局面がこの和了を裏づけているか（仕様§7のフェーズと突き合わせる）。
@@ -259,12 +259,12 @@ extension GameState {
         if rounds.count > 1, try seats.contains(where: { seat in
             try Set(rounds.map { try outcome(round: $0, seat: seat) }).count > 1
         }) {
-            missing.append(.roundWind)
+            missing.append(.場風)
         }
         if seats.count > 1, try rounds.contains(where: { round in
             try Set(seats.map { try outcome(round: round, seat: $0) }).count > 1
         }) {
-            missing.append(.seatWind(player))
+            missing.append(.席風(player))
         }
         return missing
     }

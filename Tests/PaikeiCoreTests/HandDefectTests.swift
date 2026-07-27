@@ -79,7 +79,7 @@ struct 多牌少牌 {
                 hand: try Tile.parseHand("234567m234p456s99p1z"),
                 riichi: false)])
         #expect(try state.score(winningTile: try Tile.parse("6s"), winType: .ロン)
-                == .notAWin(.枚数異常(.多牌(超過: 1))))
+                == .和了できない(.枚数異常(.多牌(超過: 1))))
     }
 
     @Test func 少牌はフリテン判定でも聴牌とみなさない() throws {

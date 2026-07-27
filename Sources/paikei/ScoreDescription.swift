@@ -4,11 +4,11 @@ import PaikeiCore
 enum ScoreDescription {
     static func text(_ analysis: ScoreAnalysis, player: Player) -> String {
         switch analysis {
-        case let .scored(score, yaku, assumptions):
+        case let .点数(score, yaku, assumptions):
             return scored(score, yaku: yaku, assumptions: assumptions)
-        case let .notAWin(reason):
+        case let .和了できない(reason):
             switch reason {
-            case .和了形でない: return "和了形ではありません"
+            case .和了形なし: return "和了形ではありません"
             case .役なし: return "役がありません（ドラのみでは和了できません）"
             case .フリテン(let matched):
                 return "フリテンです（待ちの \(TileFormatter.tiles(matched)) が自分の捨て牌にあります）。"
@@ -16,7 +16,7 @@ enum ScoreDescription {
             case .枚数異常(let defect):
                 return "\(SnapshotDescription.defectName(defect))です。和了放棄のため和了できません"
             }
-        case let .declined(requirements):
+        case let .情報不足(requirements):
             var lines = ["情報が足りないため計算できません:"]
             lines += requirements.map { "  - " + requirement($0) }
             return lines.joined(separator: "\n")
@@ -108,12 +108,12 @@ enum ScoreDescription {
 
     private static func contradiction(_ c: WinContextContradiction) -> String {
         switch c {
-        case .ippatsuRequiresRiichi:
+        case .立直なしの一発:
             "一発には立直が必要です（--riichi / --double-riichi を付けるか、"
             + "スナップショットに riichi: true が必要です）"
-        case .afterKanRequiresTsumo:
+        case .ロンの嶺上開花:
             "嶺上開花はツモ和了です（ron と同時には指定できません）"
-        case .robbingKanRequiresRon:
+        case .ツモの槍槓:
             "槍槓はロン和了です（tsumo と同時には指定できません）"
         }
     }
@@ -122,35 +122,35 @@ enum ScoreDescription {
 
     private static func assumption(_ assumption: Assumption) -> String {
         switch assumption {
-        case let .hypotheticalWin(tile, winType):
+        case let .仮定した和了(tile, winType):
             let how = winType == .ツモ ? "ツモ" : "ロン"
             return "局面はこの和了を示していないので、\(TileFormatter.tile(tile))の\(how)和了を仮定"
-        case .seatWind(let wind):
+        case .席風不明(let wind):
             return "席風が不明なので\(wind)家（子）と仮定"
                 + "（役・符は風によらず同じですが、実際が親なら支払いが変わります）"
-        case .notRiichi:
+        case .立直不明:
             return "立直の有無が不明なので立直なしと仮定"
-        case .noDoraMarkers:
+        case .ドラ表示牌不明:
             return "ドラ表示牌が不明なのでドラ0枚として計算"
-        case .noUraMarkers:
+        case .裏ドラ表示牌不明:
             return "裏ドラ表示牌が与えられていないので裏0枚として計算（--ura で指定できます）"
-        case .noHonba:
+        case .本場不明:
             return "本場が不明なので0本場として計算"
-        case .noKyotaku:
+        case .供託不明:
             return "供託が不明なので0本として計算"
         }
     }
 
     private static func requirement(_ requirement: Requirement) -> String {
         switch requirement {
-        case .hand(let player):
+        case .手牌(let player):
             return "\(playerName(player))の手牌"
-        case .roundWind:
+        case .場風:
             return "場風（この手は場風によって役が変わります。--bakaze で指定できます）"
-        case .seatWind(let player):
+        case .席風(let player):
             return "\(playerName(player))の席風"
                 + "（この手は自風によって役が変わります。--seat で指定できます）"
-        case .winningTileInHand(let tile):
+        case .和了牌の欠落(let tile):
             return "手牌が14枚形ですが、和了牌 \(TileFormatter.tile(tile)) が含まれていません"
         }
     }

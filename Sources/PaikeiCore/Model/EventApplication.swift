@@ -15,7 +15,7 @@ extension GameState {
         case let .ツモ(actor, tile):
             state.resolveClaim()
             if let wall = state.wall {
-                guard wall > 0 else { throw EventApplicationError.山が空 }
+                guard wall > 0 else { throw EventApplicationError.山切れ }
                 state.wall = wall - 1
             }
             state.update(actor) { $0.draw = tile }
@@ -43,7 +43,7 @@ extension GameState {
         case let .暗槓(actor, consumed):
             state.resolveClaim()
             guard consumed.count == 4 else {
-                throw EventApplicationError.構成牌の枚数が不正(event)
+                throw EventApplicationError.構成牌の枚数不正(event)
             }
             try state.removeConcealed(consumed, from: actor)
             state.update(actor) {
@@ -148,7 +148,7 @@ extension GameState {
         if var hand = ps.hand {
             guard let index = hand.firstIndex(where: { $0 == tile })
                 ?? hand.firstIndex(where: { $0.normalized == tile.normalized }) else {
-                throw EventApplicationError.手牌にない(actor, tile)
+                throw EventApplicationError.手牌にない牌(actor, tile)
             }
             hand.remove(at: index)
             if let draw = ps.draw { hand.append(draw) }
@@ -165,7 +165,7 @@ extension GameState {
     ) throws {
         let needed = kind == .大明槓 ? 3 : 2
         guard consumed.count == needed else {
-            throw EventApplicationError.構成牌の枚数が不正(event)
+            throw EventApplicationError.構成牌の枚数不正(event)
         }
         try consumeDiscard(of: target, tile: tile)
         try removeConcealed(consumed, from: actor)
@@ -189,7 +189,7 @@ extension GameState {
         guard let index = ps.river.lastIndex(where: {
             !$0.wasCalledAway && $0.tile.normalized == tile.normalized
         }) else {
-            throw EventApplicationError.捨てられていない(打牌者: target, 牌: tile)
+            throw EventApplicationError.河にない牌(打牌者: target, 牌: tile)
         }
         let old = ps.river[index]
         ps.river[index] = RiverTile(tile: old.tile, manner: old.manner,
@@ -202,7 +202,7 @@ extension GameState {
         guard let index = ps.melds.firstIndex(where: {
             $0.kind == .ポン && $0.tiles[0].normalized == tile.normalized
         }) else {
-            throw EventApplicationError.元のポンがない(actor, tile)
+            throw EventApplicationError.ポンなしの加槓(actor, tile)
         }
         players[actor] = ps
         try removeConcealed([tile], from: actor)
@@ -231,7 +231,7 @@ extension GameState {
         for tile in tiles {
             guard let index = pool.firstIndex(where: { $0 == tile })
                 ?? pool.firstIndex(where: { $0.normalized == tile.normalized }) else {
-                throw EventApplicationError.手牌にない(player, tile)
+                throw EventApplicationError.手牌にない牌(player, tile)
             }
             pool.remove(at: index)
         }

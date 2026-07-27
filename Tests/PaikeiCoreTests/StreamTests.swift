@@ -45,10 +45,10 @@ struct ストリームのJSONLines {
         #expect(throws: StreamParseError.self) {
             _ = try EventCoding.event(fromLine: "not json", format: .paikei)
         }
-        #expect(throws: StreamParseError.unknownEventType("start_kyoku")) {
+        #expect(throws: StreamParseError.未知のイベント種別("start_kyoku")) {
             _ = try EventCoding.event(fromLine: #"{"type":"start_kyoku"}"#, format: .paikei)
         }
-        #expect(throws: StreamParseError.missingField("pai", eventType: "dahai")) {
+        #expect(throws: StreamParseError.フィールド欠落("pai", イベント種別: "dahai")) {
             _ = try EventCoding.event(fromLine: #"{"type":"dahai","actor":"self"}"#, format: .paikei)
         }
     }
@@ -162,10 +162,10 @@ struct ストリームドキュメント {
 
     @Test("mjai は self_actor が必須、未知の format はエラー")
     func ヘッダのformat検証() throws {
-        #expect(throws: StreamParseError.missingSelfActor) {
+        #expect(throws: StreamParseError.self_actor欠落) {
             _ = try PaikeiDocument.parse(snapshotText + "\n[stream] format=mjai\n")
         }
-        #expect(throws: StreamParseError.unknownFormat("tenhou")) {
+        #expect(throws: StreamParseError.未知のformat("tenhou")) {
             _ = try PaikeiDocument.parse(snapshotText + "\n[stream] format=tenhou\n")
         }
     }

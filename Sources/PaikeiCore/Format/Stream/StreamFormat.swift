@@ -10,19 +10,19 @@ public enum StreamFormat: Sendable, Equatable {
 /// ストリームのパースに関するエラー（仕様§8）。
 public enum StreamParseError: Error, Equatable, Sendable {
     /// JSONとして読めない行。
-    case malformedJSON(String)
+    case 不正なJSON(String)
     /// 語彙にないイベント種別。
-    case unknownEventType(String)
+    case 未知のイベント種別(String)
     /// 必須フィールドが無い。
-    case missingField(String, eventType: String)
+    case フィールド欠落(String, イベント種別: String)
     /// フィールドの値が不正。
-    case invalidValue(field: String, value: String)
+    case 不正な値(フィールド: String, 値: String)
     /// `format=` の値が不明。
-    case unknownFormat(String)
+    case 未知のformat(String)
     /// `format=mjai` なのに `self_actor` が無い（仕様§8.2で必須）。
-    case missingSelfActor
+    case self_actor欠落
     /// `[stream]` ヘッダの属性が不正。
-    case malformedHeader(String)
+    case 不正なヘッダ(String)
 }
 
 extension StreamFormat {
@@ -31,10 +31,10 @@ extension StreamFormat {
     /// 座順は反時計回り: shimocha = (self+1)%4, toimen = (self+2)%4, kamicha = (self+3)%4。
     func player(fromSeat seat: Int) throws -> Player {
         guard case let .mjai(selfActor) = self else {
-            throw StreamParseError.invalidValue(field: "actor", value: String(seat))
+            throw StreamParseError.不正な値(フィールド: "actor", 値: String(seat))
         }
         guard (0...3).contains(seat) else {
-            throw StreamParseError.invalidValue(field: "actor", value: String(seat))
+            throw StreamParseError.不正な値(フィールド: "actor", 値: String(seat))
         }
         return Player.allCases[(seat - selfActor + 4) % 4]
     }

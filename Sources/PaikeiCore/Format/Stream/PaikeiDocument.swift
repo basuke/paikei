@@ -65,7 +65,7 @@ public struct PaikeiDocument: Sendable, Equatable {
         for token in body.split(whereSeparator: { $0.isWhitespace }) {
             let pair = token.split(separator: "=", maxSplits: 1)
             guard pair.count == 2 else {
-                throw StreamParseError.malformedHeader(String(line))
+                throw StreamParseError.不正なヘッダ(String(line))
             }
             attributes[String(pair[0])] = String(pair[1])
         }
@@ -76,14 +76,14 @@ public struct PaikeiDocument: Sendable, Equatable {
         case "mjai":
             // 絶対座席とカメラ相対の対応付けに必須（仕様§8.2）。
             guard let text = attributes["self_actor"] else {
-                throw StreamParseError.missingSelfActor
+                throw StreamParseError.self_actor欠落
             }
             guard let seat = Int(text), (0...3).contains(seat) else {
-                throw StreamParseError.invalidValue(field: "self_actor", value: text)
+                throw StreamParseError.不正な値(フィールド: "self_actor", 値: text)
             }
             return .mjai(selfActor: seat)
         case let other:
-            throw StreamParseError.unknownFormat(other)
+            throw StreamParseError.未知のformat(other)
         }
     }
 }

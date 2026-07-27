@@ -18,11 +18,11 @@ public enum AgariForm: Sendable, Equatable {
 /// 解析は矛盾を黙って握りつぶさず、`WinContextError` で拒む。
 public enum WinContextContradiction: Sendable, Equatable {
     /// 一発には立直（ダブル立直を含む）が必要。
-    case ippatsuRequiresRiichi
+    case 立直なしの一発
     /// 嶺上開花はツモ和了のみ。
-    case afterKanRequiresTsumo
+    case ロンの嶺上開花
     /// 槍槓はロン和了のみ。
-    case robbingKanRequiresRon
+    case ツモの槍槓
 }
 
 /// 矛盾した `WinContext` で解析を呼んだときのエラー。見つかった矛盾を全て持つ。
@@ -98,9 +98,9 @@ extension WinContext {
     /// 文脈フラグの矛盾を列挙する。空なら整合している。
     public var contradictions: [WinContextContradiction] {
         var result: [WinContextContradiction] = []
-        if ippatsu && !(riichi || doubleRiichi) { result.append(.ippatsuRequiresRiichi) }
-        if afterKan && winType != .ツモ { result.append(.afterKanRequiresTsumo) }
-        if robbingKan && winType != .ロン { result.append(.robbingKanRequiresRon) }
+        if ippatsu && !(riichi || doubleRiichi) { result.append(.立直なしの一発) }
+        if afterKan && winType != .ツモ { result.append(.ロンの嶺上開花) }
+        if robbingKan && winType != .ロン { result.append(.ツモの槍槓) }
         return result
     }
 

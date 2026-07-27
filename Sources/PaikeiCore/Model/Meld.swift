@@ -36,12 +36,12 @@ public struct Meld: Hashable, Sendable {
 
 /// 副露表記のパース・シリアライズに関するエラー。
 public enum MeldNotationError: Error, Equatable, Sendable {
-    case unknownKind(String)
-    case malformed(String)
+    case 未知の種別(String)
+    case 不正な表記(String)
     /// アポストロフィが数字の後に無い、または個数不正。
-    case invalidCalledMarker(String)
+    case 不正な鳴き牌マーカー(String)
     /// 種類に対して牌数や方向の有無が不正。
-    case invalidStructure(kind: Meld.Kind, reason: String)
+    case 不正な構造(種別: Meld.Kind, 理由: String)
 }
 
 extension Meld {
@@ -49,17 +49,17 @@ extension Meld {
     public static func parse(_ text: some StringProtocol) throws -> Meld {
         let s = text.trimmingWhitespace()
         guard let open = s.firstIndex(of: "("), s.hasSuffix(")") else {
-            throw MeldNotationError.malformed(String(text))
+            throw MeldNotationError.不正な表記(String(text))
         }
         let kindName = String(s[s.startIndex..<open])
         guard let kind = Kind(rawValue: kindName) else {
-            throw MeldNotationError.unknownKind(kindName)
+            throw MeldNotationError.未知の種別(kindName)
         }
 
         let inner = s[s.index(after: open)..<s.index(before: s.endIndex)]
         let parts = inner.split(separator: ",", omittingEmptySubsequences: false)
         guard parts.count == 1 || parts.count == 2 else {
-            throw MeldNotationError.malformed(String(text))
+            throw MeldNotationError.不正な表記(String(text))
         }
 
         let (tiles, calledIndex) = try parseTileSpec(parts[0], original: String(text))
@@ -67,7 +67,7 @@ extension Meld {
         if parts.count == 2 {
             let dirText = parts[1].trimmingWhitespace()
             guard let dir = CallDirection(rawValue: String(dirText)) else {
-                throw MeldNotationError.malformed(String(text))
+                throw MeldNotationError.不正な表記(String(text))
             }
             from = dir
         } else {
@@ -95,14 +95,14 @@ extension Meld {
                 pendingDigits.append(char)
             } else if char == "'" {
                 guard !pendingDigits.isEmpty, markedOffset == nil else {
-                    throw MeldNotationError.invalidCalledMarker(original)
+                    throw MeldNotationError.不正な鳴き牌マーカー(original)
                 }
                 markedOffset = pendingDigits.count - 1
             } else if let suit = Suit(letter: char) {
                 let base = tiles.count
                 for digit in pendingDigits {
                     guard let tile = Tile(digit: digit, suit: suit) else {
-                        throw MeldNotationError.malformed(original)
+                        throw MeldNotationError.不正な表記(original)
                     }
                     tiles.append(tile)
                 }
@@ -112,11 +112,11 @@ extension Meld {
                 }
                 pendingDigits.removeAll(keepingCapacity: true)
             } else {
-                throw MeldNotationError.malformed(original)
+                throw MeldNotationError.不正な表記(original)
             }
         }
         guard pendingDigits.isEmpty, markedOffset == nil else {
-            throw MeldNotationError.malformed(original)
+            throw MeldNotationError.不正な表記(original)
         }
         return (tiles, calledIndex)
     }
@@ -126,7 +126,7 @@ extension Meld {
     ) throws {
         func need(_ condition: Bool, _ reason: String) throws {
             guard condition else {
-                throw MeldNotationError.invalidStructure(kind: kind, reason: reason)
+                throw MeldNotationError.不正な構造(種別: kind, 理由: reason)
             }
         }
         switch kind {
