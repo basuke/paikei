@@ -37,9 +37,9 @@ enum ReplCommands {
             print(try SafetyReport.text(for: session.document, target: args.first,
                                         at: session.position))
         case "score":
-            print(try ScoreReport.text(for: session.state, args: args))
+            print(try ScoreReport.text(for: session.document, at: session.position, args: args))
         case "furiten":
-            print(FuritenReport.text(for: session.state))
+            print(try FuritenReport.text(for: session.document, at: session.position))
 
         // MARK: ストリーム
         case "step":

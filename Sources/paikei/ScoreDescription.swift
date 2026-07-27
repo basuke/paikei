@@ -13,6 +13,9 @@ enum ScoreDescription {
             case .フリテン(let matched):
                 return "フリテンです（待ちの \(TileFormatter.tiles(matched)) が自分の捨て牌にあります）。"
                     + "ロン和了はできません"
+            case .同巡内フリテン(let missed):
+                return "同巡内フリテンです（見逃した牌: \(TileFormatter.tiles(missed))）。"
+                    + "次のツモまでロン和了はできません"
             case .枚数異常(let defect):
                 return "\(SnapshotDescription.defectName(defect))です。和了放棄のため和了できません"
             }

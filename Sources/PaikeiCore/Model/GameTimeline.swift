@@ -55,15 +55,29 @@ extension GameTimeline {
     ///
     /// 窓は「自分の最後の行動（ツモまたは打牌）より後」。ツモで解消するため、
     /// 最後の行動がツモなら常に false。テンパイしていなければ false。
-    public func 同巡内フリテン(of player: Player) throws -> Bool {
-        let current = try state()
+    public func 同巡内フリテン(of player: Player, at steps: Int? = nil) throws -> Bool {
+        try !同巡内で見逃した待ち(of: player, at: steps).isEmpty
+    }
+
+    /// 履歴込みのフリテン判定。恒常フリテンを優先し、無ければ同巡内を見る。
+    public func furiten(of player: Player, at steps: Int? = nil) throws -> FuritenStatus? {
+        guard let base = try state(at: steps).furiten(of: player) else { return nil }
+        guard case let .フリテンなし(waits) = base else { return base }
+        let missed = try 同巡内で見逃した待ち(of: player, at: steps)
+        return missed.isEmpty ? base : .同巡内フリテン(待ち: waits, 見逃した牌: missed)
+    }
+
+    /// 同巡内に通してしまった当たり牌。空なら同巡内フリテンではない。
+    func 同巡内で見逃した待ち(of player: Player, at steps: Int? = nil) throws -> [Tile] {
+        let count = steps ?? events.count
+        let current = try state(at: count)
         guard let ps = current.players[player], let hand = ps.hand,
-              hand.count == 13 - 3 * ps.melds.count else { return false }
+              hand.count == 13 - 3 * ps.melds.count else { return [] }
         let ukeire = Acceptance.ukeire(hand: hand, melds: ps.melds.count)
-        guard ukeire.shanten == 0 else { return false }
+        guard ukeire.shanten == 0 else { return [] }
 
         let waits = Set(ukeire.tiles.map(\.tile))
-        let window = events.indices.last {
+        let window = events[..<count].indices.last {
             switch events[$0] {
             case let .ツモ(actor, _), let .打牌(actor, _, _): actor == player
             default: false
@@ -71,11 +85,12 @@ extension GameTimeline {
         }
         // 自分の行動が無ければ窓は全体。あればその直後から。
         let start = window.map { $0 + 1 } ?? 0
-        return events[start...].contains {
-            if case let .打牌(actor, tile, _) = $0, actor != player {
-                waits.contains(tile.normalized)
+        return events[start..<count].compactMap {
+            if case let .打牌(actor, tile, _) = $0, actor != player,
+               waits.contains(tile.normalized) {
+                tile.normalized
             } else {
-                false
+                nil
             }
         }
     }

@@ -56,7 +56,7 @@ struct ScoreCommand: ParsableCommand {
     var at: Int?
 
     func run() throws {
-        var state = try DocumentLoading.state(at: path, steps: at)
+        var timeline = try DocumentLoading.document(at: path)
 
         guard let target = Player(rawValue: player) else {
             throw ValidationError("プレイヤー名が不正です: \(player)")
@@ -66,13 +66,13 @@ struct ScoreCommand: ParsableCommand {
             guard let wind = Wind(rawValue: bakaze) else {
                 throw ValidationError("場風は E/S/W/N で指定してください: \(bakaze)")
             }
-            state.bakaze = wind
+            timeline.snapshot.bakaze = wind
         }
         if let seat {
             guard let wind = Wind(rawValue: seat) else {
                 throw ValidationError("席風は E/S/W/N で指定してください: \(seat)")
             }
-            state.players[target, default: PlayerState()].seat = wind
+            timeline.snapshot.players[target, default: PlayerState()].seat = wind
         }
         let type: WinType
         switch winType {
@@ -83,7 +83,7 @@ struct ScoreCommand: ParsableCommand {
 
         // 立直の指定はスナップショットへ反映する（ダブル立直も立直の一種）。
         if riichi || doubleRiichi {
-            state.players[target, default: PlayerState()].riichi = true
+            timeline.snapshot.players[target, default: PlayerState()].riichi = true
         }
 
         let options = WinOptions(
@@ -94,8 +94,8 @@ struct ScoreCommand: ParsableCommand {
 
         // 矛盾の検証はコア（WinContext.validate）の責務。CLI は表示に変換するだけ。
         do {
-            let analysis = try state.score(
-                for: target, winningTile: winningTile, winType: type, options: options)
+            let analysis = try timeline.score(
+                for: target, winningTile: winningTile, winType: type, options: options, at: at)
             print(ScoreDescription.text(analysis, player: target))
         } catch let error as WinContextError {
             throw ValidationError(ScoreDescription.text(error))

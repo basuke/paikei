@@ -113,14 +113,26 @@ enum SafetyReport {
 // MARK: - フリテン
 
 enum FuritenReport {
+    /// 履歴込み（同巡内フリテンも見る）。
+    static func text(for timeline: GameTimeline, at steps: Int? = nil) throws -> String {
+        text(status: try timeline.furiten(of: .myself, at: steps))
+    }
+
     static func text(for state: GameState) -> String {
-        guard let status = state.furiten(of: .myself) else {
+        text(status: state.furiten(of: .myself))
+    }
+
+    private static func text(status: FuritenStatus?) -> String {
+        guard let status else {
             return "手牌が不明、または打牌前の14枚形のため判定できません"
         }
         switch status {
         case let .フリテン(waits, matched):
             return "フリテンです（待ち: \(TileFormatter.tiles(waits))、"
                 + "うち捨てた牌: \(TileFormatter.tiles(matched))）。ロン和了はできません"
+        case let .同巡内フリテン(waits, missed):
+            return "同巡内フリテンです（待ち: \(TileFormatter.tiles(waits))、"
+                + "見逃した牌: \(TileFormatter.tiles(missed))）。次のツモまでロンできません"
         case let .フリテンなし(waits):
             return "フリテンではありません（待ち: \(TileFormatter.tiles(waits))）"
         case let .テンパイなし(shanten):
@@ -134,6 +146,24 @@ enum FuritenReport {
 // MARK: - 点数
 
 enum ScoreReport {
+    /// 履歴込み（一発を自動で導出し、同巡内フリテンでロンを断る）。
+    static func text(
+        for timeline: GameTimeline, at steps: Int? = nil, player: Player = .myself,
+        winningTile: Tile, winType: WinType, options: WinOptions,
+        bakaze: Wind? = nil, seat: Wind? = nil
+    ) throws -> String {
+        var timeline = timeline
+        if let bakaze { timeline.snapshot.bakaze = bakaze }
+        if let seat { timeline.snapshot.players[player, default: PlayerState()].seat = seat }
+        if options.doubleRiichi {
+            timeline.snapshot.players[player, default: PlayerState()].riichi = true
+        }
+        let analysis = try timeline.score(
+            for: player, winningTile: winningTile, winType: winType,
+            options: options, at: steps)
+        return ScoreDescription.text(analysis, player: player)
+    }
+
     static func text(
         for state: GameState, player: Player = .myself,
         winningTile: Tile, winType: WinType, options: WinOptions,
@@ -150,7 +180,7 @@ enum ScoreReport {
     }
 
     /// REPL 用: `score 5s tsumo ippatsu ura=1m` のような語の並びを解釈する。
-    static func text(for state: GameState, args: [String]) throws -> String {
+    static func text(for timeline: GameTimeline, at steps: Int?, args: [String]) throws -> String {
         guard args.count >= 2 else {
             throw ReportError("使い方: score <牌> tsumo|ron [ippatsu haitei ...]")
         }
@@ -194,9 +224,9 @@ enum ScoreReport {
             }
         }
 
-        var state = state
-        if riichi { state.players[.myself, default: PlayerState()].riichi = true }
-        return try text(for: state, winningTile: tile, winType: winType,
+        var timeline = timeline
+        if riichi { timeline.snapshot.players[.myself, default: PlayerState()].riichi = true }
+        return try text(for: timeline, at: steps, winningTile: tile, winType: winType,
                         options: options, bakaze: bakaze, seat: seat)
     }
 }
