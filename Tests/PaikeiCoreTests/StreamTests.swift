@@ -82,7 +82,7 @@ struct ストリームmjai方言 {
             fromLine: #"{"type":"pon","actor":3,"target":0,"pai":"5pr","consumed":["5p","5p"]}"#,
             format: format)
         #expect(pon == .ポン(手番: .shimocha, 相手: .toimen,
-                            牌: Tile(suit: .pin, rank: 5, isRed: true)!,
+                            牌: Tile(suit: .筒子, rank: 5, isRed: true)!,
                             手牌から: try Tile.parseHand("55p")))
     }
 }
@@ -121,7 +121,7 @@ struct ストリームドキュメント {
         let t0 = try doc.state(at: 0)
         #expect(t0 == doc.snapshot)
         let t1 = try doc.state(at: 1)
-        #expect(t1.players[.myself]?.draw == Tile(suit: .sou, rank: 6))
+        #expect(t1.players[.myself]?.draw == Tile(suit: .索子, rank: 6))
         let final = try doc.state()  // 既定は末尾（§8.3）
         #expect(final.players[.myself]?.river.count == 1)
         #expect(final.wall == 41)
@@ -178,6 +178,6 @@ struct ストリームドキュメント {
         let final = try doc.state()
         // 最初のイベントで claim_tile(1m) がスルーされ、対面の河に確定する。
         #expect(final.claim == nil)
-        #expect(final.players[.toimen]?.river.last?.tile == Tile(suit: .man, rank: 1))
+        #expect(final.players[.toimen]?.river.last?.tile == Tile(suit: .萬子, rank: 1))
     }
 }

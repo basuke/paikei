@@ -6,8 +6,8 @@ import Testing
     func evaluate(
         _ concealed: String,
         melds: [Meld] = [],
-        seat: Wind = .east,
-        round: Wind = .east,
+        seat: Wind = .東,
+        round: Wind = .東,
         winType: WinType = .ツモ,
         winTile: String
     ) throws -> (fu: Int, yaku: Set<Yaku>) {

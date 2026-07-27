@@ -159,7 +159,7 @@ extension GameState {
 
         // 文脈フラグの矛盾は風の選び方によらないので、代表の風で先に検査する。
         // 以降の評価呼び出しが WinContextError を投げることはない。
-        try context(round: .east, seat: .east).validate()
+        try context(round: .東, seat: .東).validate()
 
         // ロンはフリテンなら成立しない。和了牌が実際に待ちで、かつ待ちのいずれかが
         // 自分の論理捨て牌（仕様§5: 河 + 鳴かれた牌）にあるときだけ判定する
@@ -186,10 +186,10 @@ extension GameState {
             for: player, concealed: concealed, melds: ps.melds, rules: rules, context: context)
         guard missingWinds.isEmpty else { return .declined(missingWinds) }
 
-        let roundWind = bakaze ?? .east
+        let roundWind = bakaze ?? .東
         // 役・符は風によらないと確かめた上での仮定。残るのは親子（＝支払い）だけ。
-        let seatWind = ps.seat ?? .south
-        if ps.seat == nil { assumptions.insert(.seatWind(.south), at: 0) }
+        let seatWind = ps.seat ?? .南
+        if ps.seat == nil { assumptions.insert(.seatWind(.南), at: 0) }
 
         guard let best = try HandEvaluator(rules: rules)
             .best(concealed: concealed, melds: ps.melds, context: context(round: roundWind, seat: seatWind)) else {

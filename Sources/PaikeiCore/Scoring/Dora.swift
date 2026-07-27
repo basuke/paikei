@@ -6,9 +6,9 @@ extension Tile {
     public var indicatedDora: Tile {
         let next: Int
         switch suit {
-        case .man, .pin, .sou:
+        case .萬子, .筒子, .索子:
             next = rank == 9 ? 1 : rank + 1
-        case .honor:
+        case .字牌:
             next = isWind ? (rank == 4 ? 1 : rank + 1)   // 東南西北の循環
                           : (rank == 7 ? 5 : rank + 1)   // 白發中の循環
         }

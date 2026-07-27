@@ -4,7 +4,7 @@ import Testing
 @Suite("高点法 (HandEvaluator)")
 struct 高点法 {
     func context(
-        seat: Wind = .east, round: Wind = .east,
+        seat: Wind = .東, round: Wind = .東,
         winType: WinType = .ツモ, winTile: String
     ) throws -> WinContext {
         WinContext(seatWind: seat, roundWind: round, winType: winType,
@@ -33,7 +33,7 @@ struct 高点法 {
         #expect(best.yaku.contains(.一盃口))
         // 20 + 999s暗刻8 + ツモ2 + 単騎2 = 32 → 40（両面読みなら30符）
         #expect(best.fu == 40)
-        #expect(best.hand.decomposition?.pair.leadTile == Tile(suit: .man, rank: 5))
+        #expect(best.hand.decomposition?.pair.leadTile == Tile(suit: .萬子, rank: 5))
     }
 
     @Test("同じ入力なら常に同じ読み方を返す（分解の列挙順に依らない）")
@@ -96,7 +96,7 @@ struct 高点法 {
     @Test("評価器はルールを注入して使う（一発なしルール）")
     func 評価器はルールを注入して使う() throws {
         let tiles = try Tile.parseHand("234567m234p55p678s")
-        let ctx = WinContext(seatWind: .east, roundWind: .east, winType: .ツモ,
+        let ctx = WinContext(seatWind: .東, roundWind: .東, winType: .ツモ,
                              winningTile: try Tile.parse("8s"),
                              riichi: true, ippatsu: true)
         let on = try #require(try HandEvaluator(rules: RuleSet(ippatsu: true))

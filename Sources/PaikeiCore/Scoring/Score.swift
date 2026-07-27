@@ -69,7 +69,7 @@ public struct ScoreCalculator: Sendable {
         let fu = evaluation.fu
 
         let base = basePoints(han: han, fu: fu, yakumanCount: yakumanCount)
-        let isDealer = evaluation.hand.context.seatWind == .east
+        let isDealer = evaluation.hand.context.seatWind == .東
 
         return Score(
             han: han, fu: fu,

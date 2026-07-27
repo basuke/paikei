@@ -78,13 +78,10 @@ enum SnapshotDescription {
         }
     }
 
-    private static func bakazeName(_ w: Wind) -> String {
-        switch w {
-        case .east: "東"; case .south: "南"; case .west: "西"; case .north: "北"
-        }
-    }
+    /// case 名がそのまま表示名になる（東/南/西/北）。
+    private static func bakazeName(_ w: Wind) -> String { "\(w)" }
 
-    private static func seatName(_ w: Wind) -> String { bakazeName(w) + "家" }
+    private static func seatName(_ w: Wind) -> String { "\(w)家" }
 
     private static func playerName(_ p: Player) -> String {
         switch p {

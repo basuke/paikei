@@ -16,10 +16,10 @@ struct HandCounts {
     static func index(of tile: Tile) -> Int {
         let base: Int
         switch tile.suit {
-        case .man: base = 0
-        case .pin: base = 9
-        case .sou: base = 18
-        case .honor: base = 27
+        case .萬子: base = 0
+        case .筒子: base = 9
+        case .索子: base = 18
+        case .字牌: base = 27
         }
         return base + tile.rank - 1
     }
@@ -29,10 +29,10 @@ struct HandCounts {
         let suit: Suit
         let base: Int
         switch index {
-        case 0..<9: (suit, base) = (.man, 0)
-        case 9..<18: (suit, base) = (.pin, 9)
-        case 18..<27: (suit, base) = (.sou, 18)
-        default: (suit, base) = (.honor, 27)
+        case 0..<9: (suit, base) = (.萬子, 0)
+        case 9..<18: (suit, base) = (.筒子, 9)
+        case 18..<27: (suit, base) = (.索子, 18)
+        default: (suit, base) = (.字牌, 27)
         }
         return Tile(suit: suit, rank: index - base + 1)!
     }

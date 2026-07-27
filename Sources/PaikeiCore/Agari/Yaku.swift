@@ -257,15 +257,15 @@ public struct YakuDetector: Sendable {
     }
 
     private func hasIttsu(_ sequences: [TileGroup]) -> Bool {
-        [Suit.man, .pin, .sou].contains { suit in
+        [Suit.萬子, .筒子, .索子].contains { suit in
             Set(sequences.filter { $0.leadTile.suit == suit }.map(\.leadTile.rank))
                 .isSuperset(of: [1, 4, 7])
         }
     }
 
     private func isGreen(_ tile: Tile) -> Bool {
-        if tile.suit == .sou { return [2, 3, 4, 6, 8].contains(tile.rank) }
-        return tile.suit == .honor && tile.rank == 6  // 發
+        if tile.suit == .索子 { return [2, 3, 4, 6, 8].contains(tile.rank) }
+        return tile.suit == .字牌 && tile.rank == 6  // 發
     }
 
     private func dragonYaku(_ tile: Tile) -> Yaku {

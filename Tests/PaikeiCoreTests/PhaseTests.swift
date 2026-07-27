@@ -12,7 +12,7 @@ struct フェーズ導出 {
     @Test("リーチ後のツモは afterDrawRiichi")
     func リーチ後のツモはafterDrawRiichi() {
         let ps = PlayerState(hand: try! Tile.parseHand("123m456m789p123s1z").sorted(),  // 13枚
-                             draw: Tile(suit: .honor, rank: 1), riichi: true)
+                             draw: Tile(suit: .字牌, rank: 1), riichi: true)
         let state = GameState(players: [.myself: ps])
         #expect(state.phase == .打牌待ち(.myself, .立直後ツモ))
     }
@@ -20,12 +20,12 @@ struct フェーズ導出 {
     @Test("claim_tile があれば応答待ち")
     func claim_tileがあれば応答待ち() throws {
         let state = try SnapshotParser.parse(loadFixture("from-mjai"))
-        #expect(state.phase == .応答待ち(Tile(suit: .man, rank: 1)!, 打牌者: .toimen, .打牌))
+        #expect(state.phase == .応答待ち(Tile(suit: .萬子, rank: 1)!, 打牌者: .toimen, .打牌))
     }
 
     @Test("claim の kind が ClaimContext に対応する")
     func claimのkindがClaimContextに対応する() {
-        let tile = Tile(suit: .pin, rank: 5)!
+        let tile = Tile(suit: .筒子, rank: 5)!
         for (kind, ctx): (ClaimTile.Kind, ClaimContext) in [
             (.打牌, .打牌), (.立直, .立直宣言),
             (.加槓, .加槓), (.暗槓, .暗槓)

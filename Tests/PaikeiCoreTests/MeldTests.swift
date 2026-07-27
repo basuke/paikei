@@ -7,7 +7,7 @@ struct 副露の表記 {
     func ポン鳴き牌の位置と方向() throws {
         let meld = try Meld.parse("pon(5'55p,L)")
         #expect(meld.kind == .ポン)
-        #expect(meld.tiles == [Tile(suit: .pin, rank: 5)!, Tile(suit: .pin, rank: 5)!, Tile(suit: .pin, rank: 5)!])
+        #expect(meld.tiles == [Tile(suit: .筒子, rank: 5)!, Tile(suit: .筒子, rank: 5)!, Tile(suit: .筒子, rank: 5)!])
         #expect(meld.calledIndex == 0)
         #expect(meld.from == .kamicha)
     }

@@ -4,8 +4,8 @@ import Testing
 @Suite struct スナップショットからの点数解析 {
     /// 平和形（234567m 234p 45s + 99p雀頭）で 6s の両面待ちテンパイの局面を組み立てる。
     func state(
-        bakaze: Wind? = .east, honba: Int? = 1, kyotaku: Int? = 1,
-        dora: [Tile] = [], seat: Wind? = .west, riichi: Bool? = false,
+        bakaze: Wind? = .東, honba: Int? = 1, kyotaku: Int? = 1,
+        dora: [Tile] = [], seat: Wind? = .西, riichi: Bool? = false,
         hand: String = "234567m234p45s99p", melds: [Meld] = [],
         draw: Tile? = nil, claim: ClaimTile? = nil
     ) throws -> GameState {
@@ -47,7 +47,7 @@ import Testing
     }
 
     @Test func 席風が親なら支払いが親のものになる() throws {
-        let s = try state(seat: .east)
+        let s = try state(seat: .東)
         let (score, _, _) = try scored(try s.score(winningTile: try Tile.parse("6s"), winType: .ロン))
         #expect(score.payment == .ロン(1500 + 300))   // 親の1翻30符 + 1本場
     }
@@ -84,7 +84,7 @@ import Testing
         // 場風は不明のままだが、この手（風牌なし）では答えが変わらないので注記も出ない。
         #expect(assumptions == [
             .hypotheticalWin(try Tile.parse("6s"), .ロン),  // 静止状態での試算
-            .seatWind(.south), .notRiichi, .noDoraMarkers, .noHonba, .noKyotaku,
+            .seatWind(.南), .notRiichi, .noDoraMarkers, .noHonba, .noKyotaku,
         ])
         #expect(score.han == 1)               // 平和のみ（ドラ0）
         #expect(score.payment == .ロン(1000))  // 子の1翻30符、本場も供託もなし
@@ -178,11 +178,11 @@ import Testing
 
     @Test("片方だけ不明なら、足りない方だけを挙げる")
     func 片方だけ不明なら足りない方だけを挙げる() throws {
-        let noBakaze = try windTripletState(seat: .west)
+        let noBakaze = try windTripletState(seat: .西)
         #expect(try noBakaze.score(winningTile: try Tile.parse("1z"), winType: .ロン)
                 == .declined([.roundWind]))
 
-        let noSeat = try windTripletState(bakaze: .south)
+        let noSeat = try windTripletState(bakaze: .南)
         #expect(try noSeat.score(winningTile: try Tile.parse("1z"), winType: .ロン)
                 == .declined([.seatWind(.myself)]))
     }
@@ -190,11 +190,11 @@ import Testing
     @Test("風を与えれば答えが出る。与える値で結果が変わることも確認")
     func 風を与えれば答えが出る() throws {
         // 東場・東家以外 → 1z は役牌でないので役なし。
-        #expect(try windTripletState(bakaze: .south, seat: .west)
+        #expect(try windTripletState(bakaze: .南, seat: .西)
             .score(winningTile: try Tile.parse("1z"), winType: .ロン) == .notAWin(.役なし))
 
         // 東場 → 1z が場風になる。
-        let (score, yaku, _) = try scored(try windTripletState(bakaze: .east, seat: .south)
+        let (score, yaku, _) = try scored(try windTripletState(bakaze: .東, seat: .南)
             .score(winningTile: try Tile.parse("1z"), winType: .ロン))
         #expect(yaku == [.場風])
         #expect(score.payment == .ロン(1300))  // 子の1翻40符
@@ -211,7 +211,7 @@ import Testing
             try s.score(winningTile: try Tile.parse("1z"), winType: .ロン))
         #expect(yaku == [.国士無双])
         #expect(score.total == 32000)              // 子の役満
-        #expect(assumptions == [.seatWind(.south)]) // 残るのは親子の仮定だけ
+        #expect(assumptions == [.seatWind(.南)]) // 残るのは親子の仮定だけ
     }
 
     @Test("席風の仮定は子（南家）— 親と決めつけない")
@@ -219,14 +219,14 @@ import Testing
         let s = try state(seat: nil)
         let (score, _, assumptions) = try scored(
             try s.score(winningTile: try Tile.parse("6s"), winType: .ロン))
-        #expect(assumptions.contains(.seatWind(.south)))
+        #expect(assumptions.contains(.seatWind(.南)))
         #expect(score.payment == .ロン(1000 + 300))  // 子の支払い
     }
 
     // MARK: - 断る
 
     @Test func 手牌が不明なら必要な情報を宣言して断る() throws {
-        let s = GameState(players: [.myself: PlayerState(seat: .west, hand: nil)])
+        let s = GameState(players: [.myself: PlayerState(seat: .西, hand: nil)])
         #expect(try s.score(winningTile: try Tile.parse("6s"), winType: .ロン)
                 == .declined([.hand(.myself)]))
     }
@@ -271,10 +271,10 @@ import Testing
     @Test func 形は和了でも役がなければ和了できない() throws {
         // 喰いタンなしルールでの鳴き断么九。ドラがあっても役にはならない。
         let s = GameState(
-            bakaze: .east, honba: 0, kyotaku: 0,
+            bakaze: .東, honba: 0, kyotaku: 0,
             doraMarkers: [try Tile.parse("4p")],
             players: [.myself: PlayerState(
-                seat: .west, hand: try Tile.parseHand("345m678p456s55p"),
+                seat: .西, hand: try Tile.parseHand("345m678p456s55p"),
                 melds: [try Meld.parse("pon(2'22m,L)")], riichi: false)])
         #expect(try s.score(winningTile: try Tile.parse("5p"), winType: .ロン,
                         rules: RuleSet(kuitan: false)) == .notAWin(.役なし))

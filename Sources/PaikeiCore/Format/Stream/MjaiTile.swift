@@ -6,7 +6,7 @@ extension Tile {
         // 字牌: 東南西北白發中。
         let honors: [String: Int] = ["E": 1, "S": 2, "W": 3, "N": 4, "P": 5, "F": 6, "C": 7]
         if let rank = honors[mjai] {
-            self.init(suit: .honor, rank: rank)
+            self.init(suit: .字牌, rank: rank)
             return
         }
 
@@ -22,7 +22,7 @@ extension Tile {
 
     /// この牌のMJAI表記。
     var mjaiNotation: String {
-        if suit == .honor {
+        if suit == .字牌 {
             return ["E", "S", "W", "N", "P", "F", "C"][rank - 1]
         }
         return "\(rank)\(suit.letter)\(isRed ? "r" : "")"

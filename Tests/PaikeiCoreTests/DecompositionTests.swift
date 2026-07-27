@@ -8,7 +8,7 @@ import Testing
         #expect(decomps.count == 1)
         let d = try #require(decomps.first)
         #expect(d.sets.count == 4)
-        #expect(d.pair.tiles == [Tile(suit: .sou, rank: 5)!, Tile(suit: .sou, rank: 5)!])
+        #expect(d.pair.tiles == [Tile(suit: .索子, rank: 5)!, Tile(suit: .索子, rank: 5)!])
     }
 
     @Test("111222333は刻子読みと順子読みの2分解")
@@ -71,7 +71,7 @@ import Testing
         let d = try #require(decomps.first)
         #expect(d.sets.count == 4)
         #expect(d.sets.allSatisfy { $0.isKan })
-        #expect(d.pair.leadTile == Tile(suit: .sou, rank: 9))
+        #expect(d.pair.leadTile == Tile(suit: .索子, rank: 9))
     }
 
     @Test("テンパイ（未和了）は分解ゼロ")

@@ -18,24 +18,24 @@ struct スナップショットパース {
         let state = try SnapshotParser.parse(loadFixture("minimal"))
         let me = try #require(state.players[.myself])
         #expect(me.hand?.count == 13)
-        #expect(me.draw == Tile(suit: .sou, rank: 5))
+        #expect(me.draw == Tile(suit: .索子, rank: 5))
         #expect(state.bakaze == nil)  // 未記述 = 不明
     }
 
     @Test("全景: 卓フィールドと4プレイヤー")
     func 全景卓フィールドと4プレイヤー() throws {
         let state = try SnapshotParser.parse(loadFixture("east2-1"))
-        #expect(state.bakaze == .east)
+        #expect(state.bakaze == .東)
         #expect(state.kyoku == 2)
         #expect(state.honba == 1)
         #expect(state.kyotaku == 1)
-        #expect(state.doraMarkers == [Tile(suit: .pin, rank: 3)!])
+        #expect(state.doraMarkers == [Tile(suit: .筒子, rank: 3)!])
         #expect(state.wall == 42)
         #expect(state.players.count == 4)
 
         let me = try #require(state.players[.myself])
-        #expect(me.seat == .west)
-        #expect(me.draw == Tile(suit: .sou, rank: 5, isRed: true))  // 0s
+        #expect(me.seat == .西)
+        #expect(me.draw == Tile(suit: .索子, rank: 5, isRed: true))  // 0s
 
         let shimo = try #require(state.players[.shimocha])
         #expect(shimo.riichi == true)
@@ -62,7 +62,7 @@ struct スナップショットパース {
     func 牌譜由来claim_tileと被鳴き() throws {
         let state = try SnapshotParser.parse(loadFixture("from-mjai"))
         let claim = try #require(state.claim)
-        #expect(claim.tile == Tile(suit: .man, rank: 1))
+        #expect(claim.tile == Tile(suit: .萬子, rank: 1))
         #expect(claim.from == .toimen)
         #expect(claim.kind == .打牌)
 
@@ -117,7 +117,7 @@ struct スナップショットパースのエラー {
 
         kyoku: 1
         """)
-        #expect(state.bakaze == .east)
+        #expect(state.bakaze == .東)
         #expect(state.kyoku == 1)
     }
 }

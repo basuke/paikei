@@ -6,8 +6,8 @@ import Testing
     func best(
         _ concealed: String,
         melds: [Meld] = [],
-        seat: Wind = .east,
-        round: Wind = .east,
+        seat: Wind = .東,
+        round: Wind = .東,
         winType: WinType = .ツモ,
         winTile: String? = nil,
         riichi: Bool = false,
@@ -63,7 +63,7 @@ import Testing
 
     @Test("役牌: 場風と自風")
     func 役牌場風と自風() throws {
-        #expect(try best("111222z234m567p99s", seat: .south, round: .east).isSuperset(of: [.場風, .自風]))
+        #expect(try best("111222z234m567p99s", seat: .南, round: .東).isSuperset(of: [.場風, .自風]))
     }
 
     @Test func 三色同順() throws {
@@ -94,7 +94,7 @@ import Testing
     }
 
     @Test func 混一色() throws {
-        #expect(try best("123456789m111z22z", seat: .west, round: .south).contains(.混一色))
+        #expect(try best("123456789m111z22z", seat: .西, round: .南).contains(.混一色))
     }
 
     @Test func 清一色() throws {
@@ -133,7 +133,7 @@ import Testing
 @Suite struct 役満 {
     func best(_ concealed: String) throws -> Set<Yaku> {
         let tiles = try Tile.parseHand(concealed)
-        let ctx = WinContext(seatWind: .east, roundWind: .east, winType: .ツモ, winningTile: tiles[0])
+        let ctx = WinContext(seatWind: .東, roundWind: .東, winType: .ツモ, winningTile: tiles[0])
         let hands = Agari.winningHands(concealed: tiles, melds: [], context: ctx)
         let detector = YakuDetector(rules: .standard)
         return try Set(hands.flatMap { try detector.detect($0) })
@@ -176,7 +176,7 @@ import Testing
         let concealed = try Tile.parseHand("99s")
         let melds = try ["ankan(1111m)", "ankan(2222m)", "ankan(3333m)", "ankan(4444m)"]
             .map { try Meld.parse($0) }
-        let ctx = WinContext(seatWind: .east, roundWind: .east, winType: .ツモ,
+        let ctx = WinContext(seatWind: .東, roundWind: .東, winType: .ツモ,
                              winningTile: try Tile.parse("9s"))
         let hands = Agari.winningHands(concealed: concealed, melds: melds, context: ctx)
         let yaku = try Set(hands.flatMap { try YakuDetector().detect($0) })
@@ -189,7 +189,7 @@ import Testing
         let concealed = try Tile.parseHand("99s")
         let melds = try ["ankan(1111m)", "ankan(2222m)", "ankan(3333m)", "daiminkan(4'444m,C)"]
             .map { try Meld.parse($0) }
-        let ctx = WinContext(seatWind: .east, roundWind: .east, winType: .ツモ,
+        let ctx = WinContext(seatWind: .東, roundWind: .東, winType: .ツモ,
                              winningTile: try Tile.parse("9s"))
         let hands = Agari.winningHands(concealed: concealed, melds: melds, context: ctx)
         let yaku = try Set(hands.flatMap { try YakuDetector().detect($0) })

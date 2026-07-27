@@ -7,7 +7,7 @@ struct 受け入れ {
     @Test func テンパイの待ち牌と枚数() throws {
         let uke = Acceptance.ukeire(hand: try Tile.parseHand("123456789m1123p"))
         #expect(uke.shanten == 0)
-        #expect(uke.tiles.map(\.tile) == [Tile(suit: .pin, rank: 1)!, Tile(suit: .pin, rank: 4)!])
+        #expect(uke.tiles.map(\.tile) == [Tile(suit: .筒子, rank: 1)!, Tile(suit: .筒子, rank: 4)!])
         // 1p は手に2枚 → 残り2、4p は0枚 → 残り4
         #expect(uke.total == 6)
     }
@@ -30,7 +30,7 @@ struct 受け入れ {
             visible: try Tile.parseHand("1111m")  // 暗槓の4枚
         )
         #expect(uke.shanten == 0)
-        #expect(uke.tiles.map(\.tile) == [Tile(suit: .sou, rank: 9)!, Tile(suit: .honor, rank: 7)!])
+        #expect(uke.tiles.map(\.tile) == [Tile(suit: .索子, rank: 9)!, Tile(suit: .字牌, rank: 7)!])
         #expect(uke.total == 4)  // 7z:2 + 9s:2
     }
 
@@ -49,7 +49,7 @@ struct 何切る {
         // 123456789m1123p + 孤立の4s。4s を切ればテンパイ(受け入れ6枚)。
         let options = Acceptance.discards(hand: try Tile.parseHand("123456789m1123p4s"))
         let best = try #require(options.first)
-        #expect(best.discard == Tile(suit: .sou, rank: 4))
+        #expect(best.discard == Tile(suit: .索子, rank: 4))
         #expect(best.ukeire.shanten == 0)
         #expect(best.ukeire.total == 6)
     }

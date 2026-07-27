@@ -116,7 +116,7 @@ struct 本場供託と切り上げ満貫 {
     /// 子の平和ドラ3（平和1翻 + ドラ3 = 4翻、平和ロンで30符）。
     /// 切り上げ満貫の代表例なので、役とドラから符・翻が積み上がる経路ごと確認する。
     func pinfuDora3(_ rules: RuleSet, winType: WinType = .ロン) throws -> Score {
-        var ctx = WinContext(seatWind: .south, roundWind: .east, winType: winType,
+        var ctx = WinContext(seatWind: .南, roundWind: .東, winType: winType,
                              winningTile: try Tile.parse("6s"))
         // 2m・2p・4s がドラ（手牌に1枚ずつ）。
         ctx.doraMarkers = try ["1m", "1p", "3s"].map { try Tile.parse($0) }
@@ -154,24 +154,24 @@ struct 本場供託と切り上げ満貫 {
 @Suite struct ドラの計算 {
     @Test("表示牌の次の牌がドラ（数牌は9→1で循環）")
     func 表示牌の次の牌がドラ() throws {
-        #expect(try Tile.parse("3p").indicatedDora == Tile(suit: .pin, rank: 4))
-        #expect(try Tile.parse("9m").indicatedDora == Tile(suit: .man, rank: 1))
-        #expect(try Tile.parse("0s").indicatedDora == Tile(suit: .sou, rank: 6))  // 赤5も5扱い
+        #expect(try Tile.parse("3p").indicatedDora == Tile(suit: .筒子, rank: 4))
+        #expect(try Tile.parse("9m").indicatedDora == Tile(suit: .萬子, rank: 1))
+        #expect(try Tile.parse("0s").indicatedDora == Tile(suit: .索子, rank: 6))  // 赤5も5扱い
     }
 
     @Test("風牌は東南西北、三元牌は白發中で循環する")
     func 風牌と三元牌の循環() throws {
-        #expect(try Tile.parse("1z").indicatedDora == Tile(suit: .honor, rank: 2))  // 東→南
-        #expect(try Tile.parse("4z").indicatedDora == Tile(suit: .honor, rank: 1))  // 北→東
-        #expect(try Tile.parse("5z").indicatedDora == Tile(suit: .honor, rank: 6))  // 白→發
-        #expect(try Tile.parse("7z").indicatedDora == Tile(suit: .honor, rank: 5))  // 中→白
+        #expect(try Tile.parse("1z").indicatedDora == Tile(suit: .字牌, rank: 2))  // 東→南
+        #expect(try Tile.parse("4z").indicatedDora == Tile(suit: .字牌, rank: 1))  // 北→東
+        #expect(try Tile.parse("5z").indicatedDora == Tile(suit: .字牌, rank: 6))  // 白→發
+        #expect(try Tile.parse("7z").indicatedDora == Tile(suit: .字牌, rank: 5))  // 中→白
     }
 
     func hand(_ concealed: String, melds: [String] = [],
               dora: String = "", ura: String = "", riichi: Bool = false,
               win: String) throws -> WinningHand {
         let ctx = WinContext(
-            seatWind: .south, roundWind: .east, winType: .ツモ,
+            seatWind: .南, roundWind: .東, winType: .ツモ,
             winningTile: try Tile.parse(win), riichi: riichi,
             doraMarkers: try Tile.parseHand(dora), uraMarkers: try Tile.parseHand(ura))
         let hands = Agari.winningHands(
@@ -226,7 +226,7 @@ struct 本場供託と切り上げ満貫 {
 @Suite struct 和了から点数まで {
     @Test("平和ツモ（20符3翻）は 700/1300")
     func 平和ツモの支払い() throws {
-        let ctx = WinContext(seatWind: .south, roundWind: .east, winType: .ツモ,
+        let ctx = WinContext(seatWind: .南, roundWind: .東, winType: .ツモ,
                              winningTile: try Tile.parse("6s"), riichi: true)
         let score = try #require(try ScoreCalculator().score(
             concealed: try Tile.parseHand("234567m234p456s99p"), melds: [], context: ctx))
@@ -238,7 +238,7 @@ struct 本場供託と切り上げ満貫 {
     }
 
     @Test func ドラは翻に加算される() throws {
-        let base = WinContext(seatWind: .south, roundWind: .east, winType: .ツモ,
+        let base = WinContext(seatWind: .南, roundWind: .東, winType: .ツモ,
                               winningTile: try Tile.parse("6s"), riichi: true)
         var withDora = base
         withDora.doraMarkers = [try Tile.parse("1p")]  // 2p がドラ、手牌に1枚
@@ -254,7 +254,7 @@ struct 本場供託と切り上げ満貫 {
     @Test("役なしは点数にならない（ドラだけでは和了できない）")
     func 役なしは点数にならない() throws {
         // 喰いタンなしルールでの鳴き断么九。ドラがあっても和了できない。
-        var ctx = WinContext(seatWind: .south, roundWind: .east, winType: .ロン,
+        var ctx = WinContext(seatWind: .南, roundWind: .東, winType: .ロン,
                              winningTile: try Tile.parse("5p"))
         ctx.doraMarkers = [try Tile.parse("4p")]
         let calc = ScoreCalculator(rules: RuleSet(kuitan: false))
@@ -264,14 +264,14 @@ struct 本場供託と切り上げ満貫 {
 
     @Test("和了していなければ nil")
     func 和了していなければnil() throws {
-        let ctx = WinContext(seatWind: .south, roundWind: .east, winType: .ロン,
+        let ctx = WinContext(seatWind: .南, roundWind: .東, winType: .ロン,
                              winningTile: try Tile.parse("5p"))
         #expect(try ScoreCalculator().score(concealed: try Tile.parseHand("123456789m2355p"),
                                         melds: [], context: ctx) == nil)
     }
 
     @Test func 役満はドラを加算しない() throws {
-        var ctx = WinContext(seatWind: .south, roundWind: .east, winType: .ツモ,
+        var ctx = WinContext(seatWind: .南, roundWind: .東, winType: .ツモ,
                              winningTile: try Tile.parse("7z"))
         ctx.doraMarkers = [try Tile.parse("9m")]  // 1m がドラ（手牌に3枚）
         let score = try #require(try ScoreCalculator().score(
@@ -284,7 +284,7 @@ struct 本場供託と切り上げ満貫 {
 
     @Test func 供託は和了者の総取り() throws {
         // 立直のみ（1翻40符）の子ロン。么九暗刻で 20+門前ロン10+8 = 38 → 40符。
-        let ctx = WinContext(seatWind: .south, roundWind: .east, winType: .ロン,
+        let ctx = WinContext(seatWind: .南, roundWind: .東, winType: .ロン,
                              winningTile: try Tile.parse("4s"), riichi: true)
         let score = try #require(try ScoreCalculator().score(
             concealed: try Tile.parseHand("111m234p567p234s99m"), melds: [], context: ctx,

@@ -58,7 +58,7 @@ struct 論理捨て牌履歴 {
         state.players[.toimen] = PlayerState(
             melds: [try Meld.parse("pon(0'55s,C)")])  // 対面が対面（=自分）から赤5をポン
         let mine = state.logicalDiscards(of: .myself)
-        #expect(mine == [Tile(suit: .sou, rank: 5, isRed: true)])
+        #expect(mine == [Tile(suit: .索子, rank: 5, isRed: true)])
     }
 }
 
@@ -146,7 +146,7 @@ struct 安全度 {
     @Test func 赤5は通常5として判定される() throws {
         let a = try analyzer(targetRiver: ["2p", "8p"])
         let r = try judge(a, "0p")
-        #expect(r.tile == Tile(suit: .pin, rank: 5))
+        #expect(r.tile == Tile(suit: .筒子, rank: 5))
         #expect(r.reasons == [.スジ])  // 2と8の中スジ
     }
 
@@ -170,14 +170,14 @@ struct 安全度 {
         let s = try state(river: ["1z", "4p"])
         let status = try #require(s.furiten(of: .myself))
         #expect(status == .フリテン(
-            待ち: [Tile(suit: .pin, rank: 1)!, Tile(suit: .pin, rank: 4)!],
-            捨てた待ち: [Tile(suit: .pin, rank: 4)!]))
+            待ち: [Tile(suit: .筒子, rank: 1)!, Tile(suit: .筒子, rank: 4)!],
+            捨てた待ち: [Tile(suit: .筒子, rank: 4)!]))
     }
 
     @Test func 待ちが河になければクリア() throws {
         let s = try state(river: ["1z", "9s"])
         #expect(try #require(s.furiten(of: .myself))
-                == .フリテンなし(待ち: [Tile(suit: .pin, rank: 1)!, Tile(suit: .pin, rank: 4)!]))
+                == .フリテンなし(待ち: [Tile(suit: .筒子, rank: 1)!, Tile(suit: .筒子, rank: 4)!]))
     }
 
     @Test func 赤5の捨て牌は通常5の待ちと同一視する() throws {
@@ -187,7 +187,7 @@ struct 安全度 {
             Issue.record("フリテンのはず")
             return
         }
-        #expect(matched == [Tile(suit: .pin, rank: 5)!])
+        #expect(matched == [Tile(suit: .筒子, rank: 5)!])
     }
 
     @Test func テンパイしていなければフリテンの概念なし() throws {
@@ -219,7 +219,7 @@ struct 安全度 {
         let s = try state(river: ["4p"])
         // 待ちは 1p/4p。4p が河にあるので 1p のロンもできない。
         #expect(try s.score(winningTile: try Tile.parse("1p"), winType: .ロン)
-                == .notAWin(.フリテン(捨てた待ち: [Tile(suit: .pin, rank: 4)!])))
+                == .notAWin(.フリテン(捨てた待ち: [Tile(suit: .筒子, rank: 4)!])))
     }
 
     @Test func フリテンでもツモは和了できる() throws {

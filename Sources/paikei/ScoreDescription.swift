@@ -126,7 +126,7 @@ enum ScoreDescription {
             let how = winType == .ツモ ? "ツモ" : "ロン"
             return "局面はこの和了を示していないので、\(TileFormatter.tile(tile))の\(how)和了を仮定"
         case .seatWind(let wind):
-            return "席風が不明なので\(windName(wind))家（子）と仮定"
+            return "席風が不明なので\(wind)家（子）と仮定"
                 + "（役・符は風によらず同じですが、実際が親なら支払いが変わります）"
         case .notRiichi:
             return "立直の有無が不明なので立直なしと仮定"
@@ -152,12 +152,6 @@ enum ScoreDescription {
                 + "（この手は自風によって役が変わります。--seat で指定できます）"
         case .winningTileInHand(let tile):
             return "手牌が14枚形ですが、和了牌 \(TileFormatter.tile(tile)) が含まれていません"
-        }
-    }
-
-    private static func windName(_ wind: Wind) -> String {
-        switch wind {
-        case .east: "東"; case .south: "南"; case .west: "西"; case .north: "北"
         }
     }
 

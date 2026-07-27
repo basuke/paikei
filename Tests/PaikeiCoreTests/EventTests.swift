@@ -8,14 +8,14 @@ struct イベント適用 {
         GameState(
             wall: 42,
             players: [.myself: PlayerState(
-                seat: .east, hand: try Tile.parseHand("123m456m789p55s11z"),
+                seat: .東, hand: try Tile.parseHand("123m456m789p55s11z"),
                 score: 25000)])
     }
 
     @Test("ツモ: draw が立ち、山が減り、打牌待ちになる")
     func ツモでdrawが立ち山が減る() throws {
         let s = try base().applying(.ツモ(手番: .myself, 牌: try Tile.parse("6s")))
-        #expect(s.players[.myself]?.draw == Tile(suit: .sou, rank: 6))
+        #expect(s.players[.myself]?.draw == Tile(suit: .索子, rank: 6))
         #expect(s.wall == 41)
         #expect(s.phase == .打牌待ち(.myself, .ツモ後))
     }
@@ -47,14 +47,14 @@ struct イベント適用 {
             .applying(.打牌(手番: .myself, 牌: try Tile.parse("1z"), ツモ切り: false))
         let me = try #require(s.players[.myself])
         #expect(me.hand?.count == 13)
-        #expect(me.hand?.filter { $0.suit == .honor }.count == 1)  // 1z が1枚減った
-        #expect(me.hand?.contains(Tile(suit: .sou, rank: 6)!) == true)  // 6s が合流
+        #expect(me.hand?.filter { $0.suit == .字牌 }.count == 1)  // 1z が1枚減った
+        #expect(me.hand?.contains(Tile(suit: .索子, rank: 6)!) == true)  // 6s が合流
         #expect(me.river.last?.manner == .手出し)
     }
 
     @Test func 手牌に無い牌の打牌は矛盾() throws {
         let s = try base()
-        #expect(throws: EventApplicationError.手牌にない(.myself, Tile(suit: .pin, rank: 1)!)) {
+        #expect(throws: EventApplicationError.手牌にない(.myself, Tile(suit: .筒子, rank: 1)!)) {
             _ = try s.applying(.打牌(手番: .myself, 牌: try Tile.parse("1p"), ツモ切り: false))
         }
     }
@@ -84,7 +84,7 @@ struct イベント適用 {
     @Test func ツモも14枚形でもない状態のツモ切りは矛盾() throws {
         let state = GameState(players: [.myself: PlayerState(
             hand: try Tile.parseHand("123m456m789p55s11z"))])  // 13枚、draw なし
-        #expect(throws: EventApplicationError.手牌にない(.myself, Tile(suit: .sou, rank: 9)!)) {
+        #expect(throws: EventApplicationError.手牌にない(.myself, Tile(suit: .索子, rank: 9)!)) {
             _ = try state.applying(
                 .打牌(手番: .myself, 牌: try Tile.parse("9s"), ツモ切り: true))
         }
@@ -97,7 +97,7 @@ struct イベント適用 {
             .applying(.打牌(手番: .toimen, 牌: try Tile.parse("5p"), ツモ切り: nil))
         let toimen = try #require(s.players[.toimen])
         #expect(toimen.hand == nil)
-        #expect(toimen.river.map(\.tile) == [Tile(suit: .pin, rank: 5)!])
+        #expect(toimen.river.map(\.tile) == [Tile(suit: .筒子, rank: 5)!])
         #expect(s.wall == 41)  // 山は既知なので減る
     }
 
@@ -159,7 +159,7 @@ struct イベント適用 {
     @Test func 河に無い牌は鳴けない() throws {
         var state = try base()
         state.players[.myself]?.hand = try Tile.parseHand("123m456m789p55p11z")
-        #expect(throws: EventApplicationError.捨てられていない(打牌者: .toimen, 牌: Tile(suit: .pin, rank: 5)!)) {
+        #expect(throws: EventApplicationError.捨てられていない(打牌者: .toimen, 牌: Tile(suit: .筒子, rank: 5)!)) {
             _ = try state.applying(.ポン(手番: .myself, 相手: .toimen,
                                        牌: try Tile.parse("5p"),
                                        手牌から: try Tile.parseHand("55p")))
@@ -188,14 +188,14 @@ struct イベント適用 {
         #expect(kakan.players[.myself]?.draw == nil)  // ツモ牌を槓に使った
 
         // ポンが無ければ加槓できない。
-        #expect(throws: EventApplicationError.元のポンがない(.myself, Tile(suit: .sou, rank: 9)!)) {
+        #expect(throws: EventApplicationError.元のポンがない(.myself, Tile(suit: .索子, rank: 9)!)) {
             _ = try ponned.applying(.加槓(手番: .myself, 牌: try Tile.parse("9s")))
         }
     }
 
     @Test func 新ドラ表示() throws {
         let s = try base().applying(.新ドラ(表示牌: try Tile.parse("3p")))
-        #expect(s.doraMarkers == [Tile(suit: .pin, rank: 3)!])
+        #expect(s.doraMarkers == [Tile(suit: .筒子, rank: 3)!])
     }
 }
 
@@ -232,7 +232,7 @@ struct 応答対象の解決 {
         let s = try claimed(kind: .立直).applying(.立直成立(手番: .toimen))
         let toimen = try #require(s.players[.toimen])
         let last = try #require(toimen.river.last)
-        #expect(last.tile == Tile(suit: .pin, rank: 5))
+        #expect(last.tile == Tile(suit: .筒子, rank: 5))
         #expect(last.declaresRiichi)
         // 宣言牌が場に出ている＝リーチを宣言済み。安牌・フリテン判定が依存する。
         #expect(toimen.riichi == true)
