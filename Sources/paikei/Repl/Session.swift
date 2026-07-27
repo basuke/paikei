@@ -6,7 +6,7 @@ import PaikeiCore
 /// 遷移コマンドはイベントを生成して `document.events` に追記するため、
 /// セッションの中身がそのまま `.paikei` として保存できる。
 struct Session {
-    private(set) var document: PaikeiDocument
+    private(set) var document: GameTimeline
     /// t0 から何イベント適用した時点を見ているか。
     private(set) var position: Int
     /// 直近の `load` / `save` のパス。`save` の既定値に使う。
@@ -14,7 +14,7 @@ struct Session {
 
     private(set) var state: GameState
 
-    init(document: PaikeiDocument = PaikeiDocument(snapshot: GameState()), path: String? = nil) throws {
+    init(document: GameTimeline = GameTimeline(snapshot: GameState()), path: String? = nil) throws {
         self.document = document
         self.position = document.events.count
         self.path = path
@@ -60,7 +60,7 @@ struct Session {
 
     mutating func load(_ path: String) throws {
         let text = try String(contentsOfFile: path, encoding: .utf8)
-        document = try PaikeiDocument.parse(text)
+        document = try GameTimeline.parse(text)
         position = document.events.count
         state = try document.state()
         self.path = path

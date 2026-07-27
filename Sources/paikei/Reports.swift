@@ -67,8 +67,22 @@ enum ShantenReport {
 // MARK: - 安全度
 
 enum SafetyReport {
+    /// 履歴込み。立直後に通った牌も現物として扱える。
+    static func text(for timeline: GameTimeline, target: String?, at steps: Int? = nil) throws -> String {
+        try text(for: try timeline.state(at: steps), target: target) { player in
+            try SafetyAnalyzer(timeline: timeline, target: player, at: steps)
+        }
+    }
+
     /// `target` が nil ならリーチしている他家を対象にする。
     static func text(for state: GameState, target: String?) throws -> String {
+        try text(for: state, target: target) { SafetyAnalyzer(state: state, target: $0) }
+    }
+
+    private static func text(
+        for state: GameState, target: String?,
+        analyzer make: (Player) throws -> SafetyAnalyzer
+    ) throws -> String {
         let targets: [Player]
         if let target {
             guard let player = Player(rawValue: target), player != .myself else {
@@ -88,9 +102,9 @@ enum SafetyReport {
         var tiles = hand
         if let draw = me.draw { tiles.append(draw) }
 
-        return targets.map { player in
+        return try targets.map { player in
             SafetyDescription.text(
-                SafetyAnalyzer(state: state, target: player).judge(tiles),
+                try make(player).judge(tiles),
                 target: player, isRiichi: state.players[player]?.riichi == true)
         }.joined(separator: "\n\n")
     }

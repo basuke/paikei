@@ -58,14 +58,28 @@ public struct TileSafety: Sendable, Equatable {
 /// 見えている牌（場 + viewer の手牌）だけを使う。
 public struct SafetyAnalyzer: Sendable {
     public let target: Player
-    /// 対象の論理捨て牌（正規化済み）。
+    /// 対象の論理捨て牌（正規化済み）。履歴があれば立直後に通った牌も含む。
     private let genbutsu: Set<Tile>
     /// 各牌種の「相手が持ち得る」残り枚数（4 − 見え枚数）。
     private let remaining: [Int]
 
+    /// 履歴込みで判定する。立直後に場へ通った牌も現物として扱える（仕様§5）。
+    ///
+    /// `at` は解析する時点（nil なら末尾）。
+    public init(timeline: GameTimeline, target: Player, viewer: Player = .myself,
+                at steps: Int? = nil) throws {
+        let state = try timeline.state(at: steps)
+        let passed = try timeline.通った牌(against: target)
+        self.init(state: state, target: target, viewer: viewer, additionalSafe: passed)
+    }
+
     public init(state: GameState, target: Player, viewer: Player = .myself) {
+        self.init(state: state, target: target, viewer: viewer, additionalSafe: [])
+    }
+
+    private init(state: GameState, target: Player, viewer: Player, additionalSafe: [Tile]) {
         self.target = target
-        self.genbutsu = Set(state.logicalDiscards(of: target).map(\.normalized))
+        self.genbutsu = Set((state.logicalDiscards(of: target) + additionalSafe).map(\.normalized))
 
         var visible = state.visibleTiles(from: viewer)
         if let ps = state.players[viewer] {

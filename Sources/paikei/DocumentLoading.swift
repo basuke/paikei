@@ -4,9 +4,9 @@ import PaikeiCore
 
 /// `.paikei` ファイルの読み込みと、ストリーム適用位置の解決（CLI共通）。
 enum DocumentLoading {
-    static func document(at path: String) throws -> PaikeiDocument {
+    static func document(at path: String) throws -> GameTimeline {
         let text = try String(contentsOfFile: path, encoding: .utf8)
-        return try PaikeiDocument.parse(text)
+        return try GameTimeline.parse(text)
     }
 
     /// `steps` 番目まで適用した状態を返す。省略時は末尾（仕様§8.3の既定）。

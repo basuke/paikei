@@ -34,7 +34,8 @@ enum ReplCommands {
         case "analyze", "nanikiru":
             print(try ShantenReport.text(for: session.state, top: 6))
         case "safety":
-            print(try SafetyReport.text(for: session.state, target: args.first))
+            print(try SafetyReport.text(for: session.document, target: args.first,
+                                        at: session.position))
         case "score":
             print(try ScoreReport.text(for: session.state, args: args))
         case "furiten":
@@ -53,15 +54,20 @@ enum ReplCommands {
             printEvents(session)
 
         // MARK: 遷移
+        // 先頭にプレイヤー名を置ける（省略時は自分）。例: `discard toimen 5p`
         case "tsumo":
-            try transition(&session, .ツモ(手番: .myself, 牌: try args.first.map(Tile.parse)))
+            let (actor, rest) = actorPrefix(args)
+            try transition(&session, .ツモ(手番: actor, 牌: try rest.first.map(Tile.parse)))
         case "discard", "dahai":
-            guard let text = args.first else { throw ReplError("使い方: discard <牌>") }
-            let tsumogiri = args.dropFirst().contains("tsumogiri")
-            try transition(&session, .打牌(手番: .myself, 牌: try Tile.parse(text),
+            let (actor, rest) = actorPrefix(args)
+            guard let text = rest.first else {
+                throw ReplError("使い方: discard [プレイヤー] <牌> [tsumogiri]")
+            }
+            let tsumogiri = rest.dropFirst().contains("tsumogiri")
+            try transition(&session, .打牌(手番: actor, 牌: try Tile.parse(text),
                                           ツモ切り: tsumogiri ? true : nil))
         case "riichi":
-            try transition(&session, .立直(手番: .myself))
+            try transition(&session, .立直(手番: actorPrefix(args).actor))
         case "dora":
             guard let text = args.first else { throw ReplError("使い方: dora <表示牌>") }
             try transition(&session, .新ドラ(表示牌: try Tile.parse(text)))
@@ -73,6 +79,14 @@ enum ReplCommands {
     }
 
     // MARK: - 補助
+
+    /// 先頭の語がプレイヤー名なら取り出す。無ければ自分。
+    private static func actorPrefix(_ args: [String]) -> (actor: Player, rest: [String]) {
+        guard let first = args.first, let player = Player(rawValue: first) else {
+            return (.myself, args)
+        }
+        return (player, Array(args.dropFirst()))
+    }
 
     private static func move(_ session: inout Session, by delta: Int) throws {
         try session.seek(to: session.position + delta)
@@ -124,9 +138,9 @@ enum ReplCommands {
         ストリーム step [N] / back [N]      適用位置を進める / 戻す
                   seek <N>                 t0 から N イベント適用した時点へ
                   events                   イベント一覧
-        遷移      tsumo [牌]               ツモ
-                  discard <牌> [tsumogiri] 打牌
-                  riichi                   リーチ宣言
+        遷移      tsumo [家] [牌]          ツモ（家を省略すると自分）
+                  discard [家] <牌> [tsumogiri]  打牌
+                  riichi [家]              リーチ宣言
                   dora <表示牌>            新ドラ表示
         その他    help / quit
         """

@@ -99,7 +99,7 @@ struct ストリームドキュメント {
 
     @Test("[stream] が無ければイベントは空")
     func streamが無ければイベントは空() throws {
-        let doc = try PaikeiDocument.parse(snapshotText)
+        let doc = try GameTimeline.parse(snapshotText)
         #expect(doc.events.isEmpty)
         #expect(try doc.state() == doc.snapshot)
     }
@@ -115,7 +115,7 @@ struct ストリームドキュメント {
 
         {"type":"dahai","actor":"self","pai":"1z","tsumogiri":false}
         """
-        let doc = try PaikeiDocument.parse(text)
+        let doc = try GameTimeline.parse(text)
         #expect(doc.events.count == 2)
 
         let t0 = try doc.state(at: 0)
@@ -128,8 +128,8 @@ struct ストリームドキュメント {
     }
 
     @Test func 範囲外のステップは型付きエラー() throws {
-        let doc = try PaikeiDocument.parse(snapshotText)
-        #expect(throws: PaikeiDocument.StepOutOfRange(requested: 5, available: 0)) {
+        let doc = try GameTimeline.parse(snapshotText)
+        #expect(throws: GameTimeline.StepOutOfRange(requested: 5, available: 0)) {
             _ = try doc.state(at: 5)
         }
     }
@@ -144,14 +144,14 @@ struct ストリームドキュメント {
         {"type":"dahai","actor":"self","pai":"6s","tsumogiri":true}
         {"type":"reach_accepted","actor":"self"}
         """
-        let once = try PaikeiDocument.parse(text)
-        let twice = try PaikeiDocument.parse(once.serialized())
+        let once = try GameTimeline.parse(text)
+        let twice = try GameTimeline.parse(once.serialized())
         #expect(once == twice)
     }
 
     @Test("[stream] ヘッダの行末コメントは無視する（§3のコメント規則）")
     func streamヘッダの行末コメントは無視する() throws {
-        let doc = try PaikeiDocument.parse(snapshotText + """
+        let doc = try GameTimeline.parse(snapshotText + """
 
 
             [stream] format=mjai self_actor=2  # 自分は絶対座席2
@@ -163,16 +163,16 @@ struct ストリームドキュメント {
     @Test("mjai は self_actor が必須、未知の format はエラー")
     func ヘッダのformat検証() throws {
         #expect(throws: StreamParseError.self_actor欠落) {
-            _ = try PaikeiDocument.parse(snapshotText + "\n[stream] format=mjai\n")
+            _ = try GameTimeline.parse(snapshotText + "\n[stream] format=mjai\n")
         }
         #expect(throws: StreamParseError.未知のformat("tenhou")) {
-            _ = try PaikeiDocument.parse(snapshotText + "\n[stream] format=tenhou\n")
+            _ = try GameTimeline.parse(snapshotText + "\n[stream] format=tenhou\n")
         }
     }
 
     @Test("from-mjai フィクスチャ: mjai ストリームを再生できる")
     func mjaiストリームを再生できる() throws {
-        let doc = try PaikeiDocument.parse(loadFixture("from-mjai"))
+        let doc = try GameTimeline.parse(loadFixture("from-mjai"))
         #expect(!doc.events.isEmpty)
 
         let final = try doc.state()

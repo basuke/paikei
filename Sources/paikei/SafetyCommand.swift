@@ -23,10 +23,9 @@ struct SafetyCommand: ParsableCommand {
     var at: Int?
 
     func run() throws {
-        let state = try DocumentLoading.state(at: path, steps: at)
-
+        let timeline = try DocumentLoading.document(at: path)
         do {
-            print(try SafetyReport.text(for: state, target: target))
+            print(try SafetyReport.text(for: timeline, target: target, at: at))
         } catch let error as ReportError {
             throw ValidationError(error.description)
         }

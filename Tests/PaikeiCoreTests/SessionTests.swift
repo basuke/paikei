@@ -2,7 +2,7 @@ import Testing
 @testable import PaikeiCore
 
 /// REPL セッションの土台となる「初期局面 + イベント列 + 適用位置」の振る舞い（仕様§8.4）。
-/// セッション型自体は CLI 側にあるため、ここではコアの `PaikeiDocument` で同じ動きを固定する。
+/// セッション型自体は CLI 側にあるため、ここではコアの `GameTimeline` で同じ動きを固定する。
 @Suite("セッションの保存と再現")
 struct セッションの保存と再現 {
     let text = """
@@ -14,19 +14,19 @@ struct セッションの保存と再現 {
         """
 
     @Test func 操作履歴を足したドキュメントがラウンドトリップする() throws {
-        var doc = try PaikeiDocument.parse(text)
+        var doc = try GameTimeline.parse(text)
         doc.events = [
             .ツモ(手番: .myself, 牌: try Tile.parse("6s")),
             .打牌(手番: .myself, 牌: try Tile.parse("1z"), ツモ切り: false),
             .立直(手番: .myself),
         ]
-        let reloaded = try PaikeiDocument.parse(doc.serialized())
+        let reloaded = try GameTimeline.parse(doc.serialized())
         #expect(reloaded == doc)
         #expect(try reloaded.state() == doc.state())
     }
 
     @Test func 途中の位置と末尾で状態が変わる() throws {
-        var doc = try PaikeiDocument.parse(text)
+        var doc = try GameTimeline.parse(text)
         doc.events = [
             .ツモ(手番: .myself, 牌: try Tile.parse("6s")),
             .打牌(手番: .myself, 牌: try Tile.parse("1z"), ツモ切り: false),
@@ -38,7 +38,7 @@ struct セッションの保存と再現 {
 
     @Test func 巻き戻した位置からの操作は先の履歴を捨てる() throws {
         // REPL の apply が行う「分岐は持たない」挙動を、同じ手順で確認する。
-        var doc = try PaikeiDocument.parse(text)
+        var doc = try GameTimeline.parse(text)
         doc.events = [
             .ツモ(手番: .myself, 牌: try Tile.parse("6s")),
             .打牌(手番: .myself, 牌: try Tile.parse("1z"), ツモ切り: false),
