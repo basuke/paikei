@@ -24,6 +24,12 @@ struct ShantenCommand: ParsableCommand {
         guard let me = state.players[.myself], let hand = me.hand else {
             throw ValidationError("自分の手牌が不明のためシャンテン計算ができません")
         }
+        // 多牌・少牌にシャンテン数を出しても意味がない（和了放棄）。数字を出さずに断る。
+        if let defect = me.handDefect {
+            throw ValidationError(
+                "\(SnapshotDescription.defectName(defect))です"
+                + "（手牌\(hand.count)枚、副露\(me.melds.count)組）。和了放棄のため解析しません")
+        }
         let melds = me.melds.count
         let visible = state.visibleTiles(from: .myself)
         var tiles = hand

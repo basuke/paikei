@@ -10,16 +10,19 @@ public enum FuritenStatus: Sendable, Equatable {
     case clear(waits: [Tile])
     /// テンパイしていない（フリテンの概念が適用されない）。
     case notTenpai(shanten: Int)
+    /// 多牌・少牌。和了放棄なので聴牌ともみなさない。
+    case handDefect(HandDefect)
 }
 
 extension GameState {
     /// `player` のフリテン状態。
     ///
-    /// 手牌が不明、または枚数が `13 − 3×副露` でない（14枚形は打牌前で
-    /// 待ちが定まらない）ときは nil を返す。
+    /// 手牌が不明、または14枚形（打牌前で待ちが定まらない）ときは nil を返す。
+    /// 多牌・少牌は `.handDefect` として返す。
     public func furiten(of player: Player) -> FuritenStatus? {
-        guard let ps = players[player], let hand = ps.hand,
-              hand.count == 13 - 3 * ps.melds.count else { return nil }
+        guard let ps = players[player], let hand = ps.hand else { return nil }
+        if let defect = ps.handDefect { return .handDefect(defect) }
+        guard hand.count == 13 - 3 * ps.melds.count else { return nil }
 
         let ukeire = Acceptance.ukeire(hand: hand, melds: ps.melds.count)
         guard ukeire.shanten == 0 else { return .notTenpai(shanten: ukeire.shanten) }

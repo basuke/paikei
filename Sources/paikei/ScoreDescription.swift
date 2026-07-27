@@ -13,6 +13,8 @@ enum ScoreDescription {
             case .furiten(let matched):
                 return "フリテンです（待ちの \(TileFormatter.tiles(matched)) が自分の捨て牌にあります）。"
                     + "ロン和了はできません"
+            case .handDefect(let defect):
+                return "\(SnapshotDescription.defectName(defect))です。和了放棄のため和了できません"
             }
         case let .declined(requirements):
             var lines = ["情報が足りないため計算できません:"]
@@ -148,8 +150,6 @@ enum ScoreDescription {
         case .seatWind(let player):
             return "\(playerName(player))の席風"
                 + "（この手は自風によって役が変わります。--seat で指定できます）"
-        case let .handSize(actual, expected):
-            return "手牌の枚数が合いません（\(actual)枚。\(expected)枚か\(expected + 1)枚のはず）"
         case .winningTileInHand(let tile):
             return "手牌が14枚形ですが、和了牌 \(TileFormatter.tile(tile)) が含まれていません"
         }

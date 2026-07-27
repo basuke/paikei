@@ -63,8 +63,6 @@ public enum Requirement: Sendable, Equatable {
     case roundWind
     /// 席風が不明で、どれと仮定するかで役・符が変わってしまう。
     case seatWind(Player)
-    /// 手牌の枚数が `13 − 3×副露` にも `+1` にも一致しない。
-    case handSize(actual: Int, expected: Int)
     /// 手牌が14枚形なのに、和了牌がその中に無い。
     case winningTileInHand(Tile)
 }
@@ -78,6 +76,8 @@ public enum NoWinReason: Sendable, Equatable {
     /// フリテン（ロンのみ）。`matched` が自分の論理捨て牌にある待ち。
     /// 待ちのいずれか1つでも捨てていれば全ての待ちでロンできない。
     case furiten(matched: [Tile])
+    /// 多牌・少牌。和了放棄なので形がどうであれ和了できない。
+    case handDefect(HandDefect)
 }
 
 /// 点数解析の結果。
@@ -111,19 +111,19 @@ extension GameState {
             return .declined([.hand(player)])
         }
 
+        // 多牌・少牌は和了放棄。形がどうであれ和了できない。
+        if let defect = ps.handDefect { return .notAWin(.handDefect(defect)) }
+
         // 和了牌を含む手牌を組み立てる。`hand:` が14枚形なら既に含まれている。
-        let expected = 13 - 3 * ps.melds.count
+        // 枚数は上の検査で「基準」か「基準+1」に絞られている。
         let concealed: [Tile]
-        switch hand.count {
-        case expected:
-            concealed = hand + [winningTile]
-        case expected + 1:
+        if hand.count == 13 - 3 * ps.melds.count + 1 {
             guard hand.contains(where: { $0.normalized == winningTile.normalized }) else {
                 return .declined([.winningTileInHand(winningTile)])
             }
             concealed = hand
-        default:
-            return .declined([.handSize(actual: hand.count, expected: expected)])
+        } else {
+            concealed = hand + [winningTile]
         }
 
         var assumptions: [Assumption] = []

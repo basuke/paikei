@@ -33,6 +33,7 @@ enum SnapshotDescription {
         if let seat = ps.seat { parts.append(seatName(seat)) }
         if let score = ps.score { parts.append("\(score)点") }
         if ps.riichi == true { parts.append("リーチ") }
+        if let defect = ps.handDefect { parts.append("⚠\(defectName(defect))") }
         if let hand = ps.hand { parts.append("手牌:\(TileFormatter.hand(hand))") }
         if let draw = ps.draw { parts.append("ツモ:\(TileFormatter.tile(draw))") }
         if !ps.melds.isEmpty { parts.append("副露:" + TileFormatter.melds(ps.melds)) }
@@ -66,6 +67,14 @@ enum SnapshotDescription {
         case .riichiDeclaration: "リーチ宣言牌"
         case .kakan: "槍槓"
         case .ankan: "国士の槍槓"
+        }
+    }
+
+    /// 多牌・少牌の表示。和了放棄になるため目立たせる。
+    static func defectName(_ defect: HandDefect) -> String {
+        switch defect {
+        case .short(let by): "少牌(\(by)枚不足)"
+        case .long(let by): "多牌(\(by)枚超過)"
         }
     }
 

@@ -246,11 +246,12 @@ struct SnapshotScoringTests {
                 == .declined([.hand(.toimen)]))
     }
 
-    @Test("手牌の枚数が合わなければ断る（黙って推測しない）")
+    @Test("枚数が合わない手牌は多牌・少牌として和了放棄")
     func wrongHandSize() throws {
+        // 情報の不足（declined）ではなく、判明済みの状態（和了できない）として答える。
         let s = try state(hand: "234567m234p456s")  // 12枚
         #expect(try s.score(winningTile: try Tile.parse("6s"), winType: .ron)
-                == .declined([.handSize(actual: 12, expected: 13)]))
+                == .notAWin(.handDefect(.short(by: 1))))
     }
 
     @Test("14枚形なら和了牌が手牌に含まれている必要がある")
