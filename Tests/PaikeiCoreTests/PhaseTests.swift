@@ -58,6 +58,6 @@ struct フェーズ導出 {
         let ps = PlayerState(hand: try! Tile.parseHand("123m456m789p55s111z").sorted())  // 14枚
         #expect(ps.hand?.count == 14)
         let state = GameState(players: [.myself: ps])
-        #expect(state.phase == .打牌待ち(.myself, .不明))
+        #expect(state.phase == .打牌待ち(.myself, nil))
     }
 }

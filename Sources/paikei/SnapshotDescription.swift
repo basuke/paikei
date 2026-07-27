@@ -52,12 +52,12 @@ enum SnapshotDescription {
         }
     }
 
-    private static func discardContext(_ c: DiscardContext) -> String {
+    private static func discardContext(_ c: DiscardContext?) -> String {
         switch c {
         case .ツモ後: "ツモ直後"
         case .立直後ツモ: "リーチ後ツモ"
         case .鳴き後: "鳴き直後"
-        case .不明: "由来不明"
+        case nil: "由来不明"
         }
     }
 

@@ -19,7 +19,7 @@ extension GameState {
         // 2a. draw: があるプレイヤーは打牌待ち（ツモ直後）。
         for player in Player.allCases {
             guard let ps = players[player], ps.draw != nil else { continue }
-            let context: DiscardContext = (ps.riichi == true) ? .立直後ツモ : .ツモ後
+            let context: DiscardContext? = (ps.riichi == true) ? .立直後ツモ : .ツモ後
             return .打牌待ち(player, context)
         }
 
@@ -27,11 +27,11 @@ extension GameState {
         for player in Player.allCases {
             guard let ps = players[player], let hand = ps.hand else { continue }
             if hand.count == 13 - 3 * ps.melds.count + 1 {
-                let context: DiscardContext
+                let context: DiscardContext?
                 switch ps.discardOrigin {
                 case .ツモ: context = (ps.riichi == true) ? .立直後ツモ : .ツモ後
                 case .鳴き: context = .鳴き後
-                case nil: context = .不明
+                case nil: context = nil
                 }
                 return .打牌待ち(player, context)
             }

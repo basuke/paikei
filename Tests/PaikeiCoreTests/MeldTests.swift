@@ -103,7 +103,7 @@ struct 河の表記 {
     func 打牌属性の手出しとツモ切り() throws {
         #expect(try RiverTile.parse("9m+").manner == .手出し)
         #expect(try RiverTile.parse("1z-").manner == .ツモ切り)
-        #expect(try RiverTile.parse("6p").manner == .不明)
+        #expect(try RiverTile.parse("6p").manner == nil)
     }
 
     @Test("状態属性: リーチ宣言と被鳴き")
@@ -129,7 +129,7 @@ struct 河の表記 {
         #expect(river.count == 5)
         #expect(river[2].wasCalledAway)
         #expect(river[3].declaresRiichi)
-        #expect(river[4].manner == .不明)
+        #expect(river[4].manner == nil)
     }
 
     @Test func 属性の重複はエラー() {

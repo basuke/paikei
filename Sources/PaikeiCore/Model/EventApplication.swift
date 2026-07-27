@@ -108,7 +108,7 @@ extension GameState {
 
     private mutating func applyDahai(actor: Player, tile: Tile, tsumogiri: Bool?) throws {
         var ps = players[actor] ?? PlayerState()
-        let manner: RiverTile.Manner
+        let manner: RiverTile.Manner?
 
         switch tsumogiri {
         case true:
@@ -133,7 +133,7 @@ extension GameState {
             } else {
                 try removeForTedashi(tile, from: &ps, actor: actor)
             }
-            manner = .不明
+            manner = nil
         }
 
         // リーチ宣言牌: riichi が立っていて、まだ河に宣言牌が無い最初の打牌。

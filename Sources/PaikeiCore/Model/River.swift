@@ -1,17 +1,15 @@
 /// 河に捨てられた1枚とその属性（仕様§5）。
 public struct RiverTile: Hashable, Sendable {
-    /// 打牌属性（履歴層）。ソースが知らなければ `.unknown`。
     public enum Manner: Sendable {
         /// `+`
         case 手出し
         /// `-`
         case ツモ切り
-        /// 無印。
-        case 不明
     }
 
     public let tile: Tile
-    public let manner: Manner
+    /// 打牌属性（履歴層）。ソースが知らなければ nil（無印）。
+    public let manner: Manner?
     /// リーチ宣言牌（`*`、実卓で横向き）。
     public let declaresRiichi: Bool
     /// この位置で捨てたが鳴かれて物理的に不在（`^`、牌譜のみ）。
@@ -19,7 +17,7 @@ public struct RiverTile: Hashable, Sendable {
 
     public init(
         tile: Tile,
-        manner: Manner = .不明,
+        manner: Manner? = nil,
         declaresRiichi: Bool = false,
         wasCalledAway: Bool = false
     ) {
@@ -54,17 +52,17 @@ extension RiverTile {
         let tilePart = token[token.startIndex...suitIndex]
         let tile = try Tile.parse(tilePart)
 
-        var manner: Manner = .不明
+        var manner: Manner?
         var riichi = false
         var calledAway = false
 
         for char in token[token.index(after: suitIndex)...] {
             switch char {
             case "+":
-                guard manner == .不明 else { throw RiverNotationError.打牌属性の重複(String(text)) }
+                guard manner == nil else { throw RiverNotationError.打牌属性の重複(String(text)) }
                 manner = .手出し
             case "-":
-                guard manner == .不明 else { throw RiverNotationError.打牌属性の重複(String(text)) }
+                guard manner == nil else { throw RiverNotationError.打牌属性の重複(String(text)) }
                 manner = .ツモ切り
             case "*":
                 guard !riichi else { throw RiverNotationError.状態属性の重複(String(text)) }
@@ -85,7 +83,7 @@ extension RiverTile {
         switch manner {
         case .手出し: result.append("+")
         case .ツモ切り: result.append("-")
-        case .不明: break
+        case nil: break
         }
         if declaresRiichi { result.append("*") }
         if wasCalledAway { result.append("^") }
