@@ -6,24 +6,24 @@ struct EventCodingTests {
     @Test("全イベント種別が paikei 方言でラウンドトリップする")
     func roundTrip() throws {
         let events: [Event] = [
-            .tsumo(actor: .myself, tile: try Tile.parse("6s")),
-            .tsumo(actor: .toimen, tile: nil),
-            .dahai(actor: .myself, tile: try Tile.parse("1z"), tsumogiri: false),
-            .dahai(actor: .kamicha, tile: try Tile.parse("0p"), tsumogiri: true),
-            .dahai(actor: .toimen, tile: try Tile.parse("9m"), tsumogiri: nil),
-            .chi(actor: .myself, tile: try Tile.parse("4m"), consumed: try Tile.parseHand("35m")),
-            .pon(actor: .shimocha, target: .toimen, tile: try Tile.parse("5p"),
-                 consumed: try Tile.parseHand("05p")),
-            .daiminkan(actor: .myself, target: .kamicha, tile: try Tile.parse("9s"),
-                       consumed: try Tile.parseHand("999s")),
-            .kakan(actor: .myself, tile: try Tile.parse("5s")),
-            .ankan(actor: .toimen, consumed: try Tile.parseHand("1111z")),
-            .reach(actor: .shimocha),
-            .reachAccepted(actor: .shimocha),
-            .dora(marker: try Tile.parse("3p")),
-            .hora(actor: .myself, target: .toimen, tile: try Tile.parse("1m")),
-            .hora(actor: .myself, target: .myself, tile: nil),
-            .ryukyoku,
+            .ツモ(手番: .myself, 牌: try Tile.parse("6s")),
+            .ツモ(手番: .toimen, 牌: nil),
+            .打牌(手番: .myself, 牌: try Tile.parse("1z"), ツモ切り: false),
+            .打牌(手番: .kamicha, 牌: try Tile.parse("0p"), ツモ切り: true),
+            .打牌(手番: .toimen, 牌: try Tile.parse("9m"), ツモ切り: nil),
+            .チー(手番: .myself, 牌: try Tile.parse("4m"), 手牌から: try Tile.parseHand("35m")),
+            .ポン(手番: .shimocha, 相手: .toimen, 牌: try Tile.parse("5p"),
+                 手牌から: try Tile.parseHand("05p")),
+            .大明槓(手番: .myself, 相手: .kamicha, 牌: try Tile.parse("9s"),
+                       手牌から: try Tile.parseHand("999s")),
+            .加槓(手番: .myself, 牌: try Tile.parse("5s")),
+            .暗槓(手番: .toimen, 手牌から: try Tile.parseHand("1111z")),
+            .立直(手番: .shimocha),
+            .立直成立(手番: .shimocha),
+            .新ドラ(表示牌: try Tile.parse("3p")),
+            .和了(手番: .myself, 相手: .toimen, 牌: try Tile.parse("1m")),
+            .和了(手番: .myself, 相手: .myself, 牌: nil),
+            .流局,
         ]
         for event in events {
             let line = EventCoding.line(for: event)
@@ -36,9 +36,9 @@ struct EventCodingTests {
     func specExamples() throws {
         let line = #"{"type":"pon","actor":"toimen","target":"self","pai":"1z","consumed":["1z","1z"]}"#
         let event = try EventCoding.event(fromLine: line, format: .paikei)
-        #expect(event == .pon(actor: .toimen, target: .myself,
-                              tile: try Tile.parse("1z"),
-                              consumed: try Tile.parseHand("11z")))
+        #expect(event == .ポン(手番: .toimen, 相手: .myself,
+                              牌: try Tile.parse("1z"),
+                              手牌から: try Tile.parseHand("11z")))
     }
 
     @Test("不正な行は型付きエラー")
@@ -78,14 +78,14 @@ struct MjaiDialectTests {
         let format = StreamFormat.mjai(selfActor: 2)
         let tsumo = try EventCoding.event(
             fromLine: #"{"type":"tsumo","actor":2,"pai":"W"}"#, format: format)
-        #expect(tsumo == .tsumo(actor: .myself, tile: try Tile.parse("3z")))
+        #expect(tsumo == .ツモ(手番: .myself, 牌: try Tile.parse("3z")))
 
         let pon = try EventCoding.event(
             fromLine: #"{"type":"pon","actor":3,"target":0,"pai":"5pr","consumed":["5p","5p"]}"#,
             format: format)
-        #expect(pon == .pon(actor: .shimocha, target: .toimen,
-                            tile: Tile(suit: .pin, rank: 5, isRed: true)!,
-                            consumed: try Tile.parseHand("55p")))
+        #expect(pon == .ポン(手番: .shimocha, 相手: .toimen,
+                            牌: Tile(suit: .pin, rank: 5, isRed: true)!,
+                            手牌から: try Tile.parseHand("55p")))
     }
 }
 
@@ -161,7 +161,7 @@ struct PaikeiDocumentTests {
             [stream] format=mjai self_actor=2  # 自分は絶対座席2
             {"type":"tsumo","actor":2,"pai":"6s"}
             """)
-        #expect(doc.events == [.tsumo(actor: .myself, tile: try Tile.parse("6s"))])
+        #expect(doc.events == [.ツモ(手番: .myself, 牌: try Tile.parse("6s"))])
     }
 
     @Test("mjai は self_actor が必須、未知の format はエラー")

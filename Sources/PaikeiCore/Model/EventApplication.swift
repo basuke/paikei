@@ -12,59 +12,61 @@ extension GameState {
     public func applying(_ event: Event) throws -> GameState {
         var state = self
         switch event {
-        case let .tsumo(actor, tile):
+        case let .ツモ(actor, tile):
             state.resolveClaim()
             if let wall = state.wall {
-                guard wall > 0 else { throw EventApplicationError.wallEmpty }
+                guard wall > 0 else { throw EventApplicationError.山が空 }
                 state.wall = wall - 1
             }
             state.update(actor) { $0.draw = tile }
 
-        case let .dahai(actor, tile, tsumogiri):
+        case let .打牌(actor, tile, tsumogiri):
             state.resolveClaim()
             try state.applyDahai(actor: actor, tile: tile, tsumogiri: tsumogiri)
 
-        case let .chi(actor, tile, consumed):
+        case let .チー(actor, tile, consumed):
             try state.applyCall(kind: .chi, actor: actor, target: actor.seated(.kamicha),
                                 tile: tile, consumed: consumed, event: event)
 
-        case let .pon(actor, target, tile, consumed):
+        case let .ポン(actor, target, tile, consumed):
             try state.applyCall(kind: .pon, actor: actor, target: target,
                                 tile: tile, consumed: consumed, event: event)
 
-        case let .daiminkan(actor, target, tile, consumed):
+        case let .大明槓(actor, target, tile, consumed):
             try state.applyCall(kind: .daiminkan, actor: actor, target: target,
                                 tile: tile, consumed: consumed, event: event)
 
-        case let .kakan(actor, tile):
+        case let .加槓(actor, tile):
             state.resolveClaim()
             try state.applyKakan(actor: actor, tile: tile)
 
-        case let .ankan(actor, consumed):
+        case let .暗槓(actor, consumed):
             state.resolveClaim()
-            guard consumed.count == 4 else { throw EventApplicationError.invalidConsumed(event) }
+            guard consumed.count == 4 else {
+                throw EventApplicationError.構成牌の枚数が不正(event)
+            }
             try state.removeConcealed(consumed, from: actor)
             state.update(actor) {
                 $0.melds.append(Meld(kind: .ankan, tiles: consumed, calledIndex: nil, from: nil))
             }
 
-        case let .reach(actor):
+        case let .立直(actor):
             state.resolveClaim()
             state.update(actor) { $0.riichi = true }
 
-        case let .reachAccepted(actor):
+        case let .立直成立(actor):
             state.resolveClaim()
             if let kyotaku = state.kyotaku { state.kyotaku = kyotaku + 1 }
             state.update(actor) {
-                // reach を伴わない生ログ（宣言が t0 より前）でもリーチ中として扱う。
+                // 立直を伴わない生ログ（宣言が t0 より前）でもリーチ中として扱う。
                 $0.riichi = true
                 if let score = $0.score { $0.score = score - 1000 }
             }
 
-        case let .dora(marker):
+        case let .新ドラ(marker):
             state.doraMarkers.append(marker)
 
-        case let .hora(actor, target, tile):
+        case let .和了(actor, target, tile):
             // ロンなら応答対象を消費する（河に入っていた場合はそのまま残る）。
             // 点数の移動は解析（score）の領分で、状態はここで打ち止め。
             if actor != target, let claim = state.claim, claim.from == target,
@@ -72,7 +74,7 @@ extension GameState {
                 state.claim = nil
             }
 
-        case .ryukyoku:
+        case .流局:
             state.resolveClaim()
         }
         return state
@@ -112,7 +114,7 @@ extension GameState {
         case true:
             if let draw = ps.draw {
                 guard draw.normalized == tile.normalized else {
-                    throw EventApplicationError.tsumogiriMismatch(expected: draw, actual: tile)
+                    throw EventApplicationError.ツモ切りの不一致(ツモ牌: draw, 打牌: tile)
                 }
                 ps.draw = nil
             } else {
@@ -146,7 +148,7 @@ extension GameState {
         if var hand = ps.hand {
             guard let index = hand.firstIndex(where: { $0 == tile })
                 ?? hand.firstIndex(where: { $0.normalized == tile.normalized }) else {
-                throw EventApplicationError.tileNotInHand(actor, tile)
+                throw EventApplicationError.手牌にない(actor, tile)
             }
             hand.remove(at: index)
             if let draw = ps.draw { hand.append(draw) }
@@ -163,7 +165,7 @@ extension GameState {
     ) throws {
         let needed = kind == .daiminkan ? 3 : 2
         guard consumed.count == needed else {
-            throw EventApplicationError.invalidConsumed(event)
+            throw EventApplicationError.構成牌の枚数が不正(event)
         }
         try consumeDiscard(of: target, tile: tile)
         try removeConcealed(consumed, from: actor)
@@ -187,7 +189,7 @@ extension GameState {
         guard let index = ps.river.lastIndex(where: {
             !$0.wasCalledAway && $0.tile.normalized == tile.normalized
         }) else {
-            throw EventApplicationError.tileNotDiscarded(by: target, tile)
+            throw EventApplicationError.捨てられていない(打牌者: target, 牌: tile)
         }
         let old = ps.river[index]
         ps.river[index] = RiverTile(tile: old.tile, manner: old.manner,
@@ -200,7 +202,7 @@ extension GameState {
         guard let index = ps.melds.firstIndex(where: {
             $0.kind == .pon && $0.tiles[0].normalized == tile.normalized
         }) else {
-            throw EventApplicationError.noPonForKakan(actor, tile)
+            throw EventApplicationError.元のポンがない(actor, tile)
         }
         players[actor] = ps
         try removeConcealed([tile], from: actor)
@@ -229,7 +231,7 @@ extension GameState {
         for tile in tiles {
             guard let index = pool.firstIndex(where: { $0 == tile })
                 ?? pool.firstIndex(where: { $0.normalized == tile.normalized }) else {
-                throw EventApplicationError.tileNotInHand(player, tile)
+                throw EventApplicationError.手牌にない(player, tile)
             }
             pool.remove(at: index)
         }

@@ -50,32 +50,32 @@ struct ReplayCommand: ParsableCommand {
 enum EventDescription {
     static func text(_ event: Event) -> String {
         switch event {
-        case let .tsumo(actor, tile):
+        case let .ツモ(actor, tile):
             return "\(name(actor))がツモ\(tile.map { "（\(TileFormatter.tile($0))）" } ?? "")"
-        case let .dahai(actor, tile, tsumogiri):
+        case let .打牌(actor, tile, tsumogiri):
             let manner = tsumogiri.map { $0 ? "ツモ切り" : "手出し" } ?? "打牌"
             return "\(name(actor))が\(TileFormatter.tile(tile))を\(manner)"
-        case let .chi(actor, tile, _):
+        case let .チー(actor, tile, _):
             return "\(name(actor))が\(TileFormatter.tile(tile))をチー"
-        case let .pon(actor, target, tile, _):
+        case let .ポン(actor, target, tile, _):
             return "\(name(actor))が\(name(target))の\(TileFormatter.tile(tile))をポン"
-        case let .daiminkan(actor, target, tile, _):
+        case let .大明槓(actor, target, tile, _):
             return "\(name(actor))が\(name(target))の\(TileFormatter.tile(tile))を大明槓"
-        case let .kakan(actor, tile):
+        case let .加槓(actor, tile):
             return "\(name(actor))が\(TileFormatter.tile(tile))を加槓"
-        case let .ankan(actor, consumed):
+        case let .暗槓(actor, consumed):
             let tile = consumed.first.map { TileFormatter.tile($0.normalized) } ?? "?"
             return "\(name(actor))が\(tile)を暗槓"
-        case let .reach(actor):
+        case let .立直(actor):
             return "\(name(actor))がリーチ宣言"
-        case let .reachAccepted(actor):
+        case let .立直成立(actor):
             return "\(name(actor))のリーチ成立"
-        case let .dora(marker):
+        case let .新ドラ(marker):
             return "新ドラ表示: \(TileFormatter.tile(marker))"
-        case let .hora(actor, target, tile):
+        case let .和了(actor, target, tile):
             let how = actor == target ? "ツモ和了" : "\(name(target))からロン"
             return "\(name(actor))が\(how)\(tile.map { "（\(TileFormatter.tile($0))）" } ?? "")"
-        case .ryukyoku:
+        case .流局:
             return "流局"
         }
     }

@@ -3,44 +3,43 @@
 /// スナップショットを初期局面 t0 とし、イベントを順に適用して時間発展させる。
 /// REPL の遷移コマンド、ストリーム再生、将来の MJAI bot モードが共有する型。
 public enum Event: Sendable, Equatable {
-    /// ツモ。他家のツモ牌は観測できないことがある（`tile: nil`）。
-    case tsumo(actor: Player, tile: Tile?)
-    /// 打牌。`tsumogiri` が nil なら手出し/ツモ切り不明（カメラ由来）。
-    case dahai(actor: Player, tile: Tile, tsumogiri: Bool?)
-    /// チー。相手は常に上家なので持たない。
-    case chi(actor: Player, tile: Tile, consumed: [Tile])
-    case pon(actor: Player, target: Player, tile: Tile, consumed: [Tile])
-    case daiminkan(actor: Player, target: Player, tile: Tile, consumed: [Tile])
-    /// 加槓。既存のポンに `tile` を加える。
-    case kakan(actor: Player, tile: Tile)
-    /// 暗槓。
-    case ankan(actor: Player, consumed: [Tile])
-    /// リーチ宣言（次の打牌が宣言牌）。
-    case reach(actor: Player)
-    /// リーチ成立（供託+1、宣言者の持ち点−1000）。
-    case reachAccepted(actor: Player)
-    /// 新ドラ表示（槓のあと）。
-    case dora(marker: Tile)
-    /// 和了。`target` が actor 自身ならツモ。これ以降のイベントは持たない（仕様§8.3）。
-    case hora(actor: Player, target: Player, tile: Tile?)
-    /// 流局。これ以降のイベントは持たない。
-    case ryukyoku
+    /// 他家のツモ牌は観測できないことがある。
+    case ツモ(手番: Player, 牌: Tile?)
+    /// `ツモ切り` が nil なら手出し/ツモ切り不明（カメラ由来）。
+    case 打牌(手番: Player, 牌: Tile, ツモ切り: Bool?)
+    /// 相手は常に上家なので持たない。
+    case チー(手番: Player, 牌: Tile, 手牌から: [Tile])
+    case ポン(手番: Player, 相手: Player, 牌: Tile, 手牌から: [Tile])
+    case 大明槓(手番: Player, 相手: Player, 牌: Tile, 手牌から: [Tile])
+    /// 既存のポンに `牌` を加える。
+    case 加槓(手番: Player, 牌: Tile)
+    case 暗槓(手番: Player, 手牌から: [Tile])
+    /// 宣言のみ。次の打牌が宣言牌になる。
+    case 立直(手番: Player)
+    /// 成立（供託+1、宣言者の持ち点−1000）。
+    case 立直成立(手番: Player)
+    /// 槓のあとの新ドラ表示。
+    case 新ドラ(表示牌: Tile)
+    /// `相手` が `手番` 自身ならツモ和了。これ以降のイベントは持たない（仕様§8.3）。
+    case 和了(手番: Player, 相手: Player, 牌: Tile?)
+    /// これ以降のイベントは持たない。
+    case 流局
 }
 
 /// イベント適用のエラー（仕様§8.3: 既知の状態と矛盾するイベント）。
 ///
-/// 不明な値は検証しない（「イベントは不明を減らすことはあっても増やすことはない」）。
+/// 不明な値は検証しない（「イベントは不明を減らすことはあっても増やさない」）。
 public enum EventApplicationError: Error, Equatable, Sendable {
     /// `wall: 0` なのにツモした。
-    case wallEmpty
+    case 山が空
     /// 手牌にあるはずの牌が無い（打牌・鳴きの構成牌・暗槓）。
-    case tileNotInHand(Player, Tile)
+    case 手牌にない(Player, Tile)
     /// ツモ切りと言っているのにツモ牌と一致しない。
-    case tsumogiriMismatch(expected: Tile, actual: Tile)
+    case ツモ切りの不一致(ツモ牌: Tile, 打牌: Tile)
     /// 鳴き・ロンの対象牌が、応答対象（claim_tile）にも対象者の河にも無い。
-    case tileNotDiscarded(by: Player, Tile)
+    case 捨てられていない(打牌者: Player, 牌: Tile)
     /// 加槓に対応するポンが無い。
-    case noPonForKakan(Player, Tile)
+    case 元のポンがない(Player, Tile)
     /// チー・ポン・槓の構成牌の枚数が不正。
-    case invalidConsumed(Event)
+    case 構成牌の枚数が不正(Event)
 }

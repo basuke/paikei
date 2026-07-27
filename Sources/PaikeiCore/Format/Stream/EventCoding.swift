@@ -19,43 +19,43 @@ enum EventCoding {
 
         switch type {
         case "tsumo":
-            return .tsumo(actor: try decoder.player("actor"),
-                          tile: try decoder.tileOrUnknown("pai"))
+            return .ツモ(手番: try decoder.player("actor"),
+                        牌: try decoder.tileOrUnknown("pai"))
         case "dahai":
-            return .dahai(actor: try decoder.player("actor"),
-                          tile: try decoder.tile("pai"),
-                          tsumogiri: fields["tsumogiri"] as? Bool)
+            return .打牌(手番: try decoder.player("actor"),
+                        牌: try decoder.tile("pai"),
+                        ツモ切り: fields["tsumogiri"] as? Bool)
         case "chi":
-            return .chi(actor: try decoder.player("actor"),
-                        tile: try decoder.tile("pai"),
-                        consumed: try decoder.tiles("consumed"))
+            return .チー(手番: try decoder.player("actor"),
+                        牌: try decoder.tile("pai"),
+                        手牌から: try decoder.tiles("consumed"))
         case "pon":
-            return .pon(actor: try decoder.player("actor"),
-                        target: try decoder.player("target"),
-                        tile: try decoder.tile("pai"),
-                        consumed: try decoder.tiles("consumed"))
+            return .ポン(手番: try decoder.player("actor"),
+                        相手: try decoder.player("target"),
+                        牌: try decoder.tile("pai"),
+                        手牌から: try decoder.tiles("consumed"))
         case "daiminkan":
-            return .daiminkan(actor: try decoder.player("actor"),
-                              target: try decoder.player("target"),
-                              tile: try decoder.tile("pai"),
-                              consumed: try decoder.tiles("consumed"))
+            return .大明槓(手番: try decoder.player("actor"),
+                          相手: try decoder.player("target"),
+                          牌: try decoder.tile("pai"),
+                          手牌から: try decoder.tiles("consumed"))
         case "kakan":
-            return .kakan(actor: try decoder.player("actor"), tile: try decoder.tile("pai"))
+            return .加槓(手番: try decoder.player("actor"), 牌: try decoder.tile("pai"))
         case "ankan":
-            return .ankan(actor: try decoder.player("actor"),
-                          consumed: try decoder.tiles("consumed"))
+            return .暗槓(手番: try decoder.player("actor"),
+                        手牌から: try decoder.tiles("consumed"))
         case "reach":
-            return .reach(actor: try decoder.player("actor"))
+            return .立直(手番: try decoder.player("actor"))
         case "reach_accepted":
-            return .reachAccepted(actor: try decoder.player("actor"))
+            return .立直成立(手番: try decoder.player("actor"))
         case "dora":
-            return .dora(marker: try decoder.tile("dora_marker"))
+            return .新ドラ(表示牌: try decoder.tile("dora_marker"))
         case "hora":
-            let actor = try decoder.player("actor")
-            let target = try decoder.player("target")
-            return .hora(actor: actor, target: target, tile: try decoder.tileIfPresent("pai"))
+            return .和了(手番: try decoder.player("actor"),
+                        相手: try decoder.player("target"),
+                        牌: try decoder.tileIfPresent("pai"))
         case "ryukyoku":
-            return .ryukyoku
+            return .流局
         default:
             throw StreamParseError.unknownEventType(type)
         }
@@ -141,35 +141,35 @@ enum EventCoding {
         }
 
         switch event {
-        case let .tsumo(actor, tile):
+        case let .ツモ(actor, tile):
             add("type", "tsumo"); add("actor", actor.rawValue)
             add("pai", tile?.mpsz ?? "?")
-        case let .dahai(actor, tile, tsumogiri):
+        case let .打牌(actor, tile, tsumogiri):
             add("type", "dahai"); add("actor", actor.rawValue); add("pai", tile.mpsz)
             if let tsumogiri { add("tsumogiri", tsumogiri) }
-        case let .chi(actor, tile, consumed):
+        case let .チー(actor, tile, consumed):
             add("type", "chi"); add("actor", actor.rawValue); add("pai", tile.mpsz)
             add("consumed", tiles: consumed)
-        case let .pon(actor, target, tile, consumed):
+        case let .ポン(actor, target, tile, consumed):
             add("type", "pon"); add("actor", actor.rawValue); add("target", target.rawValue)
             add("pai", tile.mpsz); add("consumed", tiles: consumed)
-        case let .daiminkan(actor, target, tile, consumed):
+        case let .大明槓(actor, target, tile, consumed):
             add("type", "daiminkan"); add("actor", actor.rawValue); add("target", target.rawValue)
             add("pai", tile.mpsz); add("consumed", tiles: consumed)
-        case let .kakan(actor, tile):
+        case let .加槓(actor, tile):
             add("type", "kakan"); add("actor", actor.rawValue); add("pai", tile.mpsz)
-        case let .ankan(actor, consumed):
+        case let .暗槓(actor, consumed):
             add("type", "ankan"); add("actor", actor.rawValue); add("consumed", tiles: consumed)
-        case let .reach(actor):
+        case let .立直(actor):
             add("type", "reach"); add("actor", actor.rawValue)
-        case let .reachAccepted(actor):
+        case let .立直成立(actor):
             add("type", "reach_accepted"); add("actor", actor.rawValue)
-        case let .dora(marker):
+        case let .新ドラ(marker):
             add("type", "dora"); add("dora_marker", marker.mpsz)
-        case let .hora(actor, target, tile):
+        case let .和了(actor, target, tile):
             add("type", "hora"); add("actor", actor.rawValue); add("target", target.rawValue)
             if let tile { add("pai", tile.mpsz) }
-        case .ryukyoku:
+        case .流局:
             add("type", "ryukyoku")
         }
         return "{\(parts.joined(separator: ","))}"
