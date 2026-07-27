@@ -3,10 +3,10 @@
 /// 一般的なルールではどちらも和了放棄（その局は和了できず、聴牌ともみなさない）。
 /// 打牌自体は続くため、局面としては有効なまま。
 public enum HandDefect: Sendable, Equatable {
-    /// 少牌。あるべき枚数に `by` 枚足りない。
-    case short(by: Int)
-    /// 多牌。取り得る最大枚数（`13 − 3×副露 + 1`）を `by` 枚超えている。
-    case long(by: Int)
+    /// あるべき枚数に足りない。
+    case 少牌(不足: Int)
+    /// 取り得る最大枚数（`13 − 3×副露 + 1`）を超えている。
+    case 多牌(超過: Int)
 }
 
 extension PlayerState {
@@ -22,8 +22,8 @@ extension PlayerState {
         let maximum = base + 1
         let minimum = draw == nil ? base : maximum
 
-        if total < minimum { return .short(by: minimum - total) }
-        if total > maximum { return .long(by: total - maximum) }
+        if total < minimum { return .少牌(不足: minimum - total) }
+        if total > maximum { return .多牌(超過: total - maximum) }
         return nil
     }
 }

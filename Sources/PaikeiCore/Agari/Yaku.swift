@@ -71,13 +71,13 @@ public struct YakuDetector: Sendable {
         var yaku: [Yaku] = []
 
         switch hand.form {
-        case .thirteenOrphans:
+        case .国士無双:
             yaku.append(.国士無双)
-        case .sevenPairs:
+        case .七対子:
             yaku.append(.七対子)
             yaku += suitAndTerminalYaku(hand)
             yaku += situationalYaku(hand)
-        case .standard:
+        case .一般形:
             yaku += standardShapeYaku(hand)
             yaku += suitAndTerminalYaku(hand)
             yaku += situationalYaku(hand)
@@ -97,8 +97,8 @@ public struct YakuDetector: Sendable {
         if ctx.doubleRiichi { result.append(.ダブル立直) }
         else if ctx.riichi { result.append(.立直) }
         if ctx.ippatsu && rules.ippatsu { result.append(.一発) }
-        if hand.isMenzen && ctx.winType == .tsumo { result.append(.門前清自摸和) }
-        if ctx.lastTile { result.append(ctx.winType == .tsumo ? .海底摸月 : .河底撈魚) }
+        if hand.isMenzen && ctx.winType == .ツモ { result.append(.門前清自摸和) }
+        if ctx.lastTile { result.append(ctx.winType == .ツモ ? .海底摸月 : .河底撈魚) }
         if ctx.afterKan { result.append(.嶺上開花) }
         if ctx.robbingKan { result.append(.槍槓) }
         return result
@@ -152,8 +152,8 @@ public struct YakuDetector: Sendable {
         guard let d = hand.decomposition else { return [] }
         var result: [Yaku] = []
 
-        let sequences = d.sets.filter { $0.kind == .sequence }
-        let triplets = d.sets.filter { $0.kind == .triplet }
+        let sequences = d.sets.filter { $0.kind == .順子 }
+        let triplets = d.sets.filter { $0.kind == .刻子 }
 
         // 平和（待ちの形に依存。判定は符計算と共有）
         if isPinfu(hand) { result.append(.平和) }
@@ -224,12 +224,12 @@ public struct YakuDetector: Sendable {
     /// ロンで完成した刻子は明刻扱い（暗刻に数えない）。
     private func concealedTripletCount(_ hand: WinningHand) -> Int {
         guard let d = hand.decomposition else { return 0 }
-        var count = d.sets.filter { $0.kind == .triplet && $0.isConcealed }.count
-        if hand.context.winType == .ron {
+        var count = d.sets.filter { $0.kind == .刻子 && $0.isConcealed }.count
+        if hand.context.winType == .ロン {
             let w = hand.context.winningTile.normalized
-            let inSequence = d.sets.contains { $0.kind == .sequence && $0.tiles.contains(w) }
+            let inSequence = d.sets.contains { $0.kind == .順子 && $0.tiles.contains(w) }
             let completesConcealedTriplet = d.sets.contains {
-                $0.kind == .triplet && $0.isConcealed && !$0.isKan && $0.leadTile == w
+                $0.kind == .刻子 && $0.isConcealed && !$0.isKan && $0.leadTile == w
             }
             if !inSequence && completesConcealedTriplet { count -= 1 }
         }

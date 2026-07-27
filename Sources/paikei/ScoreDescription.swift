@@ -8,12 +8,12 @@ enum ScoreDescription {
             return scored(score, yaku: yaku, assumptions: assumptions)
         case let .notAWin(reason):
             switch reason {
-            case .notAWinningShape: return "和了形ではありません"
-            case .noYaku: return "役がありません（ドラのみでは和了できません）"
-            case .furiten(let matched):
+            case .和了形でない: return "和了形ではありません"
+            case .役なし: return "役がありません（ドラのみでは和了できません）"
+            case .フリテン(let matched):
                 return "フリテンです（待ちの \(TileFormatter.tiles(matched)) が自分の捨て牌にあります）。"
                     + "ロン和了はできません"
-            case .handDefect(let defect):
+            case .枚数異常(let defect):
                 return "\(SnapshotDescription.defectName(defect))です。和了放棄のため和了できません"
             }
         case let .declined(requirements):
@@ -91,9 +91,9 @@ enum ScoreDescription {
 
     private static func payment(_ payment: Payment) -> String {
         switch payment {
-        case .ron(let amount):
+        case .ロン(let amount):
             return "放銃者から \(amount)点"
-        case let .tsumo(dealer, nonDealer):
+        case let .ツモ(dealer, nonDealer):
             guard let dealer else { return "子から各 \(nonDealer)点" }
             return "親から \(dealer)点 / 子から各 \(nonDealer)点"
         }
@@ -123,7 +123,7 @@ enum ScoreDescription {
     private static func assumption(_ assumption: Assumption) -> String {
         switch assumption {
         case let .hypotheticalWin(tile, winType):
-            let how = winType == .tsumo ? "ツモ" : "ロン"
+            let how = winType == .ツモ ? "ツモ" : "ロン"
             return "局面はこの和了を示していないので、\(TileFormatter.tile(tile))の\(how)和了を仮定"
         case .seatWind(let wind):
             return "席風が不明なので\(windName(wind))家（子）と仮定"

@@ -4,9 +4,10 @@
 /// ここでは扱わない（和了計算の上位で赤5の枚数として数える）。
 public struct TileGroup: Hashable, Sendable {
     public enum Kind: Sendable, Hashable {
-        case sequence  // 順子
-        case triplet   // 刻子（槓を含む。isKan で区別）
-        case pair      // 雀頭
+        case 順子
+        /// 槓を含む。`isKan` で区別する。
+        case 刻子
+        case 雀頭
     }
 
     public let kind: Kind
@@ -61,7 +62,7 @@ public enum Decomposition {
         for pairIndex in 0..<34 where counts[pairIndex] >= 2 {
             counts[pairIndex] -= 2
             let pairTile = HandCounts.tile(at: pairIndex)
-            let pair = TileGroup(kind: .pair, tiles: [pairTile, pairTile], isConcealed: true)
+            let pair = TileGroup(kind: .雀頭, tiles: [pairTile, pairTile], isConcealed: true)
 
             for concealedSets in enumerateSets(&counts, from: 0) where concealedSets.count == need {
                 results.insert(HandDecomposition(sets: concealedSets + openSets, pair: pair))
@@ -114,7 +115,7 @@ public enum Decomposition {
         // 刻子
         if c[i] >= 3 {
             c[i] -= 3
-            let group = TileGroup(kind: .triplet, tiles: [tile, tile, tile], isConcealed: true)
+            let group = TileGroup(kind: .刻子, tiles: [tile, tile, tile], isConcealed: true)
             for rest in enumerateSets(&c, from: i) { out.append([group] + rest) }
             c[i] += 3
         }
@@ -122,7 +123,7 @@ public enum Decomposition {
         if HandCounts.canStartRun(i), c[i + 1] > 0, c[i + 2] > 0 {
             c[i] -= 1; c[i + 1] -= 1; c[i + 2] -= 1
             let group = TileGroup(
-                kind: .sequence,
+                kind: .順子,
                 tiles: [tile, HandCounts.tile(at: i + 1), HandCounts.tile(at: i + 2)],
                 isConcealed: true
             )
@@ -137,13 +138,13 @@ public enum Decomposition {
         let tiles = meld.tiles.map(\.normalized).sorted()
         switch meld.kind {
         case .chi:
-            return TileGroup(kind: .sequence, tiles: tiles, isConcealed: false, calledFrom: .kamicha)
+            return TileGroup(kind: .順子, tiles: tiles, isConcealed: false, calledFrom: .kamicha)
         case .pon:
-            return TileGroup(kind: .triplet, tiles: tiles, isConcealed: false, calledFrom: meld.from)
+            return TileGroup(kind: .刻子, tiles: tiles, isConcealed: false, calledFrom: meld.from)
         case .daiminkan, .kakan:
-            return TileGroup(kind: .triplet, tiles: tiles, isConcealed: false, isKan: true, calledFrom: meld.from)
+            return TileGroup(kind: .刻子, tiles: tiles, isConcealed: false, isKan: true, calledFrom: meld.from)
         case .ankan:
-            return TileGroup(kind: .triplet, tiles: tiles, isConcealed: true, isKan: true)
+            return TileGroup(kind: .刻子, tiles: tiles, isConcealed: true, isKan: true)
         }
     }
 }

@@ -6,7 +6,7 @@
 /// （`YakuDetector`）と符計算（`FuCalculator`）の両方から参照される。
 func isPinfu(_ hand: WinningHand) -> Bool {
     guard hand.isMenzen, let d = hand.decomposition else { return false }
-    guard d.sets.allSatisfy({ $0.kind == .sequence }) else { return false }
+    guard d.sets.allSatisfy({ $0.kind == .順子 }) else { return false }
 
     let pair = d.pair.leadTile
     if pair.isDragon || pair == hand.context.seatWind.tile || pair == hand.context.roundWind.tile {

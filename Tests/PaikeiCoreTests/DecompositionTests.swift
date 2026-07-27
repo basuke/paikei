@@ -17,8 +17,8 @@ import Testing
         let decomps = Decomposition.standard(concealed: concealed, melds: [])
         #expect(decomps.count == 2)
         // 一方は刻子3つ、一方は順子3つ（+456p順子）を含む
-        let tripletHeavy = decomps.contains { $0.sets.filter { $0.kind == .triplet }.count == 3 }
-        let sequenceHeavy = decomps.contains { $0.sets.filter { $0.kind == .sequence }.count == 4 }
+        let tripletHeavy = decomps.contains { $0.sets.filter { $0.kind == .刻子 }.count == 3 }
+        let sequenceHeavy = decomps.contains { $0.sets.filter { $0.kind == .順子 }.count == 4 }
         #expect(tripletHeavy)
         #expect(sequenceHeavy)
     }
@@ -32,7 +32,7 @@ import Testing
         #expect(decomps.count == 1)
         let d = try #require(decomps.first)
         #expect(d.sets.count == 4)
-        #expect(d.sets.contains { !$0.isConcealed && $0.kind == .triplet })  // 副露のポン
+        #expect(d.sets.contains { !$0.isConcealed && $0.kind == .刻子 })  // 副露のポン
     }
 
     @Test func 暗槓は4枚の面前グループとして分解に入る() throws {
@@ -46,7 +46,7 @@ import Testing
         let kan = try #require(d.sets.first { $0.isKan })
         #expect(kan.tiles.count == 4)          // 槓は4枚のまま保持
         #expect(kan.isConcealed)               // 暗槓は面前
-        #expect(kan.kind == .triplet)          // 刻子扱い（isKan で区別）
+        #expect(kan.kind == .刻子)          // 刻子扱い（isKan で区別）
     }
 
     @Test("大明槓・加槓は明刻グループになる")

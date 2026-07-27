@@ -11,11 +11,11 @@ public struct FuCalculator: Sendable {
     /// 和了手の符を計算する（切り上げ済み）。
     public func calculate(_ hand: WinningHand) -> Int {
         switch hand.form {
-        case .sevenPairs:
+        case .七対子:
             return 25
-        case .thirteenOrphans:
+        case .国士無双:
             return 0  // 役満のため符は使わない
-        case .standard:
+        case .一般形:
             return standardFu(hand)
         }
     }
@@ -25,12 +25,12 @@ public struct FuCalculator: Sendable {
 
         // 平和は特別扱い（ツモ20符・ロン30符固定）。
         if isPinfu(hand) {
-            return hand.context.winType == .tsumo ? 20 : 30
+            return hand.context.winType == .ツモ ? 20 : 30
         }
 
         var fu = 20  // 底
-        if hand.isMenzen && hand.context.winType == .ron { fu += 10 }  // 門前ロン
-        if hand.context.winType == .tsumo { fu += 2 }                  // ツモ符
+        if hand.isMenzen && hand.context.winType == .ロン { fu += 10 }  // 門前ロン
+        if hand.context.winType == .ツモ { fu += 2 }                  // ツモ符
         fu += waitFu(hand, d)
         fu += pairFu(d.pair, hand)
         for set in d.sets { fu += setFu(set, hand) }
@@ -45,7 +45,7 @@ public struct FuCalculator: Sendable {
         let w = hand.context.winningTile.normalized
         var fu = 0
         if d.pair.leadTile == w { fu = max(fu, 2) }  // 単騎
-        for seq in d.sets where seq.kind == .sequence && seq.tiles.contains(w) {
+        for seq in d.sets where seq.kind == .順子 && seq.tiles.contains(w) {
             let low = seq.tiles[0].rank
             if w.rank == low + 1 { fu = max(fu, 2) }                 // 嵌張
             else if w.rank == low && low == 7 { fu = max(fu, 2) }   // 辺張 789←7
@@ -67,11 +67,11 @@ public struct FuCalculator: Sendable {
 
     /// 面子符。順子0。刻子/槓は 明暗×么九 で決まる。
     private func setFu(_ group: TileGroup, _ hand: WinningHand) -> Int {
-        guard group.kind == .triplet else { return 0 }
+        guard group.kind == .刻子 else { return 0 }
         let terminal = group.leadTile.isTerminalOrHonor
         var concealed = group.isConcealed
         // ロンで完成した暗刻は明刻扱い（順子で置ければ暗刻を維持）。
-        if concealed, !group.isKan, hand.context.winType == .ron,
+        if concealed, !group.isKan, hand.context.winType == .ロン,
            group.leadTile == hand.context.winningTile.normalized,
            !winningTileInSequence(hand) {
             concealed = false
@@ -88,6 +88,6 @@ public struct FuCalculator: Sendable {
     private func winningTileInSequence(_ hand: WinningHand) -> Bool {
         guard let d = hand.decomposition else { return false }
         let w = hand.context.winningTile.normalized
-        return d.sets.contains { $0.kind == .sequence && $0.tiles.contains(w) }
+        return d.sets.contains { $0.kind == .順子 && $0.tiles.contains(w) }
     }
 }

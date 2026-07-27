@@ -76,8 +76,8 @@ struct ScoreCommand: ParsableCommand {
         }
         let type: WinType
         switch winType {
-        case "tsumo": type = .tsumo
-        case "ron": type = .ron
+        case "tsumo": type = .ツモ
+        case "ron": type = .ロン
         default: throw ValidationError("tsumo または ron を指定してください: \(winType)")
         }
 

@@ -70,14 +70,14 @@ public enum Requirement: Sendable, Equatable {
 /// 和了していない理由。
 public enum NoWinReason: Sendable, Equatable {
     /// 和了形になっていない。
-    case notAWinningShape
+    case 和了形でない
     /// 形は和了だが役がない（ドラのみでは和了できない）。
-    case noYaku
+    case 役なし
     /// フリテン（ロンのみ）。`matched` が自分の論理捨て牌にある待ち。
     /// 待ちのいずれか1つでも捨てていれば全ての待ちでロンできない。
-    case furiten(matched: [Tile])
+    case フリテン(捨てた待ち: [Tile])
     /// 多牌・少牌。和了放棄なので形がどうであれ和了できない。
-    case handDefect(HandDefect)
+    case 枚数異常(HandDefect)
 }
 
 /// 点数解析の結果。
@@ -112,7 +112,7 @@ extension GameState {
         }
 
         // 多牌・少牌は和了放棄。形がどうであれ和了できない。
-        if let defect = ps.handDefect { return .notAWin(.handDefect(defect)) }
+        if let defect = ps.handDefect { return .notAWin(.枚数異常(defect)) }
 
         // 和了牌を含む手牌を組み立てる。`hand:` が14枚形なら既に含まれている。
         // 枚数は上の検査で「基準」か「基準+1」に絞られている。
@@ -164,7 +164,7 @@ extension GameState {
         // ロンはフリテンなら成立しない。和了牌が実際に待ちで、かつ待ちのいずれかが
         // 自分の論理捨て牌（仕様§5: 河 + 鳴かれた牌）にあるときだけ判定する
         // （待ちですらない牌は「和了形でない」として後段で断る）。
-        if winType == .ron {
+        if winType == .ロン {
             var thirteen = concealed
             if let index = thirteen.firstIndex(where: { $0.normalized == winningTile.normalized }) {
                 thirteen.remove(at: index)
@@ -175,7 +175,7 @@ extension GameState {
                 if waits.contains(winningTile.normalized) {
                     let discarded = Set(logicalDiscards(of: player).map(\.normalized))
                     let matched = waits.filter { discarded.contains($0.normalized) }
-                    if !matched.isEmpty { return .notAWin(.furiten(matched: matched)) }
+                    if !matched.isEmpty { return .notAWin(.フリテン(捨てた待ち: matched)) }
                 }
             }
         }
@@ -193,12 +193,12 @@ extension GameState {
 
         guard let best = try HandEvaluator(rules: rules)
             .best(concealed: concealed, melds: ps.melds, context: context(round: roundWind, seat: seatWind)) else {
-            return .notAWin(.notAWinningShape)
+            return .notAWin(.和了形でない)
         }
         guard let score = ScoreCalculator(rules: rules).score(
             best, dora: DoraCounter(rules: rules).count(best.hand),
             honba: honbaCount, kyotaku: kyotakuCount) else {
-            return .notAWin(.noYaku)
+            return .notAWin(.役なし)
         }
         // 役満はドラを加算しないため、ドラ不明は答えに影響しない＝仮定として挙げない。
         if case .役満 = score.limit {
@@ -221,12 +221,12 @@ extension GameState {
         case .quiescent:
             return false
         case let .awaitingDiscard(who, _):
-            guard who == player, winType == .tsumo, let ps = players[who] else { return false }
+            guard who == player, winType == .ツモ, let ps = players[who] else { return false }
             // `draw:` があればその牌と一致するか。14枚形に畳まれていれば手牌に含まれるか。
             if let draw = ps.draw { return draw.normalized == target }
             return ps.hand?.contains { $0.normalized == target } ?? false
         case let .awaitingClaim(tile, from, _):
-            return winType == .ron && from != player && tile.normalized == target
+            return winType == .ロン && from != player && tile.normalized == target
         }
     }
 

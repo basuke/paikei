@@ -6,11 +6,11 @@ struct 子の点数表 {
     let calc = ScoreCalculator()
 
     func ron(_ han: Int, _ fu: Int) -> Int {
-        calc.payment(han: han, fu: fu, isDealer: false, winType: .ron).total
+        calc.payment(han: han, fu: fu, isDealer: false, winType: .ロン).total
     }
 
     func tsumo(_ han: Int, _ fu: Int) -> Payment {
-        calc.payment(han: han, fu: fu, isDealer: false, winType: .tsumo)
+        calc.payment(han: han, fu: fu, isDealer: false, winType: .ツモ)
     }
 
     @Test func 子ロンの古典的な組み合わせ() {
@@ -30,12 +30,12 @@ struct 子の点数表 {
 
     @Test("子ツモの古典的な組み合わせ（子払い / 親払い）")
     func 子ツモの古典的な組み合わせ() {
-        #expect(tsumo(3, 20) == .tsumo(dealer: 1300, nonDealer: 700))   // 平和ツモ
-        #expect(tsumo(1, 30) == .tsumo(dealer: 500, nonDealer: 300))
-        #expect(tsumo(2, 30) == .tsumo(dealer: 1000, nonDealer: 500))
-        #expect(tsumo(3, 30) == .tsumo(dealer: 2000, nonDealer: 1000))
-        #expect(tsumo(4, 30) == .tsumo(dealer: 3900, nonDealer: 2000))
-        #expect(tsumo(2, 40) == .tsumo(dealer: 1300, nonDealer: 700))
+        #expect(tsumo(3, 20) == .ツモ(親: 1300, 子: 700))   // 平和ツモ
+        #expect(tsumo(1, 30) == .ツモ(親: 500, 子: 300))
+        #expect(tsumo(2, 30) == .ツモ(親: 1000, 子: 500))
+        #expect(tsumo(3, 30) == .ツモ(親: 2000, 子: 1000))
+        #expect(tsumo(4, 30) == .ツモ(親: 3900, 子: 2000))
+        #expect(tsumo(2, 40) == .ツモ(親: 1300, 子: 700))
     }
 
     @Test func 平和ツモ20符3翻の合計は2700点() {
@@ -53,10 +53,10 @@ struct 子の点数表 {
         #expect(ron(10, 30) == 16000)
         #expect(ron(11, 30) == 24000)  // 三倍満
         #expect(ron(13, 30) == 32000)  // 数え役満
-        #expect(tsumo(5, 30) == .tsumo(dealer: 4000, nonDealer: 2000))
-        #expect(calc.payment(han: 13, fu: 20, isDealer: false, winType: .ron,
+        #expect(tsumo(5, 30) == .ツモ(親: 4000, 子: 2000))
+        #expect(calc.payment(han: 13, fu: 20, isDealer: false, winType: .ロン,
                              yakumanCount: 1).total == 32000)
-        #expect(calc.payment(han: 26, fu: 20, isDealer: false, winType: .ron,
+        #expect(calc.payment(han: 26, fu: 20, isDealer: false, winType: .ロン,
                              yakumanCount: 2).total == 64000)  // ダブル役満
     }
 }
@@ -66,7 +66,7 @@ struct 親の点数表 {
     let calc = ScoreCalculator()
 
     func ron(_ han: Int, _ fu: Int) -> Int {
-        calc.payment(han: han, fu: fu, isDealer: true, winType: .ron).total
+        calc.payment(han: han, fu: fu, isDealer: true, winType: .ロン).total
     }
 
     @Test func 親ロンの古典的な組み合わせ() {
@@ -83,10 +83,10 @@ struct 親の点数表 {
     }
 
     @Test func 親ツモは全員が同額を払う() {
-        let p = calc.payment(han: 4, fu: 30, isDealer: true, winType: .tsumo)
-        #expect(p == .tsumo(dealer: nil, nonDealer: 3900))
+        let p = calc.payment(han: 4, fu: 30, isDealer: true, winType: .ツモ)
+        #expect(p == .ツモ(親: nil, 子: 3900))
         #expect(p.total == 11700)
-        #expect(calc.payment(han: 5, fu: 30, isDealer: true, winType: .tsumo).total == 12000)
+        #expect(calc.payment(han: 5, fu: 30, isDealer: true, winType: .ツモ).total == 12000)
     }
 }
 
@@ -95,27 +95,27 @@ struct 本場供託と切り上げ満貫 {
     @Test("本場はロンで300点、ツモで各100点")
     func 本場はロンで300点ツモで各100点() {
         let calc = ScoreCalculator()
-        #expect(calc.payment(han: 1, fu: 30, isDealer: false, winType: .ron, honba: 2).total
+        #expect(calc.payment(han: 1, fu: 30, isDealer: false, winType: .ロン, honba: 2).total
                 == 1000 + 600)
-        let t = calc.payment(han: 1, fu: 30, isDealer: false, winType: .tsumo, honba: 2)
-        #expect(t == .tsumo(dealer: 700, nonDealer: 500))  // 各自 +200
+        let t = calc.payment(han: 1, fu: 30, isDealer: false, winType: .ツモ, honba: 2)
+        #expect(t == .ツモ(親: 700, 子: 500))  // 各自 +200
         #expect(t.total == 1700)
     }
 
     @Test func 切り上げ満貫はルールで切り替わる() {
         let off = ScoreCalculator(rules: RuleSet(roundUpMangan: false))
         let on = ScoreCalculator(rules: RuleSet(roundUpMangan: true))
-        #expect(off.payment(han: 4, fu: 30, isDealer: false, winType: .ron).total == 7700)
-        #expect(on.payment(han: 4, fu: 30, isDealer: false, winType: .ron).total == 8000)
-        #expect(off.payment(han: 3, fu: 60, isDealer: false, winType: .ron).total == 7700)
-        #expect(on.payment(han: 3, fu: 60, isDealer: false, winType: .ron).total == 8000)
+        #expect(off.payment(han: 4, fu: 30, isDealer: false, winType: .ロン).total == 7700)
+        #expect(on.payment(han: 4, fu: 30, isDealer: false, winType: .ロン).total == 8000)
+        #expect(off.payment(han: 3, fu: 60, isDealer: false, winType: .ロン).total == 7700)
+        #expect(on.payment(han: 3, fu: 60, isDealer: false, winType: .ロン).total == 8000)
         // 対象外の組み合わせは変わらない
-        #expect(on.payment(han: 3, fu: 30, isDealer: false, winType: .ron).total == 3900)
+        #expect(on.payment(han: 3, fu: 30, isDealer: false, winType: .ロン).total == 3900)
     }
 
     /// 子の平和ドラ3（平和1翻 + ドラ3 = 4翻、平和ロンで30符）。
     /// 切り上げ満貫の代表例なので、役とドラから符・翻が積み上がる経路ごと確認する。
-    func pinfuDora3(_ rules: RuleSet, winType: WinType = .ron) throws -> Score {
+    func pinfuDora3(_ rules: RuleSet, winType: WinType = .ロン) throws -> Score {
         var ctx = WinContext(seatWind: .south, roundWind: .east, winType: winType,
                              winningTile: try Tile.parse("6s"))
         // 2m・2p・4s がドラ（手牌に1枚ずつ）。
@@ -130,24 +130,24 @@ struct 本場供託と切り上げ満貫 {
         #expect(off.han == 4)          // 平和1 + ドラ3
         #expect(off.fu == 30)          // 平和ロンは30符
         #expect(off.dora.dora == 3)
-        #expect(off.payment == .ron(7700))
+        #expect(off.payment == .ロン(7700))
         #expect(off.limit == nil)
 
         let on = try pinfuDora3(RuleSet(roundUpMangan: true))
-        #expect(on.payment == .ron(8000))
+        #expect(on.payment == .ロン(8000))
         #expect(on.limit == .満貫)
     }
 
     @Test func 平和ツモは20符なので切り上げ満貫の対象外() throws {
         // 平和ツモは 平和1 + 門前ツモ1 + ドラ3 = 5翻で、そもそも満貫。
-        let tsumo = try pinfuDora3(RuleSet(roundUpMangan: true), winType: .tsumo)
+        let tsumo = try pinfuDora3(RuleSet(roundUpMangan: true), winType: .ツモ)
         #expect(tsumo.han == 5)
         #expect(tsumo.fu == 20)
         #expect(tsumo.limit == .満貫)
         // 20符4翻（門前ツモが付かない形）は切り上げの対象にならない。
         let calc = ScoreCalculator(rules: RuleSet(roundUpMangan: true))
-        #expect(calc.payment(han: 4, fu: 20, isDealer: false, winType: .tsumo)
-                == .tsumo(dealer: 2600, nonDealer: 1300))
+        #expect(calc.payment(han: 4, fu: 20, isDealer: false, winType: .ツモ)
+                == .ツモ(親: 2600, 子: 1300))
     }
 }
 
@@ -171,7 +171,7 @@ struct 本場供託と切り上げ満貫 {
               dora: String = "", ura: String = "", riichi: Bool = false,
               win: String) throws -> WinningHand {
         let ctx = WinContext(
-            seatWind: .south, roundWind: .east, winType: .tsumo,
+            seatWind: .south, roundWind: .east, winType: .ツモ,
             winningTile: try Tile.parse(win), riichi: riichi,
             doraMarkers: try Tile.parseHand(dora), uraMarkers: try Tile.parseHand(ura))
         let hands = Agari.winningHands(
@@ -226,19 +226,19 @@ struct 本場供託と切り上げ満貫 {
 @Suite struct 和了から点数まで {
     @Test("平和ツモ（20符3翻）は 700/1300")
     func 平和ツモの支払い() throws {
-        let ctx = WinContext(seatWind: .south, roundWind: .east, winType: .tsumo,
+        let ctx = WinContext(seatWind: .south, roundWind: .east, winType: .ツモ,
                              winningTile: try Tile.parse("6s"), riichi: true)
         let score = try #require(try ScoreCalculator().score(
             concealed: try Tile.parseHand("234567m234p456s99p"), melds: [], context: ctx))
         #expect(score.han == 3)  // 立直 + 平和 + 門前ツモ
         #expect(score.fu == 20)
-        #expect(score.payment == .tsumo(dealer: 1300, nonDealer: 700))
+        #expect(score.payment == .ツモ(親: 1300, 子: 700))
         #expect(score.total == 2700)
         #expect(score.limit == nil)
     }
 
     @Test func ドラは翻に加算される() throws {
-        let base = WinContext(seatWind: .south, roundWind: .east, winType: .tsumo,
+        let base = WinContext(seatWind: .south, roundWind: .east, winType: .ツモ,
                               winningTile: try Tile.parse("6s"), riichi: true)
         var withDora = base
         withDora.doraMarkers = [try Tile.parse("1p")]  // 2p がドラ、手牌に1枚
@@ -254,7 +254,7 @@ struct 本場供託と切り上げ満貫 {
     @Test("役なしは点数にならない（ドラだけでは和了できない）")
     func 役なしは点数にならない() throws {
         // 喰いタンなしルールでの鳴き断么九。ドラがあっても和了できない。
-        var ctx = WinContext(seatWind: .south, roundWind: .east, winType: .ron,
+        var ctx = WinContext(seatWind: .south, roundWind: .east, winType: .ロン,
                              winningTile: try Tile.parse("5p"))
         ctx.doraMarkers = [try Tile.parse("4p")]
         let calc = ScoreCalculator(rules: RuleSet(kuitan: false))
@@ -264,34 +264,34 @@ struct 本場供託と切り上げ満貫 {
 
     @Test("和了していなければ nil")
     func 和了していなければnil() throws {
-        let ctx = WinContext(seatWind: .south, roundWind: .east, winType: .ron,
+        let ctx = WinContext(seatWind: .south, roundWind: .east, winType: .ロン,
                              winningTile: try Tile.parse("5p"))
         #expect(try ScoreCalculator().score(concealed: try Tile.parseHand("123456789m2355p"),
                                         melds: [], context: ctx) == nil)
     }
 
     @Test func 役満はドラを加算しない() throws {
-        var ctx = WinContext(seatWind: .south, roundWind: .east, winType: .tsumo,
+        var ctx = WinContext(seatWind: .south, roundWind: .east, winType: .ツモ,
                              winningTile: try Tile.parse("7z"))
         ctx.doraMarkers = [try Tile.parse("9m")]  // 1m がドラ（手牌に3枚）
         let score = try #require(try ScoreCalculator().score(
             concealed: try Tile.parseHand("111222m333p555s77z"), melds: [], context: ctx))
         #expect(score.han == 13)
-        #expect(score.limit == .役満(multiplier: 1))
-        #expect(score.payment == .tsumo(dealer: 16000, nonDealer: 8000))
+        #expect(score.limit == .役満(複合数: 1))
+        #expect(score.payment == .ツモ(親: 16000, 子: 8000))
         #expect(score.total == 32000)
     }
 
     @Test func 供託は和了者の総取り() throws {
         // 立直のみ（1翻40符）の子ロン。么九暗刻で 20+門前ロン10+8 = 38 → 40符。
-        let ctx = WinContext(seatWind: .south, roundWind: .east, winType: .ron,
+        let ctx = WinContext(seatWind: .south, roundWind: .east, winType: .ロン,
                              winningTile: try Tile.parse("4s"), riichi: true)
         let score = try #require(try ScoreCalculator().score(
             concealed: try Tile.parseHand("111m234p567p234s99m"), melds: [], context: ctx,
             honba: 1, kyotaku: 2))
         #expect(score.han == 1)
         #expect(score.fu == 40)
-        #expect(score.payment == .ron(1300 + 300))       // 1本場
+        #expect(score.payment == .ロン(1300 + 300))       // 1本場
         #expect(score.total == 1600 + 2000)              // 供託2本
     }
 }

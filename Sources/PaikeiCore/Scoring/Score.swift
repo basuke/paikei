@@ -3,23 +3,23 @@ public enum LimitRank: Sendable, Equatable {
     case 満貫, 跳満, 倍満, 三倍満
     /// 翻数が13翻以上に達したことによる役満。
     case 数え役満
-    /// 役満役の成立による役満。`multiplier` は複合数（ダブル役満なら2）。
-    case 役満(multiplier: Int)
+    /// 役満役の成立による役満。ダブル役満なら複合数2。
+    case 役満(複合数: Int)
 }
 
 /// 誰がいくら払うか。金額には本場（1本場につきロン300点／ツモ各100点）を含む。
 public enum Payment: Sendable, Equatable {
     /// 放銃者が払う点数。
-    case ron(Int)
-    /// ツモ。`dealer` は親の支払い（和了者自身が親なら nil）、`nonDealer` は子1人あたり。
-    case tsumo(dealer: Int?, nonDealer: Int)
+    case ロン(Int)
+    /// `親` は親の支払い（和了者自身が親なら nil）、`子` は子1人あたり。
+    case ツモ(親: Int?, 子: Int)
 
     /// 支払いの合計（供託は含まない）。
     public var total: Int {
         switch self {
-        case .ron(let amount):
+        case .ロン(let amount):
             return amount
-        case .tsumo(let dealer, let nonDealer):
+        case .ツモ(let dealer, let nonDealer):
             // 親が和了したときは子3人が同額、子が和了したときは親1人＋子2人。
             guard let dealer else { return nonDealer * 3 }
             return dealer + nonDealer * 2
@@ -131,7 +131,7 @@ public struct ScoreCalculator: Sendable {
     }
 
     private func limitRank(han: Int, fu: Int, yakumanCount: Int) -> LimitRank? {
-        if yakumanCount > 0 { return .役満(multiplier: yakumanCount) }
+        if yakumanCount > 0 { return .役満(複合数: yakumanCount) }
         switch han {
         case 13...: return .数え役満
         case 11...12: return .三倍満
@@ -148,12 +148,12 @@ public struct ScoreCalculator: Sendable {
 
     private func payment(base: Int, isDealer: Bool, winType: WinType, honba: Int) -> Payment {
         switch winType {
-        case .ron:
-            return .ron(roundUp100(base * (isDealer ? 6 : 4)) + 300 * honba)
-        case .tsumo:
+        case .ロン:
+            return .ロン(roundUp100(base * (isDealer ? 6 : 4)) + 300 * honba)
+        case .ツモ:
             let fromNonDealer = roundUp100(base * (isDealer ? 2 : 1)) + 100 * honba
-            guard !isDealer else { return .tsumo(dealer: nil, nonDealer: fromNonDealer) }
-            return .tsumo(dealer: roundUp100(base * 2) + 100 * honba, nonDealer: fromNonDealer)
+            guard !isDealer else { return .ツモ(親: nil, 子: fromNonDealer) }
+            return .ツモ(親: roundUp100(base * 2) + 100 * honba, 子: fromNonDealer)
         }
     }
 

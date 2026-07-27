@@ -5,7 +5,7 @@ import Testing
 struct 高点法 {
     func context(
         seat: Wind = .east, round: Wind = .east,
-        winType: WinType = .tsumo, winTile: String
+        winType: WinType = .ツモ, winTile: String
     ) throws -> WinContext {
         WinContext(seatWind: seat, roundWind: round, winType: winType,
                    winningTile: try Tile.parse(winTile))
@@ -61,7 +61,7 @@ struct 高点法 {
         // 喰いタンなしルールでの鳴き断么九。和了形ではあるが役が付かない。
         let tiles = try Tile.parseHand("345m678p456s55p")
         let melds = [try Meld.parse("pon(2'22m,L)")]
-        let ctx = try context(winType: .ron, winTile: "5p")
+        let ctx = try context(winType: .ロン, winTile: "5p")
 
         let withKuitan = try #require(
             try HandEvaluator(rules: RuleSet(kuitan: true)).best(concealed: tiles, melds: melds, context: ctx))
@@ -96,7 +96,7 @@ struct 高点法 {
     @Test("評価器はルールを注入して使う（一発なしルール）")
     func 評価器はルールを注入して使う() throws {
         let tiles = try Tile.parseHand("234567m234p55p678s")
-        let ctx = WinContext(seatWind: .east, roundWind: .east, winType: .tsumo,
+        let ctx = WinContext(seatWind: .east, roundWind: .east, winType: .ツモ,
                              winningTile: try Tile.parse("8s"),
                              riichi: true, ippatsu: true)
         let on = try #require(try HandEvaluator(rules: RuleSet(ippatsu: true))

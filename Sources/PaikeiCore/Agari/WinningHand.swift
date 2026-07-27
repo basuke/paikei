@@ -32,20 +32,20 @@ extension Agari {
 
         if Decomposition.isThirteenOrphans(concealed: concealed, melds: melds) {
             hands.append(WinningHand(
-                form: .thirteenOrphans, decomposition: nil, melds: melds,
+                form: .国士無双, decomposition: nil, melds: melds,
                 allTiles: concealed.map(\.normalized), sourceTiles: source,
                 isMenzen: isMenzen, context: context))
         }
         if Decomposition.isSevenPairs(concealed: concealed, melds: melds) {
             hands.append(WinningHand(
-                form: .sevenPairs, decomposition: nil, melds: melds,
+                form: .七対子, decomposition: nil, melds: melds,
                 allTiles: concealed.map(\.normalized), sourceTiles: source,
                 isMenzen: isMenzen, context: context))
         }
         for decomposition in Decomposition.standard(concealed: concealed, melds: melds) {
             let all = decomposition.sets.flatMap(\.tiles) + decomposition.pair.tiles
             hands.append(WinningHand(
-                form: .standard, decomposition: decomposition, melds: melds,
+                form: .一般形, decomposition: decomposition, melds: melds,
                 allTiles: all, sourceTiles: source, isMenzen: isMenzen, context: context))
         }
         return hands

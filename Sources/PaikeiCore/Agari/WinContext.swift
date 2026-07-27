@@ -1,14 +1,15 @@
 /// 和了の種類。
 public enum WinType: Sendable, Equatable {
-    case tsumo  // 自摸
-    case ron    // 栄和
+    case ツモ
+    case ロン
 }
 
 /// 和了手の形。
 public enum AgariForm: Sendable, Equatable {
-    case standard        // 一般形（4面子1雀頭）
-    case sevenPairs      // 七対子
-    case thirteenOrphans // 国士無双
+    /// 4面子1雀頭。
+    case 一般形
+    case 七対子
+    case 国士無双
 }
 
 /// `WinContext` の文脈フラグの矛盾。麻雀のルール上ありえない組み合わせを表す。
@@ -98,8 +99,8 @@ extension WinContext {
     public var contradictions: [WinContextContradiction] {
         var result: [WinContextContradiction] = []
         if ippatsu && !(riichi || doubleRiichi) { result.append(.ippatsuRequiresRiichi) }
-        if afterKan && winType != .tsumo { result.append(.afterKanRequiresTsumo) }
-        if robbingKan && winType != .ron { result.append(.robbingKanRequiresRon) }
+        if afterKan && winType != .ツモ { result.append(.afterKanRequiresTsumo) }
+        if robbingKan && winType != .ロン { result.append(.robbingKanRequiresRon) }
         return result
     }
 

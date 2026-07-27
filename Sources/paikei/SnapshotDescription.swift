@@ -73,8 +73,8 @@ enum SnapshotDescription {
     /// 多牌・少牌の表示。和了放棄になるため目立たせる。
     static func defectName(_ defect: HandDefect) -> String {
         switch defect {
-        case .short(let by): "少牌(\(by)枚不足)"
-        case .long(let by): "多牌(\(by)枚超過)"
+        case .少牌(let by): "少牌(\(by)枚不足)"
+        case .多牌(let by): "多牌(\(by)枚超過)"
         }
     }
 

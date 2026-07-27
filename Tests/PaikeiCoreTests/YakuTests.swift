@@ -8,7 +8,7 @@ import Testing
         melds: [Meld] = [],
         seat: Wind = .east,
         round: Wind = .east,
-        winType: WinType = .tsumo,
+        winType: WinType = .ツモ,
         winTile: String? = nil,
         riichi: Bool = false,
         doubleRiichi: Bool = false,
@@ -47,17 +47,17 @@ import Testing
 
     @Test("嶺上開花はツモ限定（ロンとの併用は矛盾としてエラー）")
     func 嶺上開花はツモ限定() throws {
-        #expect(try best("234567m234p55p678s", winType: .tsumo, afterKan: true).contains(.嶺上開花))
+        #expect(try best("234567m234p55p678s", winType: .ツモ, afterKan: true).contains(.嶺上開花))
         #expect(throws: WinContextError(contradictions: [.afterKanRequiresTsumo])) {
-            _ = try self.best("234567m234p55p678s", winType: .ron, afterKan: true)
+            _ = try self.best("234567m234p55p678s", winType: .ロン, afterKan: true)
         }
     }
 
     @Test("槍槓はロン限定（ツモとの併用は矛盾としてエラー）")
     func 槍槓はロン限定() throws {
-        #expect(try best("234567m234p55p678s", winType: .ron, robbingKan: true).contains(.槍槓))
+        #expect(try best("234567m234p55p678s", winType: .ロン, robbingKan: true).contains(.槍槓))
         #expect(throws: WinContextError(contradictions: [.robbingKanRequiresRon])) {
-            _ = try self.best("234567m234p55p678s", winType: .tsumo, robbingKan: true)
+            _ = try self.best("234567m234p55p678s", winType: .ツモ, robbingKan: true)
         }
     }
 
@@ -133,7 +133,7 @@ import Testing
 @Suite struct 役満 {
     func best(_ concealed: String) throws -> Set<Yaku> {
         let tiles = try Tile.parseHand(concealed)
-        let ctx = WinContext(seatWind: .east, roundWind: .east, winType: .tsumo, winningTile: tiles[0])
+        let ctx = WinContext(seatWind: .east, roundWind: .east, winType: .ツモ, winningTile: tiles[0])
         let hands = Agari.winningHands(concealed: tiles, melds: [], context: ctx)
         let detector = YakuDetector(rules: .standard)
         return try Set(hands.flatMap { try detector.detect($0) })
@@ -176,7 +176,7 @@ import Testing
         let concealed = try Tile.parseHand("99s")
         let melds = try ["ankan(1111m)", "ankan(2222m)", "ankan(3333m)", "ankan(4444m)"]
             .map { try Meld.parse($0) }
-        let ctx = WinContext(seatWind: .east, roundWind: .east, winType: .tsumo,
+        let ctx = WinContext(seatWind: .east, roundWind: .east, winType: .ツモ,
                              winningTile: try Tile.parse("9s"))
         let hands = Agari.winningHands(concealed: concealed, melds: melds, context: ctx)
         let yaku = try Set(hands.flatMap { try YakuDetector().detect($0) })
@@ -189,7 +189,7 @@ import Testing
         let concealed = try Tile.parseHand("99s")
         let melds = try ["ankan(1111m)", "ankan(2222m)", "ankan(3333m)", "daiminkan(4'444m,C)"]
             .map { try Meld.parse($0) }
-        let ctx = WinContext(seatWind: .east, roundWind: .east, winType: .tsumo,
+        let ctx = WinContext(seatWind: .east, roundWind: .east, winType: .ツモ,
                              winningTile: try Tile.parse("9s"))
         let hands = Agari.winningHands(concealed: concealed, melds: melds, context: ctx)
         let yaku = try Set(hands.flatMap { try YakuDetector().detect($0) })
