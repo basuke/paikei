@@ -55,7 +55,11 @@ extension GameState {
         case let .reachAccepted(actor):
             state.resolveClaim()
             if let kyotaku = state.kyotaku { state.kyotaku = kyotaku + 1 }
-            state.update(actor) { if let score = $0.score { $0.score = score - 1000 } }
+            state.update(actor) {
+                // reach を伴わない生ログ（宣言が t0 より前）でもリーチ中として扱う。
+                $0.riichi = true
+                if let score = $0.score { $0.score = score - 1000 }
+            }
 
         case let .dora(marker):
             state.doraMarkers.append(marker)
@@ -90,6 +94,8 @@ extension GameState {
             update(claim.from) {
                 $0.river.append(RiverTile(tile: claim.tile,
                                           declaresRiichi: claim.kind == .riichi))
+                // 宣言牌が場に出ている＝リーチ宣言済み。安牌・フリテン判定が依存する。
+                if claim.kind == .riichi { $0.riichi = true }
             }
         case .kakan, .ankan:
             break  // 牌は既に副露の中にある（槍槓の検討だった）
@@ -109,6 +115,10 @@ extension GameState {
                     throw EventApplicationError.tsumogiriMismatch(expected: draw, actual: tile)
                 }
                 ps.draw = nil
+            } else {
+                // `draw:` が無くても14枚目は手牌に畳まれていることがある（仕様§7.3 2b）。
+                // その場合はツモ切りでも手牌から抜く。手牌が不明なら何もしない。
+                try removeForTedashi(tile, from: &ps, actor: actor)
             }
             manner = .tsumogiri
         case false:

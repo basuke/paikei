@@ -58,10 +58,11 @@ public struct PaikeiDocument: Sendable, Equatable {
 
     // MARK: - ヘッダ
 
-    /// `[stream] format=mjai self_actor=2` を解釈する。
+    /// `[stream] format=mjai self_actor=2` を解釈する。行末コメントは無視する（§3）。
     private static func parseHeader(_ line: Substring) throws -> StreamFormat {
+        let body = line.prefix(while: { $0 != "#" }).dropFirst("[stream]".count)
         var attributes: [String: String] = [:]
-        for token in line.dropFirst("[stream]".count).split(whereSeparator: { $0.isWhitespace }) {
+        for token in body.split(whereSeparator: { $0.isWhitespace }) {
             let pair = token.split(separator: "=", maxSplits: 1)
             guard pair.count == 2 else {
                 throw StreamParseError.malformedHeader(String(line))

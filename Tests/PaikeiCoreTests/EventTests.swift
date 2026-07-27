@@ -69,6 +69,31 @@ struct EventApplicationTests {
         }
     }
 
+    @Test("14枚形に畳まれた手牌からのツモ切りも手牌から抜く")
+    func tsumogiriFromFoldedHand() throws {
+        // draw を持たず手牌が14枚（仕様§7.3 の 2b。カメラ由来の形）。
+        let state = GameState(players: [.myself: PlayerState(
+            hand: try Tile.parseHand("123m456m789p55s11z6s"))])
+        #expect(state.players[.myself]?.hand?.count == 14)
+
+        let s = try state.applying(
+            .dahai(actor: .myself, tile: try Tile.parse("6s"), tsumogiri: true))
+        let me = try #require(s.players[.myself])
+        #expect(me.hand?.count == 13)  // 河に出した分が手牌から減る
+        #expect(me.river.last?.manner == .tsumogiri)
+        #expect(s.phase == .quiescent)
+    }
+
+    @Test("ツモも14枚形でもない状態のツモ切りは矛盾")
+    func tsumogiriWithoutFourteenth() throws {
+        let state = GameState(players: [.myself: PlayerState(
+            hand: try Tile.parseHand("123m456m789p55s11z"))])  // 13枚、draw なし
+        #expect(throws: EventApplicationError.tileNotInHand(.myself, Tile(suit: .sou, rank: 9)!)) {
+            _ = try state.applying(
+                .dahai(actor: .myself, tile: try Tile.parse("9s"), tsumogiri: true))
+        }
+    }
+
     @Test("手牌が不明な他家は検証せずに通す（不明を増やさない）")
     func unknownHandIsLenient() throws {
         let s = try base()
@@ -211,12 +236,24 @@ struct ClaimResolutionTests {
         #expect(s.players[.toimen]?.river.map(\.tile.mpsz) == ["9m", "5p"])
     }
 
-    @Test("リーチ宣言牌のスルーは * 付きで河に入る")
+    @Test("リーチ宣言牌のスルーは * 付きで河に入り、riichi が立つ")
     func riichiClaimPassed() throws {
         let s = try claimed(kind: .riichi).applying(.reachAccepted(actor: .toimen))
-        let last = try #require(s.players[.toimen]?.river.last)
+        let toimen = try #require(s.players[.toimen])
+        let last = try #require(toimen.river.last)
         #expect(last.tile == Tile(suit: .pin, rank: 5))
         #expect(last.declaresRiichi)
+        // 宣言牌が場に出ている＝リーチを宣言済み。安牌・フリテン判定が依存する。
+        #expect(toimen.riichi == true)
+    }
+
+    @Test("reach_accepted 単独でも riichi が立つ（MJAI由来のログ対策）")
+    func reachAcceptedSetsFlag() throws {
+        var state = GameState(kyotaku: 0)
+        state.players[.toimen] = PlayerState(score: 25000)
+        let s = try state.applying(.reachAccepted(actor: .toimen))
+        #expect(s.players[.toimen]?.riichi == true)
+        #expect(s.kyotaku == 1)
     }
 
     @Test("ロンは応答対象を消費して終局")

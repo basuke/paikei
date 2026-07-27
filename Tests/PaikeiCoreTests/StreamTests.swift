@@ -153,6 +153,17 @@ struct PaikeiDocumentTests {
         #expect(once == twice)
     }
 
+    @Test("[stream] ヘッダの行末コメントは無視する（§3のコメント規則）")
+    func headerTrailingComment() throws {
+        let doc = try PaikeiDocument.parse(snapshotText + """
+
+
+            [stream] format=mjai self_actor=2  # 自分は絶対座席2
+            {"type":"tsumo","actor":2,"pai":"6s"}
+            """)
+        #expect(doc.events == [.tsumo(actor: .myself, tile: try Tile.parse("6s"))])
+    }
+
     @Test("mjai は self_actor が必須、未知の format はエラー")
     func headerValidation() throws {
         #expect(throws: StreamParseError.missingSelfActor) {
