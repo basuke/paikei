@@ -1,18 +1,17 @@
 # Paikei — 麻雀局面解析エンジン
 
 **Paikei（牌景）** はプロジェクト・iOSアプリ・テキストフォーマットに共通する名前。
-共有ライブラリは **PaikeiCore**。
+共有ライブラリは **PaikeiCore**。プロジェクトの紹介と使い方は `README.md`、
+フォーマットの正典は `docs/PAIKEI_SPEC.md`。
 
 ## このプロジェクトは何か
 
 **最終的な野望**: iOSアプリ **Paikei**。カメラで雀卓を撮影すると牌を認識し、
-その瞬間の局面についてあらゆる解析を返す —
-和了していれば役判定・符計算・点数計算、和了前ならシャンテン数・待ち・受け入れ、
-フリテン判定、相手の河から安牌・危険牌の判定、何切る分析。
+その瞬間の局面についてあらゆる解析を返す。
 
 このリポジトリはその**ロジック層**。カメラ認識（Vision / Core ML）は将来の別レイヤーで、
-両者はテキストフォーマット **Paikei**（`docs/PAIKEI_SPEC.md`）で疎結合にする。
-認識層の完成を待たずに、ロジック層を単体で完成・検証できるようにするのが狙い。
+両者はテキストフォーマット **Paikei** で疎結合にする。認識層の完成を待たずに、
+ロジック層を単体で完成・検証できるようにするのが狙い。
 
 ```
 [カメラ認識層]──┐
@@ -32,59 +31,98 @@
 
 新規ファイルの置き場所（未作成のディレクトリは必要になったら作る）:
 
-- `Sources/PaikeiCore/` … Model / Shanten / Agari / Scoring（符・点数・ルール） /
-  Safety（フリテン・安牌） / Format（`.paikei` の入出力、`Format/Stream/` は仕様§8）
+- `Sources/PaikeiCore/`
+  - `Model/` … 牌・風・プレイヤー・副露・河・`GameState`・`Event`・`GameTimeline`
+  - `Shanten/` … シャンテン数・受け入れ・何切る
+  - `Agari/` … 面子分解・役・平和・和了形の読み
+  - `Scoring/` … 符・点数・ドラ・`RuleSet`・応答の選択肢
+  - `Safety/` … 論理捨て牌履歴・フリテン・安牌・見えている牌
+  - `Format/` … `.paikei` の入出力。`Format/Stream/` は仕様§8とMJAI方言
+  - `Bot/` … 局面から手を決める打ち手
 - `Sources/paikei/` … CLI実行ファイル（PaikeiCoreに依存）
-- `Tests/PaikeiCoreTests/Fixtures/` … 仕様§9のサンプル
-- `docs/PAIKEI_SPEC.md` が正典
+- `Tests/PaikeiCoreTests/Fixtures/` … 仕様§9のサンプルとシャンテン正解データ
 
 設計原則:
 
-- **ライブラリ内の依存は一方向**: Model/Shanten/Agari/Scoring/Safety（ドメイン層）は
+- **ライブラリ内の依存は一方向**: Model/Shanten/Agari/Scoring/Safety/Bot（ドメイン層）は
   Format/ の型を一切参照しない。フォーマットは入出力の1形式にすぎず、
   依存は常に Format → ドメイン層 の向きのみ
 - 全て値型（struct/enum）。ロジックは純粋関数にしてテスト容易性を最優先
 - 「不明」は第一級の概念（仕様§1・§6）。解析関数は不足情報があるとき
-  「仮定を明示して答える」か「必要な情報を宣言して断る」— 黙って推測しない
+  「仮定を明示して答える」か「必要な情報を宣言して断る」— 黙って推測しない。
+  仮定として置いてよいのは「外れていれば答えがより高くなる」ものだけ
+- **矛盾はコアが検出して返す**。ライブラリなのだから、おかしな入力を黙って握りつぶさず
+  何がおかしいかを型で返す（`EventApplicationError` / `WinContextError` / `Requirement`）
+- `GameState` は「いまの卓上」だけを表し履歴を持たない（カメラ由来には履歴が無いため）。
+  履歴が要る導出は `GameTimeline`（初期局面 + イベント列）の担当
 - イベント適用は `apply(GameState, Event) throws -> GameState` の形に統一。
   REPLの遷移コマンド、ストリーム再生、MJAI botモードすべてがこの関数を共有する
 
-## 最初に作るCLI: `paikei`
+## 命名規約
 
-REPLと1発実行の両対応:
+Swift の Unicode 識別子を活かし、麻雀の概念はそのまま日本語で書く。
+
+- **enum の case と引数ラベルは日本語**
+  `case ポン(手番: Player, 相手: Player, 牌: Tile, 手牌から: [Tile])`
+- **変数名・プロパティ名は英数字**。パターンバインドも英数字にする
+  （`case let .ポン(actor, target, tile, consumed)`）。
+  ラベルは日本語でも、それを受ける側はプログラミングの文脈なので英数字が読みやすい
+- **型名は英語で素直に書けるならそのまま**。`Player` `GameState` `Tile` は英語のまま
+- **関数名は麻雀の概念なら日本語**。`可能な応答(for:)` `通った牌(against:)`。
+  汎用の操作（`applying` `serialized`）は英語
+- **エラーの case は体言止めで短く**。`case 山切れ` `case 自席未確定` `case ポンなしの加槓(Player, Tile)`
+- **rawValue が仕様の表記トークンなら ASCII 固定**。`case 東 = "E"` `case チー = "chi"`
+- **テストの型名・関数名も日本語**。`@Suite("応答の選択肢") struct 応答の選択肢`、
+  `@Test func 立直中は鳴けない()`。
+  `swift test --filter` は日本語の識別子で効くが `@Test("表示名")` では効かない
+
+リネーム時の注意:
+
+- **一括置換は事故る**。`.七対子` への置換が `Shanten.sevenPairs()` を、`.加槓` が
+  `ClaimContext.kakan` を巻き込んだ実績がある。置換後は
+  `grep -rnE "(let|var|func) [^ -~]"` で変数名に日本語が混ざっていないか確認する
+
+## CLI: `paikei`
+
+1発実行・REPL・MJAI botの3つの顔を持つ。使用例は `README.md`。
 
 ```
-$ paikei analyze snapshot.paikei      # 1発実行
-$ paikei mjai                         # MJAI botとして標準入出力で対局
-$ paikei                              # REPL起動
-> load east2-1.paikei
-東2局1本場 供託1 ドラ:4p 残り42枚 / 自分:西家 24000点 / 下家リーチ
-> shanten
-1シャンテン (受け入れ: 1s 4s 6s 9s = 14枚)
-> analyze                             # 全打牌候補の受け入れ比較（何切る）
-> safety shimocha                     # 現物/スジ/無スジの安全度
-> score 5s tsumo                      # 和了と仮定した役・符・点数
-> score 5s tsumo ippatsu              # 履歴依存情報はコマンド引数で仮定できる
-> discard 1z                          # 状態遷移（イベントを生成）
-> step / seek 5                       # [stream]がある場合の再生
-> save session.paikei                 # 初期局面+操作履歴を保存（仕様§8.4）
+$ paikei analyze <path>            # 局面の要約
+$ paikei shanten <path>            # シャンテン・受け入れ・何切る
+$ paikei score <path> <牌> <tsumo|ron> [フラグ]
+$ paikei safety <path> [相手]      # 現物/スジ/無スジ
+$ paikei replay <path>             # [stream] の再生
+$ paikei mjai                      # MJAI botとして標準入出力で対局
+$ paikei                           # REPL起動
 ```
 
-コマンドは局面フェーズ（仕様§7）で有効性チェックする
-（例: `score X ron` は awaiting claim でのみ有効）。
+REPLのコマンドは局面フェーズ（仕様§7）で有効性をチェックする
+（例: `score X ron` は応答待ちでのみ有効）。遷移コマンド（`discard` `pon` `chi` …）は
+イベントを生成するので、セッションがそのまま `.paikei` として保存できる（仕様§8.4）。
 
-## 実装フェーズ
+## 実装フェーズと現在地
 
-順番に。各フェーズはテストが通ってから次へ:
+1〜7 は完了。フェーズを1つずつ、テストが通ってから次へ進める方針は継続する。
 
-1. **Tile + MPSZ**: 牌の型、MPSZパース/シリアライズ、正規化、ラウンドトリップテスト
-2. **Snapshotパーサー + Phase導出**: 仕様§3〜§7。§9のサンプル4つをフィクスチャに
-3. **シャンテン + 受け入れ**: 一般形・七対子・国士。`shanten` `waits` `analyze` が動く
-4. **和了・役・符・点数**: 面子分解の全列挙 → 役判定 → 高点法。`score` が動く
-5. **フリテン + 安牌**: 論理捨て牌履歴の導出（仕様§5）→ 現物・スジ・壁
-6. **ストリーム**: イベント適用、`format=mjai` 方言、`step`/`seek`/`save`
-7. **MJAI botモード**: stdin/stdoutでJSONLを読み書きし、
-   mjai.appシミュレータに接続して対戦検証。`paikei mjai`
+| # | フェーズ | 状態 |
+|---|---|---|
+| 1 | Tile + MPSZ | 完了 |
+| 2 | Snapshotパーサー + Phase導出 | 完了 |
+| 3 | シャンテン + 受け入れ | 完了（正解データ4万手と照合） |
+| 4 | 和了・役・符・点数 | 完了（高点法・役満複合まで） |
+| 5 | フリテン + 安牌 | 完了（現物・スジ・壁） |
+| 6 | ストリーム（イベント・mjai方言・REPL） | 完了 |
+| 7 | MJAI botモード | 完了（`paikei mjai` + `SimpleBot`） |
+
+### 既知の未実装（意識して残しているもの）
+
+- **局をまたぐ進行を持たない**。1局が単位で、連荘・親流れ・供託の精算は範囲外。
+  和了イベントは応答対象を消費するだけで持ち点を動かさない（点数移動は `score` の領分）
+- **履歴から自動導出しているのは一発だけ**。海底摸月・河底撈魚（`wall == 0`）と
+  嶺上開花（直前が槓）は `GameTimeline` から分かるはずだが、まだ `WinOptions` に
+  明示的に渡す必要がある
+- **特殊な流局・責任払いが無い**。四開槓・四風連打・九種九牌、大明槓の責任払い（包）
+- **`SimpleBot` は押し引きをしない**。鳴かず立直せず、安全度も点数期待値も見ない
 
 ## テスト方針
 
@@ -93,6 +131,8 @@ $ paikei                              # REPL起動
 - 点数計算は「30符4翻=7700（子ロン）」のような古典的な組を網羅テストに。
   符計算のエッジケース（平和ツモ20符、七対子25符、喰い平和形30符、切り上げ）を重点的に
 - パーサーは常にラウンドトリップ（parse → serialize → parse 同一）を検証
+- **テスト用の手牌は必ず枚数を数えてから書く**。13枚/14枚のつもりで12枚や15枚を
+  書く事故が繰り返し起きている
 - 実装の正しさに迷ったら仕様書が正。仕様書に穴を見つけたら
   実装を進める前に仕様書の§10（未解決の論点）へ追記して報告すること
 
@@ -109,3 +149,4 @@ $ paikei                              # REPL起動
 
 喰いタンあり・赤3枚（0m/0p/0s各1）・切り上げ満貫なし・一発/裏あり。
 `RuleSet` 構造体に集約し、ハードコードしない（仕様§10の論点3）。
+評価器には注入する（`YakuDetector(rules:)` `FuCalculator(rules:)` など）。
