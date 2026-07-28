@@ -33,8 +33,12 @@ enum TileFormatter {
 
     /// 牌1枚。端末なら赤5を赤字にする。
     ///
-    /// Unicode には赤5の符号位置が無いので印で補う。色はパイプに流すと消えるため、
-    /// 色だけに頼らない。
+    /// Unicode には赤5の符号位置が無いので `~` を後置して補う。色はパイプに流すと
+    /// 消えるため、色だけに頼らない。
+    ///
+    /// 印に ASCII を使うのは幅のため。`·` `•` `★` などは East Asian Width が
+    /// Ambiguous で、日本語ロケールの端末では全角になり赤5だけ桁がずれる。
+    /// `+ - * ^` は `.paikei` の河表記が使っているので避ける（仕様§5）。
     static func tile(_ t: Tile) -> String {
         switch style {
         case .kanji:
@@ -42,7 +46,7 @@ enum TileFormatter {
             return t.isRed ? red("赤" + body) : body
         case .unicode:
             let body = t.unicodeTile
-            return t.isRed ? red(body + "*") : body
+            return t.isRed ? red(body + "~") : body
         }
     }
 
