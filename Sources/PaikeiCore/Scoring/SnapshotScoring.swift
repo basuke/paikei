@@ -1,12 +1,17 @@
-/// 履歴に依存する情報（スナップショットには写らない。解析時に与える。仕様§10の論点1）。
+/// 局面だけでは決まらない和了の文脈（仕様§10の論点1）。
+///
+/// 導出できるものは解析側が埋めるので、ここで渡すのは**導出できないときの補い**。
+/// 指定した値は導出結果と OR を取るので、明示的に立てたフラグが消えることはない。
 public struct WinOptions: Sendable, Equatable {
     public var doubleRiichi: Bool
+    /// 一発。`GameTimeline` が履歴から導出する。
     public var ippatsu: Bool
-    /// 海底摸月 / 河底撈魚。
+    /// 海底摸月 / 河底撈魚。`wall == 0` から導出する。
     public var lastTile: Bool
-    /// 嶺上開花。
+    /// 嶺上開花。`GameTimeline` が「直前に自分が槓した」ことから導出する。
     public var afterKan: Bool
-    /// 槍槓。
+    /// 槍槓。加槓への応答（`claim_tile kind=kakan`）から導出する。
+    /// 暗槓の槍槓は国士限定でルール依存のため、導出せずここで指定する。
     public var robbingKan: Bool
     /// 裏ドラ表示牌（立直時のみ意味を持つ）。
     public var uraMarkers: [Tile]
@@ -125,6 +130,18 @@ extension GameState {
             concealed = hand
         } else {
             concealed = hand + [winningTile]
+        }
+
+        // 局面から読み取れる文脈フラグは導出する。呼び出し側の指定とは OR を取るので、
+        // 明示的に立てたフラグが消えることはない。
+        var options = options
+        // 山が尽きていれば、この和了は海底摸月 / 河底撈魚。`wall` が不明なら導出しない。
+        if wall == 0 { options.lastTile = true }
+        // 加槓に応答してのロンは槍槓（仕様§3.4）。暗槓の槍槓は国士限定でルール依存の
+        // ため導出せず、呼び出し側の指定に任せる。
+        if winType == .ロン, let claim, claim.kind == .加槓, claim.from != player,
+           claim.tile.normalized == winningTile.normalized {
+            options.robbingKan = true
         }
 
         var assumptions: [Assumption] = []

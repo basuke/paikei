@@ -126,6 +126,24 @@ extension GameTimeline {
         }
     }
 
+    /// `player` のいまのツモが嶺上牌か（直前に自分が槓している）。嶺上開花の判定用。
+    ///
+    /// 槓の直後は必ず嶺上ツモなので、直前2イベントを見れば足りる。
+    /// スナップショットには「嶺上ツモ直後」を表す印が無いため（仕様§7.5）、
+    /// この導出は履歴がある場合に限られる。
+    public func 嶺上ツモか(of player: Player, at steps: Int? = nil) throws -> Bool {
+        let count = steps ?? events.count
+        guard count >= 2, count <= events.count else { return false }
+        guard case let .ツモ(actor, _) = events[count - 1], actor == player else { return false }
+
+        switch events[count - 2] {
+        case let .大明槓(actor, _, _, _), let .加槓(actor, _), let .暗槓(actor, _):
+            return actor == player
+        default:
+            return false
+        }
+    }
+
     /// `player` が立直状態になった直後のイベント位置。立直していなければ nil。
     ///
     /// t0 で既に立直済みなら 0（＝全イベントが立直後）。
