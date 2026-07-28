@@ -1,0 +1,327 @@
+import Testing
+@testable import PaikeiCore
+
+/// 局と局のあいだの遷移。連荘・親流れ・本場・供託・点数移動。
+@Suite("局の連鎖 (MatchState)")
+struct 局の連鎖 {
+    /// 東1局、自分が親。持ち点は全員25000。
+    func state(bakaze: Wind = .東, kyoku: Int = 1, honba: Int = 0, kyotaku: Int = 0,
+               dealer: Player = .自分) -> MatchState {
+        MatchState(
+            bakaze: bakaze, kyoku: kyoku, honba: honba, kyotaku: kyotaku,
+            scores: Dictionary(uniqueKeysWithValues: Player.allCases.map { ($0, 25000) }),
+            dealer: dealer)
+    }
+
+    /// 局の終了時点の卓。持ち点と供託だけが要る。
+    func end(_ state: MatchState, 立直: [Player] = []) -> GameState {
+        var s = state.snapshot()
+        for player in 立直 {
+            s.players[player]?.score = (state.scores[player] ?? 0) - 1000
+            s.players[player]?.riichi = true
+        }
+        s.kyotaku = state.kyotaku + 立直.count
+        return s
+    }
+
+    func 子のロン満貫() -> Score {
+        Score(han: 5, fu: 30, limit: .満貫, dora: DoraCount(),
+              payment: .ロン(8000), liable: nil, honba: 0, kyotaku: 0)
+    }
+
+    func 続行(_ progress: MatchProgress) throws -> MatchState {
+        guard case let .続行(next) = progress else {
+            Issue.record("続行するはず: \(progress)")
+            return state()
+        }
+        return next
+    }
+
+    // MARK: - 席風
+
+    @Test("親が東で、手番順に南・西・北")
+    func 席風は親から回る() {
+        let s = state(dealer: .下家)
+        #expect(s.seat(of: .下家) == .東)
+        #expect(s.seat(of: .対面) == .南)
+        #expect(s.seat(of: .上家) == .西)
+        #expect(s.seat(of: .自分) == .北)
+    }
+
+    @Test("初期局面の骨格は仮定を必要としない")
+    func 初期局面の骨格() {
+        let snapshot = state(honba: 2, kyotaku: 1).snapshot()
+        #expect(snapshot.bakaze == .東)
+        #expect(snapshot.honba == 2)
+        #expect(snapshot.kyotaku == 1)
+        #expect(snapshot.wall == 70)
+        #expect(snapshot.players[.自分]?.seat == .東)
+        #expect(snapshot.players[.自分]?.riichi == false)
+        #expect(snapshot.players[.下家]?.score == 25000)
+    }
+
+    // MARK: - 連荘と親流れ
+
+    @Test func 親の和了で連荘し本場が増える() throws {
+        let s = state()
+        let next = try 続行(s.applying(
+            .和了(of: .自分, from: .下家, 子のロン満貫()), at: end(s)))
+        #expect(next.dealer == .自分)
+        #expect(next.kyoku == 1)
+        #expect(next.honba == 1)
+    }
+
+    @Test func 子の和了で親が流れ本場が戻る() throws {
+        let s = state(honba: 3)
+        let next = try 続行(s.applying(
+            .和了(of: .下家, from: .自分, 子のロン満貫()), at: end(s)))
+        #expect(next.dealer == .下家)
+        #expect(next.kyoku == 2)
+        #expect(next.honba == 0)
+    }
+
+    @Test func 流局で親テンパイなら連荘() throws {
+        let s = state()
+        let next = try 続行(s.applying(
+            .流局(理由: .荒牌平局, テンパイ: [.自分, .対面], 流し満貫: []), at: end(s)))
+        #expect(next.dealer == .自分)
+        #expect(next.honba == 1)
+    }
+
+    @Test func 流局で親ノーテンなら親流れ() throws {
+        let s = state()
+        let next = try 続行(s.applying(
+            .流局(理由: .荒牌平局, テンパイ: [.対面], 流し満貫: []), at: end(s)))
+        #expect(next.dealer == .下家)
+        #expect(next.kyoku == 2)
+        // 流局では連荘・親流れによらず本場が増える。
+        #expect(next.honba == 1)
+    }
+
+    @Test func 東4を終えると場風が変わる() throws {
+        let s = state(kyoku: 4, dealer: .上家)
+        let next = try 続行(s.applying(
+            .和了(of: .自分, from: .上家, 子のロン満貫()), at: end(s)))
+        #expect(next.bakaze == .南)
+        #expect(next.kyoku == 1)
+        #expect(next.dealer == .自分)
+    }
+
+    // MARK: - 点数移動
+
+    @Test func ロンは放銃者だけが払う() throws {
+        let s = state()
+        let next = try 続行(s.applying(
+            .和了(of: .下家, from: .対面, 子のロン満貫()), at: end(s)))
+        #expect(next.scores[.下家] == 33000)
+        #expect(next.scores[.対面] == 17000)
+        #expect(next.scores[.自分] == 25000)
+        #expect(next.scores[.上家] == 25000)
+    }
+
+    @Test func ツモは親と子で額が違う() throws {
+        let score = Score(han: 5, fu: 30, limit: .満貫, dora: DoraCount(),
+                          payment: .ツモ(親: 4000, 子: 2000), liable: nil, honba: 0, kyotaku: 0)
+        let s = state()  // 親は自分
+        let next = try 続行(s.applying(.和了(of: .下家, from: .下家, score), at: end(s)))
+        #expect(next.scores[.下家] == 33000)
+        #expect(next.scores[.自分] == 21000)   // 親払い
+        #expect(next.scores[.対面] == 23000)
+        #expect(next.scores[.上家] == 23000)
+    }
+
+    @Test("親のツモは全員が同額を払う")
+    func 親のツモ() throws {
+        let score = Score(han: 5, fu: 30, limit: .満貫, dora: DoraCount(),
+                          payment: .ツモ(親: nil, 子: 4000), liable: nil, honba: 0, kyotaku: 0)
+        let s = state()
+        let next = try 続行(s.applying(.和了(of: .自分, from: .自分, score), at: end(s)))
+        #expect(next.scores[.自分] == 37000)
+        #expect(next.scores[.下家] == 21000)
+    }
+
+    @Test func 包の責任払いは責任者が全額を負う() throws {
+        let score = Score(han: 13, fu: 0, limit: .役満(複合数: 1), dora: DoraCount(),
+                          payment: .責任払い(32000), liable: .上家, honba: 0, kyotaku: 0)
+        let s = state()
+        // 上家が飛ぶ額なので、トビ終了を切って点数移動だけを見る。
+        let next = try 続行(s.applying(.和了(of: .下家, from: .下家, score), at: end(s),
+                                     rules: MatchRules(bankruptcyEnds: false)))
+        #expect(next.scores[.下家] == 57000)
+        #expect(next.scores[.上家] == -7000)
+        #expect(next.scores[.対面] == 25000)
+    }
+
+    // MARK: - 供託と立直棒
+
+    @Test("立直棒は局中に減り、和了者が供託を総取りする")
+    func 供託は和了者が総取り() throws {
+        let s = state(kyotaku: 1)
+        // 対面と上家が立直した局。
+        let next = try 続行(s.applying(
+            .和了(of: .下家, from: .対面, 子のロン満貫()),
+            at: end(s, 立直: [.対面, .上家])))
+        // 供託は元の1本 + この局の2本 = 3本。
+        #expect(next.scores[.下家] == 25000 + 8000 + 3000)
+        #expect(next.scores[.対面] == 25000 - 1000 - 8000)
+        #expect(next.scores[.上家] == 24000)
+        #expect(next.kyotaku == 0)
+    }
+
+    @Test func 流局では供託が次局へ持ち越される() throws {
+        let s = state(kyotaku: 1)
+        let next = try 続行(s.applying(
+            .流局(理由: .荒牌平局, テンパイ: [.自分], 流し満貫: []),
+            at: end(s, 立直: [.自分])))
+        #expect(next.kyotaku == 2)
+    }
+
+    // MARK: - ノーテン罰符
+
+    @Test func テンパイ1人なら3000点を1人で受け取る() throws {
+        let s = state()
+        let next = try 続行(s.applying(
+            .流局(理由: .荒牌平局, テンパイ: [.対面], 流し満貫: []), at: end(s)))
+        #expect(next.scores[.対面] == 28000)
+        #expect(next.scores[.自分] == 24000)
+    }
+
+    @Test func テンパイ2人なら1500点ずつ() throws {
+        let s = state()
+        let next = try 続行(s.applying(
+            .流局(理由: .荒牌平局, テンパイ: [.対面, .上家], 流し満貫: []), at: end(s)))
+        #expect(next.scores[.対面] == 26500)
+        #expect(next.scores[.自分] == 23500)
+    }
+
+    @Test("全員テンパイ・全員ノーテンなら移動しない")
+    func 全員同じなら移動なし() throws {
+        let s = state()
+        for tenpai in [Set(Player.allCases), Set<Player>()] {
+            let next = try 続行(s.applying(
+                .流局(理由: .荒牌平局, テンパイ: tenpai, 流し満貫: []), at: end(s)))
+            #expect(next.scores.values.allSatisfy { $0 == 25000 })
+        }
+    }
+
+    @Test("流し満貫があればノーテン罰符は無い")
+    func 流し満貫はノーテン罰符に優先する() throws {
+        let s = state()
+        let 流し = NagashiMangan(player: .対面, payment: .ツモ(親: 4000, 子: 2000))
+        let next = try 続行(s.applying(
+            .流局(理由: .荒牌平局, テンパイ: [.対面], 流し満貫: [流し]), at: end(s)))
+        #expect(next.scores[.対面] == 33000)
+        #expect(next.scores[.自分] == 21000)   // 親払い
+        #expect(next.scores[.上家] == 23000)
+    }
+}
+
+/// 対局全体（東風戦・半荘戦）の進行と終局判定。
+@Suite("対局 (Match)")
+struct 対局 {
+    func 満貫ロン() -> Score {
+        Score(han: 5, fu: 30, limit: .満貫, dora: DoraCount(),
+              payment: .ロン(8000), liable: nil, honba: 0, kyotaku: 0)
+    }
+
+    /// 局を1つ、指定の和了者で終える。
+    func 進める(_ match: inout Match, 和了: Player, 放銃: Player) throws {
+        let timeline = GameTimeline(snapshot: match.state.snapshot())
+        try match.finish(timeline, result: .和了(of: 和了, from: 放銃, 満貫ロン()))
+    }
+
+    @Test func 東風戦は東4で終わる() throws {
+        var match = Match(rules: MatchRules(length: .東風戦))
+        // 毎局、親でない下家が和了して親が流れる。
+        for _ in 0..<3 {
+            try 進める(&match, 和了: match.state.dealer.seated(.下家),
+                     放銃: match.state.dealer.seated(.対面))
+            #expect(!match.isFinished)
+        }
+        #expect(match.state.bakaze == .東)
+        #expect(match.state.kyoku == 4)
+
+        try 進める(&match, 和了: match.state.dealer.seated(.下家),
+                 放銃: match.state.dealer.seated(.対面))
+        #expect(match.isFinished)
+        #expect(match.records.count == 4)
+    }
+
+    @Test func 半荘戦は南4まで続く() throws {
+        var match = Match(rules: MatchRules(length: .半荘戦))
+        for _ in 0..<7 {
+            try 進める(&match, 和了: match.state.dealer.seated(.下家),
+                     放銃: match.state.dealer.seated(.対面))
+            #expect(!match.isFinished)
+        }
+        #expect(match.state.bakaze == .南)
+        #expect(match.state.kyoku == 4)
+
+        try 進める(&match, 和了: match.state.dealer.seated(.下家),
+                 放銃: match.state.dealer.seated(.対面))
+        #expect(match.isFinished)
+    }
+
+    @Test("オーラスで親が和了すれば連荘して続く")
+    func オーラスの連荘() throws {
+        var match = Match(rules: MatchRules(length: .東風戦))
+        for _ in 0..<3 {
+            try 進める(&match, 和了: match.state.dealer.seated(.下家),
+                     放銃: match.state.dealer.seated(.対面))
+        }
+        // 東4で親が和了。
+        try 進める(&match, 和了: match.state.dealer, 放銃: match.state.dealer.seated(.対面))
+        #expect(!match.isFinished)
+        #expect(match.state.kyoku == 4)
+        #expect(match.state.honba == 1)
+    }
+
+    @Test("アガリやめなら、オーラスで親がトップのまま和了して終局")
+    func アガリやめ() throws {
+        var match = Match(rules: MatchRules(length: .東風戦, agariyame: true))
+        for _ in 0..<3 {
+            try 進める(&match, 和了: match.state.dealer.seated(.下家),
+                     放銃: match.state.dealer.seated(.対面))
+        }
+        try 進める(&match, 和了: match.state.dealer, 放銃: match.state.dealer.seated(.対面))
+        #expect(match.isFinished)
+    }
+
+    @Test func トビで即終局() throws {
+        var match = Match(rules: MatchRules(length: .半荘戦))
+        let 役満 = Score(han: 13, fu: 0, limit: .役満(複合数: 1), dora: DoraCount(),
+                        payment: .ロン(32000), liable: nil, honba: 0, kyotaku: 0)
+        let timeline = GameTimeline(snapshot: match.state.snapshot())
+        try match.finish(timeline, result: .和了(of: .下家, from: .対面, 役満))
+        #expect(match.state.scores[.対面] == -7000)
+        #expect(match.isFinished)
+        #expect(match.state.bakaze == .東)  // 場風は最後の局のまま
+    }
+
+    @Test func トビを無効にすれば続行する() throws {
+        var match = Match(rules: MatchRules(length: .半荘戦, bankruptcyEnds: false))
+        let 役満 = Score(han: 13, fu: 0, limit: .役満(複合数: 1), dora: DoraCount(),
+                        payment: .ロン(32000), liable: nil, honba: 0, kyotaku: 0)
+        let timeline = GameTimeline(snapshot: match.state.snapshot())
+        try match.finish(timeline, result: .和了(of: .下家, from: .対面, 役満))
+        #expect(!match.isFinished)
+    }
+
+    @Test("順位は持ち点降順、同点は起家に近い順")
+    func 順位() throws {
+        var match = Match(firstDealer: .対面)
+        try 進める(&match, 和了: .上家, 放銃: .自分)
+        // 上家 33000 / 自分 17000 / 下家・対面 25000（同点）。
+        // 同点は起家（対面）に近い順なので 対面 → 下家。
+        #expect(match.standings == [.上家, .対面, .下家, .自分])
+    }
+
+    @Test func 各局の記録が残る() throws {
+        var match = Match(rules: MatchRules(length: .東風戦))
+        try 進める(&match, 和了: .下家, 放銃: .対面)
+        let record = try #require(match.records.first)
+        #expect(record.start.kyoku == 1)
+        #expect(record.start.scores[.下家] == 25000)
+        #expect(record.result == .和了(of: .下家, from: .対面, 満貫ロン()))
+    }
+}
