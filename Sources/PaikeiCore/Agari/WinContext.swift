@@ -16,6 +16,10 @@ public enum AgariForm: Sendable, Equatable {
 ///
 /// 観測の不足（`Requirement`）とは別物で、これは**呼び出し側の入力の誤り**。
 /// 解析は矛盾を黙って握りつぶさず、`WinContextError` で拒む。
+///
+/// **風に依存する組み合わせはここに入れない**。`GameState.score` は不明な風を
+/// 総当たりするため、矛盾検査は代表の風1つで済ませている（仕様§6）。
+/// 「親の第一巡ロン」のような風次第の不整合は、矛盾ではなく役が付かないこととして扱う。
 public enum WinContextContradiction: Sendable, Equatable {
     /// 一発には立直（ダブル立直を含む）が必要。
     case 立直なしの一発
@@ -23,8 +27,6 @@ public enum WinContextContradiction: Sendable, Equatable {
     case ロンの嶺上開花
     /// 槍槓はロン和了のみ。
     case ツモの槍槓
-    /// 天和・地和は配牌後の第一ツモなので、ロンにはなり得ない。
-    case ロンの第一ツモ
 }
 
 /// 矛盾した `WinContext` で解析を呼んだときのエラー。見つかった矛盾を全て持つ。
@@ -61,8 +63,9 @@ public struct WinContext: Sendable, Equatable {
     public var afterKan: Bool
     /// 槍槓。
     public var robbingKan: Bool
-    /// 配牌後の第一ツモ（親なら天和、子なら地和）。
-    public var firstDraw: Bool
+    /// 配牌後の第一巡で、自分はまだ何もしていない。
+    /// ツモなら天和（親）/ 地和（子）、ロンなら人和になる。
+    public var firstTurn: Bool
 
     /// ドラ表示牌。
     public var doraMarkers: [Tile]
@@ -80,7 +83,7 @@ public struct WinContext: Sendable, Equatable {
         lastTile: Bool = false,
         afterKan: Bool = false,
         robbingKan: Bool = false,
-        firstDraw: Bool = false,
+        firstTurn: Bool = false,
         doraMarkers: [Tile] = [],
         uraMarkers: [Tile] = []
     ) {
@@ -94,7 +97,7 @@ public struct WinContext: Sendable, Equatable {
         self.lastTile = lastTile
         self.afterKan = afterKan
         self.robbingKan = robbingKan
-        self.firstDraw = firstDraw
+        self.firstTurn = firstTurn
         self.doraMarkers = doraMarkers
         self.uraMarkers = uraMarkers
     }
@@ -107,7 +110,6 @@ extension WinContext {
         if ippatsu && !(riichi || doubleRiichi) { result.append(.立直なしの一発) }
         if afterKan && winType != .ツモ { result.append(.ロンの嶺上開花) }
         if robbingKan && winType != .ロン { result.append(.ツモの槍槓) }
-        if firstDraw && winType != .ツモ { result.append(.ロンの第一ツモ) }
         return result
     }
 

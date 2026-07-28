@@ -15,7 +15,7 @@ public struct WinOptions: Sendable, Equatable {
     public var robbingKan: Bool
     /// 配牌後の第一ツモ（親なら天和、子なら地和）。誰も鳴いておらず、
     /// 自分がまだ1枚も打っていないことから導出する。
-    public var firstDraw: Bool
+    public var firstTurn: Bool
     /// 裏ドラ表示牌（立直時のみ意味を持つ）。
     public var uraMarkers: [Tile]
 
@@ -25,7 +25,7 @@ public struct WinOptions: Sendable, Equatable {
         lastTile: Bool = false,
         afterKan: Bool = false,
         robbingKan: Bool = false,
-        firstDraw: Bool = false,
+        firstTurn: Bool = false,
         uraMarkers: [Tile] = []
     ) {
         self.doubleRiichi = doubleRiichi
@@ -33,7 +33,7 @@ public struct WinOptions: Sendable, Equatable {
         self.lastTile = lastTile
         self.afterKan = afterKan
         self.robbingKan = robbingKan
-        self.firstDraw = firstDraw
+        self.firstTurn = firstTurn
         self.uraMarkers = uraMarkers
     }
 }
@@ -148,16 +148,22 @@ extension GameState {
            claim.tile.normalized == winningTile.normalized {
             options.robbingKan = true
         }
-        // 配牌のまま第一ツモで和了れば天和（親）/ 地和（子）。誰も鳴いておらず、
+        // 配牌後の第一巡（ツモなら天和/地和、ロンなら人和）。誰も鳴いておらず、
         // 自分がまだ1枚も打っていないことが条件。
         //
-        // 河が観測できていないだけの局面を役満と誤らないよう、山の残りが席順どおりか
-        // まで確かめる（親の第一ツモなら 70−1、南家なら 70−2 …）。
-        // `wall` や `seat` が不明なら導出しない。
-        if winType == .ツモ, ps.river.isEmpty,
-           players.values.allSatisfy(\.melds.isEmpty),
-           let seat = ps.seat, wall == GameState.wallAfterDeal - seat.order {
-            options.firstDraw = true
+        // 河が観測できていないだけの局面を役満と誤らないよう、山の残りが巡目と
+        // 整合するかまで確かめる。`wall` や `seat` が不明なら導出しない。
+        if ps.river.isEmpty, players.values.allSatisfy(\.melds.isEmpty),
+           let seat = ps.seat, let wall {
+            // 自分の第一ツモの時点での山（親なら 70−1、南家なら 70−2 …）。
+            let atMyDraw = GameState.wallAfterDeal - seat.order
+            switch winType {
+            case .ツモ:
+                if wall == atMyDraw { options.firstTurn = true }
+            case .ロン:
+                // 自分の第一ツモより前。親は誰も打っていないので該当しない。
+                if wall > atMyDraw, wall < GameState.wallAfterDeal { options.firstTurn = true }
+            }
         }
 
         var assumptions: [Assumption] = []
@@ -187,7 +193,7 @@ extension GameState {
                 lastTile: options.lastTile,
                 afterKan: options.afterKan,
                 robbingKan: options.robbingKan,
-                firstDraw: options.firstDraw,
+                firstTurn: options.firstTurn,
                 doraMarkers: doraMarkers,
                 uraMarkers: options.uraMarkers)
         }

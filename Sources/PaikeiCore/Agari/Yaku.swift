@@ -16,6 +16,8 @@ public enum Yaku: Sendable, Hashable {
     case 国士無双, 大三元, 四暗刻, 字一色, 清老頭, 緑一色, 大四喜, 小四喜, 四槓子, 九蓮宝燈
     /// 配牌のままの和了。親なら天和、子なら地和。
     case 天和, 地和
+    /// 子が第一巡でロン。翻数も採否も流派差が大きいので `RuleSet` から受け取る。
+    case 人和(人和の扱い)
 
     /// 役満か。
     public var isYakuman: Bool {
@@ -23,6 +25,8 @@ public enum Yaku: Sendable, Hashable {
         case .国士無双, .大三元, .四暗刻, .字一色, .清老頭, .緑一色, .大四喜, .小四喜, .四槓子,
              .九蓮宝燈, .天和, .地和:
             true
+        case let .人和(rank):
+            rank == .役満
         default:
             false
         }
@@ -30,6 +34,7 @@ public enum Yaku: Sendable, Hashable {
 
     /// 翻数。面前か否かで食い下がりを反映する。役満は13。
     public func han(menzen: Bool) -> Int {
+        if case let .人和(rank) = self { return rank.han }
         if isYakuman { return 13 }
         switch self {
         case .三色同順, .一気通貫, .混全帯幺九:
@@ -53,6 +58,7 @@ public enum Yaku: Sendable, Hashable {
         case .白: "役牌 白"
         case .發: "役牌 發"
         case .中: "役牌 中"
+        case .人和: "人和"
         default: String(describing: self)
         }
     }
@@ -104,8 +110,19 @@ public struct YakuDetector: Sendable {
         if ctx.lastTile { result.append(ctx.winType == .ツモ ? .海底摸月 : .河底撈魚) }
         if ctx.afterKan { result.append(.嶺上開花) }
         if ctx.robbingKan { result.append(.槍槓) }
-        // 配牌のままの和了。親が天和、子が地和。どちらもツモ限定。
-        if ctx.firstDraw { result.append(ctx.seatWind == .東 ? .天和 : .地和) }
+        // 配牌後の第一巡。ツモなら天和（親）/ 地和（子）、ロンなら人和。
+        // 親の第一巡ロンは validate() で拒否済み。
+        if ctx.firstTurn {
+            switch ctx.winType {
+            case .ツモ:
+                result.append(ctx.seatWind == .東 ? .天和 : .地和)
+            case .ロン:
+                // 親の第一巡にはまだ誰も打っていないので、人和は子だけ。
+                if ctx.seatWind != .東, let rank = rules.renhou {
+                    result.append(.人和(rank))
+                }
+            }
+        }
         return result
     }
 

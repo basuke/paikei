@@ -259,3 +259,24 @@ struct ReportError: Error, CustomStringConvertible {
     let description: String
     init(_ description: String) { self.description = description }
 }
+
+/// 流し満貫（流局時の支払い）。
+enum NagashiManganReport {
+    static func text(for state: GameState) -> String {
+        let results = state.流し満貫()
+        guard !results.isEmpty else {
+            return "流し満貫は成立していません（捨て牌が全て幺九牌で、1枚も鳴かれていないこと）"
+        }
+        return results.map { result in
+            let 支払い = result.payment.map(payment)
+                ?? "支払いは席風が不明なため不定（親か子かで変わります）"
+            return "\(result.player.displayName): 流し満貫 — \(支払い)"
+        }.joined(separator: "\n")
+    }
+
+    private static func payment(_ payment: Payment) -> String {
+        guard case let .ツモ(dealer, nonDealer) = payment else { return "\(payment.total)点" }
+        guard let dealer else { return "子から各 \(nonDealer)点" }
+        return "親から \(dealer)点 / 子から各 \(nonDealer)点"
+    }
+}

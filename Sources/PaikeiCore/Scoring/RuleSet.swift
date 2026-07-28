@@ -1,3 +1,19 @@
+/// 人和の扱い。役満・倍満・満貫と流派が分かれ、採用しない卓も多い。
+///
+/// 満貫/倍満は翻として扱う（5翻/8翻）ので、他の役と複合して跳満以上になり得る。
+public enum 人和の扱い: Sendable, Hashable {
+    case 満貫, 倍満, 役満
+
+    /// 翻数。役満は13。
+    var han: Int {
+        switch self {
+        case .満貫: 5
+        case .倍満: 8
+        case .役満: 13
+        }
+    }
+}
+
 /// ルールオプション（仕様§10の論点3、CLAUDE.md の既定値）。
 ///
 /// ハードコードを避け、点数・役計算はこの構造体を参照する。
@@ -16,6 +32,10 @@ public struct RuleSet: Sendable, Equatable {
     public var doubleWindPairFu: Int
     /// 包（責任払い）を認めるか。大三元・大四喜を確定させる副露を鳴かせた者が負う。
     public var liability: Bool
+    /// 人和の扱い。nil なら採用しない（既定）。
+    public var renhou: 人和の扱い?
+    /// 流し満貫を認めるか。
+    public var nagashiMangan: Bool
     /// 大明槓の責任払いを認めるか。鳴かせた牌で槓させ、嶺上開花で和了られたときに負う。
     /// 包より採用が分かれるので既定は無効。
     public var daiminkanLiability: Bool
@@ -28,7 +48,9 @@ public struct RuleSet: Sendable, Equatable {
         uraDora: Bool = true,
         doubleWindPairFu: Int = 4,
         liability: Bool = true,
-        daiminkanLiability: Bool = false
+        daiminkanLiability: Bool = false,
+        renhou: 人和の扱い? = nil,
+        nagashiMangan: Bool = true
     ) {
         self.kuitan = kuitan
         self.redFives = redFives
@@ -38,6 +60,8 @@ public struct RuleSet: Sendable, Equatable {
         self.doubleWindPairFu = doubleWindPairFu
         self.liability = liability
         self.daiminkanLiability = daiminkanLiability
+        self.renhou = renhou
+        self.nagashiMangan = nagashiMangan
     }
 
     /// CLAUDE.md の既定値: 喰いタンあり・赤3枚・切り上げなし・一発/裏あり・包あり。
