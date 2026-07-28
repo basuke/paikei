@@ -551,3 +551,4 @@ claim_tile: 1m from=toimen
 | MJAI | フィールド名とイベント語彙を借用。`[stream] format=mjai` で生ログを直接受理。牌表記は異なる（E/S/W/N/P/F/C、5mr）ため変換層が必要 |
 | kobalab牌姿記法 | 副露表現の先行例として参考 |
 | 天鳳牌理URL | 手牌のみ。`hand:` フィールドと相互変換可能 |
+| Unicode 麻雀牌 (U+1F000〜) | 表示用。実装は `Tile.unicodeTile` で相互変換できるが、赤5を区別できないため `.paikei` の構文には入れていない（§2はMPSZ） |

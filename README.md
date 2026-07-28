@@ -71,6 +71,21 @@ $ paikei safety east2-1.paikei shimocha
 
 `score` / `replay` も同様。`paikei --help` で一覧。
 
+#### 牌の表示
+
+既定は漢字（`1萬` `5筒` `東`）。`PAIKEI_TILES=unicode` で Unicode の麻雀牌
+（U+1F000〜）に切り替わる。REPL なら `tiles unicode`。
+
+```console
+$ PAIKEI_TILES=unicode paikei shanten east2-1.paikei
+何切る:
+  打 🀔 → 1シャンテン 受け入れ 🀐 🀓 🀕 🀗 🀘 = 15枚
+  打 🀗 → 1シャンテン 受け入れ 🀐 🀓 🀕 🀘 = 13枚
+```
+
+フォントが対応していないと豆腐になるので既定にはしていない。
+赤5は対応する符号位置が無いため `赤🀝` と表す。
+
 ### REPL
 
 引数なしで起動すると対話モードに入る。局面を読み込み、解析し、打牌や鳴きで進め、

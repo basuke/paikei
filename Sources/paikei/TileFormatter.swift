@@ -1,3 +1,4 @@
+import Foundation
 import PaikeiCore
 #if canImport(Glibc)
 import Glibc
@@ -5,22 +6,39 @@ import Glibc
 import Darwin
 #endif
 
-/// 牌を人間向けの漢字表記に整形する（プレゼンテーション層）。
+/// 牌の表示スタイル。環境変数 `PAIKEI_TILES` で選ぶ。
+enum TileStyle: String {
+    /// 漢字表記（既定）。`1萬` `5筒` `東`。どの端末・どのフォントでも確実に読める。
+    case kanji
+    /// Unicode の麻雀牌（U+1F000〜）。`🀇` `🀝` `🀀`。
+    /// フォントが対応していれば一目で分かるが、対応していなければ豆腐になる。
+    case unicode
+}
+
+/// 牌を人間向けの表記に整形する（プレゼンテーション層）。
 ///
-/// 数牌は「数字＋スート漢字」（例: `1萬` `5筒`）、字牌は「東南西北白發中」。
-/// 手牌はスートごとにまとめる（例: `234萬 567筒 23788索 東東`）。
-/// 赤5は端末なら赤色で強調、それ以外は `0`。
+/// 既定は漢字表記。数牌は「数字＋スート漢字」（例: `1萬` `5筒`）、
+/// 字牌は「東南西北白發中」。赤5は「赤5筒」とし、端末なら赤色で強調する。
 enum TileFormatter {
     static let color = isatty(STDOUT_FILENO) != 0
+
+    /// 表示スタイル。起動時に環境変数から読み、REPL の `tiles` で切り替えられる。
+    /// CLI は単一スレッドなので保護しない。
+    nonisolated(unsafe) static var style: TileStyle =
+        ProcessInfo.processInfo.environment["PAIKEI_TILES"]
+            .flatMap(TileStyle.init(rawValue:)) ?? .kanji
 
     private static let suitKanji: [Suit: String] = [.萬子: "萬", .筒子: "筒", .索子: "索"]
     private static let honorNames = ["東", "南", "西", "北", "白", "發", "中"]  // 1z〜7z
 
-    /// 牌1枚の漢字表記。赤5は「赤5萬」のように赤字で表す。
+    /// 牌1枚。赤5は「赤」を付け、端末なら赤字にする。
     static func tile(_ t: Tile) -> String {
-        if t.suit == .字牌 { return honorNames[t.rank - 1] }
-        let body = "\(t.rank)\(suitKanji[t.suit]!)"
+        let body = style == .unicode ? t.unicodeTile : kanjiTile(t)
         return t.isRed ? red("赤" + body) : body
+    }
+
+    private static func kanjiTile(_ t: Tile) -> String {
+        t.suit == .字牌 ? honorNames[t.rank - 1] : "\(t.rank)\(suitKanji[t.suit]!)"
     }
 
     /// 複数牌をスペース区切りの漢字表記に（河・ドラなど）。

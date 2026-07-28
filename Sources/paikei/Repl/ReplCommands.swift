@@ -42,6 +42,15 @@ enum ReplCommands {
             print(try FuritenReport.text(for: session.document, at: session.position))
         case "nagashi":
             print(NagashiManganReport.text(for: session.state))
+        case "tiles":
+            if let name = args.first {
+                guard let style = TileStyle(rawValue: name) else {
+                    throw ReplError("使い方: tiles [kanji|unicode]")
+                }
+                TileFormatter.style = style
+            }
+            print("牌の表示: \(TileFormatter.style.rawValue)"
+                  + "（例: \(TileFormatter.tiles(try Tile.parseHand("19m0p5z7z")))）")
         case "options", "opts":
             let (actor, _) = actorPrefix(args)
             print(ClaimOptionsReport.text(
@@ -228,6 +237,7 @@ enum ReplCommands {
                   chi [家] <牌> <手牌から> チー（例: chi 4m 35m）
                   ankan [家] <牌>          暗槓
                   kakan [家] <牌>          加槓
+        表示      tiles [kanji|unicode]    牌の表示を切り替える（環境変数 PAIKEI_TILES）
         その他    help / quit
         """
 }

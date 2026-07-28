@@ -105,6 +105,8 @@ $ paikei safety <path> [相手]      # 現物/スジ/無スジ
 $ paikei replay <path>             # [stream] の再生
 $ paikei mjai                      # MJAI botとして標準入出力で対局
 $ paikei                           # REPL起動
+
+PAIKEI_TILES=unicode               # 牌の表示を Unicode 麻雀牌に（既定は漢字）
 ```
 
 REPLのコマンドは局面フェーズ（仕様§7）で有効性をチェックする
