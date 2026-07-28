@@ -4,9 +4,6 @@
 /// ドラ表示牌が全て確定し、立直も全員していないと言い切れる。
 /// つまりここから起こしたスナップショットは、解析が仮定を置かずに済む。
 enum MjaiKyoku {
-    /// 王牌14枚と配牌52枚を引いた、配牌直後の山の残り。
-    static let wallAfterDeal = 136 - 14 - 13 * 4
-
     static func snapshot(from fields: [String: Any], selfActor: Int) throws -> GameState {
         let format = StreamFormat.mjai(selfActor: selfActor)
 
@@ -49,7 +46,7 @@ enum MjaiKyoku {
 
         return GameState(
             bakaze: bakaze, kyoku: try int("kyoku"), honba: try int("honba"),
-            kyotaku: try int("kyotaku"), doraMarkers: markers, wall: wallAfterDeal,
+            kyotaku: try int("kyotaku"), doraMarkers: markers, wall: GameState.wallAfterDeal,
             players: players)
     }
 

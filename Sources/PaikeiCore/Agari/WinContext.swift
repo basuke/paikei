@@ -23,6 +23,8 @@ public enum WinContextContradiction: Sendable, Equatable {
     case ロンの嶺上開花
     /// 槍槓はロン和了のみ。
     case ツモの槍槓
+    /// 天和・地和は配牌後の第一ツモなので、ロンにはなり得ない。
+    case ロンの第一ツモ
 }
 
 /// 矛盾した `WinContext` で解析を呼んだときのエラー。見つかった矛盾を全て持つ。
@@ -59,6 +61,8 @@ public struct WinContext: Sendable, Equatable {
     public var afterKan: Bool
     /// 槍槓。
     public var robbingKan: Bool
+    /// 配牌後の第一ツモ（親なら天和、子なら地和）。
+    public var firstDraw: Bool
 
     /// ドラ表示牌。
     public var doraMarkers: [Tile]
@@ -76,6 +80,7 @@ public struct WinContext: Sendable, Equatable {
         lastTile: Bool = false,
         afterKan: Bool = false,
         robbingKan: Bool = false,
+        firstDraw: Bool = false,
         doraMarkers: [Tile] = [],
         uraMarkers: [Tile] = []
     ) {
@@ -89,6 +94,7 @@ public struct WinContext: Sendable, Equatable {
         self.lastTile = lastTile
         self.afterKan = afterKan
         self.robbingKan = robbingKan
+        self.firstDraw = firstDraw
         self.doraMarkers = doraMarkers
         self.uraMarkers = uraMarkers
     }
@@ -101,6 +107,7 @@ extension WinContext {
         if ippatsu && !(riichi || doubleRiichi) { result.append(.立直なしの一発) }
         if afterKan && winType != .ツモ { result.append(.ロンの嶺上開花) }
         if robbingKan && winType != .ロン { result.append(.ツモの槍槓) }
+        if firstDraw && winType != .ツモ { result.append(.ロンの第一ツモ) }
         return result
     }
 

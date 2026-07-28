@@ -49,6 +49,9 @@ struct ScoreCommand: ParsableCommand {
     @Flag(name: .long, help: "槍槓")
     var chankan = false
 
+    @Flag(name: .long, help: "配牌後の第一ツモ（親なら天和、子なら地和）")
+    var tenho = false
+
     @Option(name: .long, help: "裏ドラ表示牌（例: 1m5p）")
     var ura: String?
 
@@ -89,6 +92,7 @@ struct ScoreCommand: ParsableCommand {
         let options = WinOptions(
             doubleRiichi: doubleRiichi, ippatsu: ippatsu, lastTile: haitei,
             afterKan: rinshan, robbingKan: chankan,
+            firstDraw: tenho,
             uraMarkers: try ura.map { try Tile.parseHand($0) } ?? [])
         let winningTile = try Tile.parse(tile)
 

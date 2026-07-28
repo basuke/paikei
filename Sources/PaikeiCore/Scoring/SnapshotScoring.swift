@@ -13,6 +13,9 @@ public struct WinOptions: Sendable, Equatable {
     /// 槍槓。加槓への応答（`claim_tile kind=kakan`）から導出する。
     /// 暗槓の槍槓は国士限定でルール依存のため、導出せずここで指定する。
     public var robbingKan: Bool
+    /// 配牌後の第一ツモ（親なら天和、子なら地和）。誰も鳴いておらず、
+    /// 自分がまだ1枚も打っていないことから導出する。
+    public var firstDraw: Bool
     /// 裏ドラ表示牌（立直時のみ意味を持つ）。
     public var uraMarkers: [Tile]
 
@@ -22,6 +25,7 @@ public struct WinOptions: Sendable, Equatable {
         lastTile: Bool = false,
         afterKan: Bool = false,
         robbingKan: Bool = false,
+        firstDraw: Bool = false,
         uraMarkers: [Tile] = []
     ) {
         self.doubleRiichi = doubleRiichi
@@ -29,6 +33,7 @@ public struct WinOptions: Sendable, Equatable {
         self.lastTile = lastTile
         self.afterKan = afterKan
         self.robbingKan = robbingKan
+        self.firstDraw = firstDraw
         self.uraMarkers = uraMarkers
     }
 }
@@ -143,6 +148,17 @@ extension GameState {
            claim.tile.normalized == winningTile.normalized {
             options.robbingKan = true
         }
+        // 配牌のまま第一ツモで和了れば天和（親）/ 地和（子）。誰も鳴いておらず、
+        // 自分がまだ1枚も打っていないことが条件。
+        //
+        // 河が観測できていないだけの局面を役満と誤らないよう、山の残りが席順どおりか
+        // まで確かめる（親の第一ツモなら 70−1、南家なら 70−2 …）。
+        // `wall` や `seat` が不明なら導出しない。
+        if winType == .ツモ, ps.river.isEmpty,
+           players.values.allSatisfy(\.melds.isEmpty),
+           let seat = ps.seat, wall == GameState.wallAfterDeal - seat.order {
+            options.firstDraw = true
+        }
 
         var assumptions: [Assumption] = []
         func assume<T>(_ value: T?, _ fallback: T, _ note: Assumption) -> T {
@@ -171,6 +187,7 @@ extension GameState {
                 lastTile: options.lastTile,
                 afterKan: options.afterKan,
                 robbingKan: options.robbingKan,
+                firstDraw: options.firstDraw,
                 doraMarkers: doraMarkers,
                 uraMarkers: options.uraMarkers)
         }

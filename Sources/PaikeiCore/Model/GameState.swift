@@ -74,4 +74,7 @@ public struct GameState: Sendable, Equatable {
         self.players = players
         self.claim = claim
     }
+
+    /// 配牌直後の山の残り。全136枚から王牌14枚と配牌52枚を引いた数。
+    public static let wallAfterDeal = 136 - 14 - 13 * 4
 }

@@ -14,11 +14,14 @@ public enum Yaku: Sendable, Hashable {
     case 混一色, 清一色
     // 役満
     case 国士無双, 大三元, 四暗刻, 字一色, 清老頭, 緑一色, 大四喜, 小四喜, 四槓子, 九蓮宝燈
+    /// 配牌のままの和了。親なら天和、子なら地和。
+    case 天和, 地和
 
     /// 役満か。
     public var isYakuman: Bool {
         switch self {
-        case .国士無双, .大三元, .四暗刻, .字一色, .清老頭, .緑一色, .大四喜, .小四喜, .四槓子, .九蓮宝燈:
+        case .国士無双, .大三元, .四暗刻, .字一色, .清老頭, .緑一色, .大四喜, .小四喜, .四槓子,
+             .九蓮宝燈, .天和, .地和:
             true
         default:
             false
@@ -101,6 +104,8 @@ public struct YakuDetector: Sendable {
         if ctx.lastTile { result.append(ctx.winType == .ツモ ? .海底摸月 : .河底撈魚) }
         if ctx.afterKan { result.append(.嶺上開花) }
         if ctx.robbingKan { result.append(.槍槓) }
+        // 配牌のままの和了。親が天和、子が地和。どちらもツモ限定。
+        if ctx.firstDraw { result.append(ctx.seatWind == .東 ? .天和 : .地和) }
         return result
     }
 

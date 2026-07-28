@@ -12,7 +12,8 @@ public enum Wind: String, Sendable, CaseIterable {
         Tile(suit: .字牌, rank: order)!
     }
 
-    private var order: Int {
+    /// 東=1 〜 北=4。対応する字牌の数字であり、親から数えた席順でもある。
+    var order: Int {
         switch self {
         case .東: 1
         case .南: 2
