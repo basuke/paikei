@@ -44,8 +44,8 @@ extension GameTimeline {
     ///
     /// `target` が立直していなければ空を返す。手が変わり得る相手には
     /// 「通った」ことが安全を保証しないため、推測で埋めない。
-    public func 通った牌(against target: Player) throws -> [Tile] {
-        guard let start = try 立直が成立した位置(of: target) else { return [] }
+    public func 通った牌(against target: Player) -> [Tile] {
+        guard let start = 立直が成立した位置(of: target) else { return [] }
         return events[start...].compactMap {
             if case let .打牌(_, tile, _) = $0 { tile } else { nil }
         }
@@ -56,21 +56,33 @@ extension GameTimeline {
     /// 窓は「自分の最後の行動（ツモまたは打牌）より後」。ツモで解消するため、
     /// 最後の行動がツモなら常に false。テンパイしていなければ false。
     public func 同巡内フリテン(of player: Player, at steps: Int? = nil) throws -> Bool {
-        try !同巡内で見逃した待ち(of: player, at: steps).isEmpty
+        let count = try resolve(steps)
+        return !同巡内で見逃した待ち(of: player, at: count, in: try state(at: count)).isEmpty
     }
 
     /// 履歴込みのフリテン判定。恒常フリテンを優先し、無ければ同巡内を見る。
     public func furiten(of player: Player, at steps: Int? = nil) throws -> FuritenStatus? {
-        guard let base = try state(at: steps).furiten(of: player) else { return nil }
+        let count = try resolve(steps)
+        let current = try state(at: count)
+        guard let base = current.furiten(of: player) else { return nil }
         guard case let .フリテンなし(waits) = base else { return base }
-        let missed = try 同巡内で見逃した待ち(of: player, at: steps)
+        let missed = 同巡内で見逃した待ち(of: player, at: count, in: current)
         return missed.isEmpty ? base : .同巡内フリテン(待ち: waits, 見逃した牌: missed)
     }
 
-    /// 同巡内に通してしまった当たり牌。空なら同巡内フリテンではない。
-    func 同巡内で見逃した待ち(of player: Player, at steps: Int? = nil) throws -> [Tile] {
+    /// `at:` 引数を実際のイベント数に解決する。範囲外はここで弾く。
+    func resolve(_ steps: Int?) throws -> Int {
         let count = steps ?? events.count
-        let current = try state(at: count)
+        guard count >= 0, count <= events.count else {
+            throw StepOutOfRange(requested: count, available: events.count)
+        }
+        return count
+    }
+
+    /// 同巡内に通してしまった当たり牌。空なら同巡内フリテンではない。
+    ///
+    /// `current` は `state(at: count)`。再生は高くつくので、既に持っているなら渡す。
+    func 同巡内で見逃した待ち(of player: Player, at count: Int, in current: GameState) -> [Tile] {
         guard let ps = current.players[player], let hand = ps.hand,
               hand.count == 13 - 3 * ps.melds.count else { return [] }
         let ukeire = Acceptance.ukeire(hand: hand, melds: ps.melds.count)
@@ -106,18 +118,9 @@ extension GameTimeline {
     ///
     /// 区間は**宣言牌を打った直後から**。その後に本人の打牌または誰かの鳴きが
     /// あれば消える。立直が t0 より前で宣言牌が特定できない場合は false（推測しない）。
-    public func 一発が生きているか(of player: Player) throws -> Bool {
-        guard let start = try 立直が成立した位置(of: player) else { return false }
-        // t0 で既に立直済み＝宣言牌がストリームに無いので、一発の区間を特定できない。
-        guard start > 0 else { return false }
-
-        // 宣言牌そのものは区間の開始なので、区間の外に置く。
-        guard let declaration = events[start...].firstIndex(where: {
-            if case let .打牌(actor, _, _) = $0 { actor == player } else { false }
-        }) else {
-            return true  // まだ宣言牌を打っていない
-        }
-        return !events[(declaration + 1)...].contains {
+    public func 一発が生きているか(of player: Player) -> Bool {
+        guard let start = 一発の区間の開始(of: player) else { return false }
+        return !events[start...].contains {
             switch $0 {
             case let .打牌(actor, _, _): actor == player
             case .チー, .ポン, .大明槓, .加槓, .暗槓: true
@@ -126,12 +129,29 @@ extension GameTimeline {
         }
     }
 
+    /// 一発の区間（宣言牌を打った直後）が始まる位置。特定できなければ nil。
+    private func 一発の区間の開始(of player: Player) -> Int? {
+        // t0 で宣言牌が応答待ちのまま＝立直した直後。区間は t0 から始まる。
+        if let claim = snapshot.claim, claim.kind == .立直, claim.from == player { return 0 }
+        // t0 で既に立直済み＝宣言牌がストリームに無いので区間を特定できない（推測しない）。
+        if snapshot.players[player]?.riichi == true { return nil }
+
+        guard let declared = 立直が成立した位置(of: player) else { return nil }
+        // 宣言牌そのものは区間の開始なので、区間の外に置く。
+        guard let declaration = events[declared...].firstIndex(where: {
+            if case let .打牌(actor, _, _) = $0 { actor == player } else { false }
+        }) else {
+            return declared  // まだ宣言牌を打っていない
+        }
+        return declaration + 1
+    }
+
     /// `player` のいまのツモが嶺上牌か（直前に自分が槓している）。嶺上開花の判定用。
     ///
     /// 槓の直後は必ず嶺上ツモなので、直前2イベントを見れば足りる。
     /// スナップショットには「嶺上ツモ直後」を表す印が無いため（仕様§7.5）、
     /// この導出は履歴がある場合に限られる。
-    public func 嶺上ツモか(of player: Player, at steps: Int? = nil) throws -> Bool {
+    public func 嶺上ツモか(of player: Player, at steps: Int? = nil) -> Bool {
         let count = steps ?? events.count
         guard count >= 2, count <= events.count else { return false }
         guard case let .ツモ(actor, _) = events[count - 1], actor == player else { return false }
@@ -147,10 +167,22 @@ extension GameTimeline {
     /// `player` が立直状態になった直後のイベント位置。立直していなければ nil。
     ///
     /// t0 で既に立直済みなら 0（＝全イベントが立直後）。
-    private func 立直が成立した位置(of player: Player) throws -> Int? {
+    ///
+    /// riichi を立てるのは `立直` / `立直成立` イベントだけで、一度立ったら降りない。
+    /// だから状態を再生せず、イベントを走査すれば足りる — 再生して各時点の riichi を
+    /// 見ると、1回の判定でストリーム全体を n 回再生することになる。
+    private func 立直が成立した位置(of player: Player) -> Int? {
         if snapshot.players[player]?.riichi == true { return 0 }
-        for index in events.indices {
-            if try state(at: index + 1).players[player]?.riichi == true { return index + 1 }
+        // 宣言牌が応答待ちのまま t0 になっている場合も、既に立直している。
+        if let claim = snapshot.claim, claim.kind == .立直, claim.from == player { return 0 }
+
+        for (index, event) in events.enumerated() {
+            switch event {
+            case let .立直(actor), let .立直成立(actor):
+                if actor == player { return index + 1 }
+            default:
+                continue
+            }
         }
         return nil
     }

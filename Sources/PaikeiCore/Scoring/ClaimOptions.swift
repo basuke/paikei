@@ -99,8 +99,10 @@ extension GameTimeline {
     public func 可能な応答(
         for player: Player, rules: RuleSet = .standard, at steps: Int? = nil
     ) throws -> [ClaimOption] {
-        try 除外(try state(at: steps).可能な応答(for: player, rules: rules),
-               for: player, at: steps)
+        let count = try resolve(steps)
+        let current = try state(at: count)
+        return 除外(current.可能な応答(for: player, rules: rules),
+                  for: player, at: count, in: current)
     }
 
     /// 打牌を明示して問う版（履歴込み）。
@@ -108,15 +110,19 @@ extension GameTimeline {
         for player: Player, 打牌 tile: Tile, 打牌者 discarder: Player,
         context: ClaimContext = .打牌, rules: RuleSet = .standard, at steps: Int? = nil
     ) throws -> [ClaimOption] {
-        try 除外(try state(at: steps).可能な応答(
-            for: player, 打牌: tile, 打牌者: discarder, context: context, rules: rules),
-               for: player, at: steps)
+        let count = try resolve(steps)
+        let current = try state(at: count)
+        return 除外(current.可能な応答(for: player, 打牌: tile, 打牌者: discarder,
+                                  context: context, rules: rules),
+                  for: player, at: count, in: current)
     }
 
+    /// 同巡内フリテンならロンを外す。状態は再生済みのものを使い回す。
     private func 除外(
-        _ options: [ClaimOption], for player: Player, at steps: Int?
-    ) throws -> [ClaimOption] {
-        guard options.contains(.ロン), try 同巡内フリテン(of: player, at: steps) else {
+        _ options: [ClaimOption], for player: Player, at count: Int, in current: GameState
+    ) -> [ClaimOption] {
+        guard options.contains(.ロン),
+              !同巡内で見逃した待ち(of: player, at: count, in: current).isEmpty else {
             return options
         }
         return options.filter { $0 != .ロン }

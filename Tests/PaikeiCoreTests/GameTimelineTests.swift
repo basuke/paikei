@@ -24,7 +24,7 @@ struct 履歴からの導出 {
         let t = try timeline(events: [
             .打牌(手番: .対面, 牌: try Tile.parse("5s"), ツモ切り: nil),
         ])
-        #expect(try t.通った牌(against: .下家).isEmpty)
+        #expect(t.通った牌(against: .下家).isEmpty)
     }
 
     @Test func t0で立直済みなら全イベントの打牌が通った牌() throws {
@@ -35,7 +35,7 @@ struct 履歴からの導出 {
             .ツモ(手番: .上家, 牌: nil),
             .打牌(手番: .上家, 牌: try Tile.parse("9p"), ツモ切り: true),
         ]
-        #expect(try t.通った牌(against: .下家).map(\.mpsz) == ["5s", "9p"])
+        #expect(t.通った牌(against: .下家).map(\.mpsz) == ["5s", "9p"])
     }
 
     @Test func 立直宣言より前の打牌は通った牌に入らない() throws {
@@ -46,7 +46,7 @@ struct 履歴からの導出 {
             .打牌(手番: .下家, 牌: try Tile.parse("2s"), ツモ切り: true), // 宣言牌
             .打牌(手番: .対面, 牌: try Tile.parse("3s"), ツモ切り: nil),   // 宣言後
         ])
-        #expect(try t.通った牌(against: .下家).map(\.mpsz) == ["2s", "3s"])
+        #expect(t.通った牌(against: .下家).map(\.mpsz) == ["2s", "3s"])
     }
 
     @Test func 通った牌は安全度判定で現物になる() throws {
@@ -127,7 +127,7 @@ struct 履歴からの導出 {
             .立直(手番: .自分),
             .打牌(手番: .自分, 牌: try Tile.parse("9s"), ツモ切り: true),
         ])
-        #expect(try t.一発が生きているか(of: .自分))
+        #expect(t.一発が生きているか(of: .自分))
     }
 
     @Test func 鳴きが入ると一発は消える() throws {
@@ -138,7 +138,7 @@ struct 履歴からの導出 {
             .ポン(手番: .対面, 相手: .自分, 牌: try Tile.parse("9s"),
                  手牌から: try Tile.parseHand("99s")),
         ])
-        #expect(try !t.一発が生きているか(of: .自分))
+        #expect(!t.一発が生きているか(of: .自分))
     }
 
     @Test func 次の打牌まで来たら一発は消える() throws {
@@ -149,16 +149,31 @@ struct 履歴からの導出 {
             .ツモ(手番: .自分, 牌: try Tile.parse("9s")),
             .打牌(手番: .自分, 牌: try Tile.parse("9s"), ツモ切り: true),
         ])
-        #expect(try !t.一発が生きているか(of: .自分))
+        #expect(!t.一発が生きているか(of: .自分))
     }
 
     @Test func t0で立直済みなら一発は判定しない() throws {
         // 宣言牌がストリームに無いので区間を特定できない。推測しない。
         let t = try timeline(riichi: true, events: [.ツモ(手番: .対面, 牌: nil)])
-        #expect(try !t.一発が生きているか(of: .自分))
+        #expect(!t.一発が生きているか(of: .自分))
     }
 
     @Test func 立直していなければ一発は生きていない() throws {
         #expect(try timeline().一発が生きているか(of: .自分) == false)
+    }
+
+    @Test("t0で宣言牌が応答待ちなら、立直は成立していて一発も生きている")
+    func t0で宣言牌が応答待ち() throws {
+        // riichi: false のまま claim_tile kind=riichi が残っている局面。
+        // 宣言牌はまだ河に確定していないが、立直そのものは済んでいる。
+        var t = try timeline()
+        t.snapshot.claim = ClaimTile(tile: try Tile.parse("2s"), from: .下家, kind: .立直)
+        t.events = [
+            .ツモ(手番: .対面, 牌: nil),
+            .打牌(手番: .対面, 牌: try Tile.parse("3s"), ツモ切り: true),
+        ]
+        #expect(t.一発が生きているか(of: .下家))
+        // 宣言牌の後に場へ出た牌はすべて「通った牌」。
+        #expect(t.通った牌(against: .下家).map(\.mpsz) == ["3s"])
     }
 }

@@ -19,19 +19,22 @@ extension GameTimeline {
         rules: RuleSet = .standard,
         at steps: Int? = nil
     ) throws -> ScoreAnalysis {
+        let count = try resolve(steps)
+        let current = try state(at: count)
+
         if winType == .ロン {
-            let missed = try 同巡内で見逃した待ち(of: player, at: steps)
+            let missed = 同巡内で見逃した待ち(of: player, at: count, in: current)
             if !missed.isEmpty { return .和了できない(.同巡内フリテン(見逃した牌: missed)) }
         }
 
         var options = options
-        if !options.ippatsu, try 一発が生きているか(of: player) {
+        if !options.ippatsu, 一発が生きているか(of: player) {
             options.ippatsu = true
         }
-        if winType == .ツモ, !options.afterKan, try 嶺上ツモか(of: player, at: steps) {
+        if winType == .ツモ, !options.afterKan, 嶺上ツモか(of: player, at: count) {
             options.afterKan = true
         }
-        return try state(at: steps).score(
+        return try current.score(
             for: player, winningTile: winningTile, winType: winType,
             options: options, rules: rules)
     }

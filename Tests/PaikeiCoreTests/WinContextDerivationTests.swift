@@ -110,9 +110,9 @@ struct 嶺上開花の導出 {
 
     @Test func 槓の直後のツモは嶺上ツモ() throws {
         let t = try timeline()
-        #expect(try t.嶺上ツモか(of: .自分))
+        #expect(t.嶺上ツモか(of: .自分))
         // 槓の前のツモは嶺上ではない。
-        #expect(try !t.嶺上ツモか(of: .自分, at: 1))
+        #expect(!t.嶺上ツモか(of: .自分, at: 1))
     }
 
     @Test func 他家の槓では嶺上ツモにならない() throws {
@@ -121,7 +121,7 @@ struct 嶺上開花の導出 {
             .暗槓(手番: .下家, 手牌から: try Tile.parseHand("2222s")),
             .ツモ(手番: .自分, 牌: try Tile.parse("9p")),
         ]
-        #expect(try !t.嶺上ツモか(of: .自分))
+        #expect(!t.嶺上ツモか(of: .自分))
     }
 
     @Test func 嶺上開花が役に入る() throws {
