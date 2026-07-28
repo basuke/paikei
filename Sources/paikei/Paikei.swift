@@ -8,7 +8,8 @@ struct Paikei: ParsableCommand {
         commandName: "paikei",
         abstract: "麻雀局面解析エンジン Paikei",
         subcommands: [ReplCommand.self, Analyze.self, ShantenCommand.self, ScoreCommand.self,
-                      SafetyCommand.self, ReplayCommand.self, Normalize.self],
+                      SafetyCommand.self, ReplayCommand.self, MjaiCommand.self,
+                      Normalize.self],
         defaultSubcommand: ReplCommand.self
     )
 }

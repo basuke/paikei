@@ -38,4 +38,10 @@ extension StreamFormat {
         }
         return Player.allCases[(seat - selfActor + 4) % 4]
     }
+
+    /// `player(fromSeat:)` の逆。paikei方言には絶対座席が無いので nil。
+    func seat(of player: Player) -> Int? {
+        guard case let .mjai(selfActor) = self else { return nil }
+        return (selfActor + player.order) % 4
+    }
 }

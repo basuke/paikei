@@ -129,49 +129,93 @@ enum EventCoding {
         }
     }
 
-    // MARK: - シリアライズ（paikei 方言の正規形）
+    // MARK: - シリアライズ
 
+    /// `.paikei` 方言の正規形。`[stream]` の書き出しはこちら。
     static func line(for event: Event) -> String {
-        var parts: [String] = []
-        func add(_ key: String, _ value: String) { parts.append("\"\(key)\":\"\(value)\"") }
-        func add(_ key: String, _ value: Bool) { parts.append("\"\(key)\":\(value)") }
-        func add(_ key: String, tiles: [Tile]) {
-            let items = tiles.map { "\"\($0.mpsz)\"" }.joined(separator: ",")
-            parts.append("\"\(key)\":[\(items)]")
-        }
+        line(for: event, format: .paikei)
+    }
+
+    /// 方言を指定して1行にする。mjai方言は bot が手を返すときに使う（フェーズ7）。
+    static func line(for event: Event, format: StreamFormat) -> String {
+        var out = Encoder(format: format)
 
         switch event {
         case let .ツモ(actor, tile):
-            add("type", "tsumo"); add("actor", actor.rawValue)
-            add("pai", tile?.mpsz ?? "?")
+            out.add("type", "tsumo"); out.add("actor", player: actor)
+            out.add("pai", tile.map(out.notation) ?? "?")
         case let .打牌(actor, tile, tsumogiri):
-            add("type", "dahai"); add("actor", actor.rawValue); add("pai", tile.mpsz)
-            if let tsumogiri { add("tsumogiri", tsumogiri) }
+            out.add("type", "dahai"); out.add("actor", player: actor); out.add("pai", tile: tile)
+            if let tsumogiri { out.add("tsumogiri", tsumogiri) }
         case let .チー(actor, tile, consumed):
-            add("type", "chi"); add("actor", actor.rawValue); add("pai", tile.mpsz)
-            add("consumed", tiles: consumed)
+            out.add("type", "chi"); out.add("actor", player: actor); out.add("pai", tile: tile)
+            out.add("consumed", tiles: consumed)
         case let .ポン(actor, target, tile, consumed):
-            add("type", "pon"); add("actor", actor.rawValue); add("target", target.rawValue)
-            add("pai", tile.mpsz); add("consumed", tiles: consumed)
+            out.add("type", "pon"); out.add("actor", player: actor); out.add("target", player: target)
+            out.add("pai", tile: tile); out.add("consumed", tiles: consumed)
         case let .大明槓(actor, target, tile, consumed):
-            add("type", "daiminkan"); add("actor", actor.rawValue); add("target", target.rawValue)
-            add("pai", tile.mpsz); add("consumed", tiles: consumed)
+            out.add("type", "daiminkan"); out.add("actor", player: actor)
+            out.add("target", player: target)
+            out.add("pai", tile: tile); out.add("consumed", tiles: consumed)
         case let .加槓(actor, tile):
-            add("type", "kakan"); add("actor", actor.rawValue); add("pai", tile.mpsz)
+            out.add("type", "kakan"); out.add("actor", player: actor); out.add("pai", tile: tile)
         case let .暗槓(actor, consumed):
-            add("type", "ankan"); add("actor", actor.rawValue); add("consumed", tiles: consumed)
+            out.add("type", "ankan"); out.add("actor", player: actor)
+            out.add("consumed", tiles: consumed)
         case let .立直(actor):
-            add("type", "reach"); add("actor", actor.rawValue)
+            out.add("type", "reach"); out.add("actor", player: actor)
         case let .立直成立(actor):
-            add("type", "reach_accepted"); add("actor", actor.rawValue)
+            out.add("type", "reach_accepted"); out.add("actor", player: actor)
         case let .新ドラ(marker):
-            add("type", "dora"); add("dora_marker", marker.mpsz)
+            out.add("type", "dora"); out.add("dora_marker", tile: marker)
         case let .和了(actor, target, tile):
-            add("type", "hora"); add("actor", actor.rawValue); add("target", target.rawValue)
-            if let tile { add("pai", tile.mpsz) }
+            out.add("type", "hora"); out.add("actor", player: actor); out.add("target", player: target)
+            if let tile { out.add("pai", tile: tile) }
         case .流局:
-            add("type", "ryukyoku")
+            out.add("type", "ryukyoku")
         }
-        return "{\(parts.joined(separator: ","))}"
+        return out.line
+    }
+
+    /// フィールドの組み立てと方言の解決（`Decoder` の対）。
+    private struct Encoder {
+        let format: StreamFormat
+        private var parts: [String] = []
+
+        init(format: StreamFormat) { self.format = format }
+
+        var line: String { "{\(parts.joined(separator: ","))}" }
+
+        func notation(_ tile: Tile) -> String {
+            switch format {
+            case .paikei: tile.mpsz
+            case .mjai: tile.mjaiNotation
+            }
+        }
+
+        mutating func add(_ key: String, _ value: String) {
+            parts.append("\"\(key)\":\"\(value)\"")
+        }
+
+        mutating func add(_ key: String, _ value: Bool) {
+            parts.append("\"\(key)\":\(value)")
+        }
+
+        mutating func add(_ key: String, tile: Tile) {
+            add(key, notation(tile))
+        }
+
+        mutating func add(_ key: String, tiles: [Tile]) {
+            let items = tiles.map { "\"\(notation($0))\"" }.joined(separator: ",")
+            parts.append("\"\(key)\":[\(items)]")
+        }
+
+        mutating func add(_ key: String, player: Player) {
+            if let seat = format.seat(of: player) {
+                parts.append("\"\(key)\":\(seat)")
+            } else {
+                add(key, player.rawValue)
+            }
+        }
     }
 }

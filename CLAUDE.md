@@ -47,7 +47,7 @@
 - 「不明」は第一級の概念（仕様§1・§6）。解析関数は不足情報があるとき
   「仮定を明示して答える」か「必要な情報を宣言して断る」— 黙って推測しない
 - イベント適用は `apply(GameState, Event) throws -> GameState` の形に統一。
-  REPLの遷移コマンド、ストリーム再生、将来のMJAI botモードすべてがこの関数を共有する
+  REPLの遷移コマンド、ストリーム再生、MJAI botモードすべてがこの関数を共有する
 
 ## 最初に作るCLI: `paikei`
 
@@ -55,6 +55,7 @@ REPLと1発実行の両対応:
 
 ```
 $ paikei analyze snapshot.paikei      # 1発実行
+$ paikei mjai                         # MJAI botとして標準入出力で対局
 $ paikei                              # REPL起動
 > load east2-1.paikei
 東2局1本場 供託1 ドラ:4p 残り42枚 / 自分:西家 24000点 / 下家リーチ
@@ -82,8 +83,8 @@ $ paikei                              # REPL起動
 4. **和了・役・符・点数**: 面子分解の全列挙 → 役判定 → 高点法。`score` が動く
 5. **フリテン + 安牌**: 論理捨て牌履歴の導出（仕様§5）→ 現物・スジ・壁
 6. **ストリーム**: イベント適用、`format=mjai` 方言、`step`/`seek`/`save`
-7. **（将来）MJAI botモード**: stdin/stdoutでJSONLを読み書きし、
-   mjai.appシミュレータに接続して対戦検証
+7. **MJAI botモード**: stdin/stdoutでJSONLを読み書きし、
+   mjai.appシミュレータに接続して対戦検証。`paikei mjai`
 
 ## テスト方針
 

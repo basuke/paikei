@@ -10,6 +10,13 @@ public enum Player: String, Sendable, CaseIterable {
 }
 
 extension Player {
+    /// 自分を 0 とした手番順の位置（self=0 → shimocha=1 → toimen=2 → kamicha=3）。
+    ///
+    /// MJAIの絶対座席との相互変換（仕様§8.2）に使う。
+    public var order: Int {
+        Player.allCases.firstIndex(of: self)!
+    }
+
     /// このプレイヤーから見て `direction` の位置にいるプレイヤー。
     ///
     /// 例: `.shimocha.seated(.kamicha) == .myself`（下家から見た上家は自分）。
@@ -22,8 +29,7 @@ extension Player {
         case .kamicha: offset = 3
         }
         let all = Player.allCases  // 宣言順 = 手番順（self → shimocha → toimen → kamicha）
-        let index = all.firstIndex(of: self)!
-        return all[(index + offset) % all.count]
+        return all[(order + offset) % all.count]
     }
 
     /// `seated` の逆引き: このプレイヤーから見た `other` の方向。自分自身なら nil。
