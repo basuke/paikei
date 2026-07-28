@@ -213,9 +213,15 @@ extension GameState {
             .best(concealed: concealed, melds: ps.melds, context: context(round: roundWind, seat: seatWind)) else {
             return .和了できない(.和了形なし)
         }
+        // 包（責任払い）。放銃者が責任者本人なら折半する相手が居ないので、
+        // 通常のロンと支払いが同じになる＝特別扱いしない。
+        var liable = LiabilityDetector(rules: rules)
+            .detect(winner: player, evaluation: best, afterKan: options.afterKan)
+        if winType == .ロン, liable == claim?.from { liable = nil }
+
         guard let score = ScoreCalculator(rules: rules).score(
             best, dora: DoraCounter(rules: rules).count(best.hand),
-            honba: honbaCount, kyotaku: kyotakuCount) else {
+            honba: honbaCount, kyotaku: kyotakuCount, liable: liable) else {
             return .和了できない(.役なし)
         }
         // 役満はドラを加算しないため、ドラ不明は答えに影響しない＝仮定として挙げない。

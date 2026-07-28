@@ -14,6 +14,11 @@ public struct RuleSet: Sendable, Equatable {
     public var uraDora: Bool
     /// 連風牌（場風かつ自風）の雀頭の符。伝統的に4、天鳳系は2。
     public var doubleWindPairFu: Int
+    /// 包（責任払い）を認めるか。大三元・大四喜を確定させる副露を鳴かせた者が負う。
+    public var liability: Bool
+    /// 大明槓の責任払いを認めるか。鳴かせた牌で槓させ、嶺上開花で和了られたときに負う。
+    /// 包より採用が分かれるので既定は無効。
+    public var daiminkanLiability: Bool
 
     public init(
         kuitan: Bool = true,
@@ -21,7 +26,9 @@ public struct RuleSet: Sendable, Equatable {
         roundUpMangan: Bool = false,
         ippatsu: Bool = true,
         uraDora: Bool = true,
-        doubleWindPairFu: Int = 4
+        doubleWindPairFu: Int = 4,
+        liability: Bool = true,
+        daiminkanLiability: Bool = false
     ) {
         self.kuitan = kuitan
         self.redFives = redFives
@@ -29,8 +36,10 @@ public struct RuleSet: Sendable, Equatable {
         self.ippatsu = ippatsu
         self.uraDora = uraDora
         self.doubleWindPairFu = doubleWindPairFu
+        self.liability = liability
+        self.daiminkanLiability = daiminkanLiability
     }
 
-    /// CLAUDE.md の既定値: 喰いタンあり・赤3枚・切り上げなし・一発/裏あり。
+    /// CLAUDE.md の既定値: 喰いタンあり・赤3枚・切り上げなし・一発/裏あり・包あり。
     public static let standard = RuleSet()
 }

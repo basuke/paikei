@@ -32,7 +32,7 @@ enum ScoreDescription {
         var lines: [String] = []
         lines.append(yaku.map(\.displayName).joined(separator: " "))
         lines.append(headline(score))
-        lines.append("支払い: " + payment(score.payment))
+        lines.append("支払い: " + payment(score.payment, liable: score.liable))
         if score.honba > 0 || score.kyotaku > 0 {
             var extras: [String] = []
             if score.honba > 0 { extras.append("\(score.honba)本場") }
@@ -92,13 +92,18 @@ enum ScoreDescription {
         }
     }
 
-    private static func payment(_ payment: Payment) -> String {
+    private static func payment(_ payment: Payment, liable: Player?) -> String {
+        let who = liable?.displayName ?? "責任者"
         switch payment {
-        case .ロン(let amount):
+        case let .ロン(amount):
             return "放銃者から \(amount)点"
         case let .ツモ(dealer, nonDealer):
             guard let dealer else { return "子から各 \(nonDealer)点" }
             return "親から \(dealer)点 / 子から各 \(nonDealer)点"
+        case let .責任払い(amount):
+            return "\(who)（包）から \(amount)点"
+        case let .折半(liableAmount, discarder):
+            return "\(who)（包）から \(liableAmount)点 / 放銃者から \(discarder)点"
         }
     }
 

@@ -8,21 +8,33 @@ public enum LimitRank: Sendable, Equatable {
 }
 
 /// 誰がいくら払うか。金額には本場（1本場につきロン300点／ツモ各100点）を含む。
+///
+/// 支払う相手は**役割**で表す（放銃者・親・子・包の責任者）。誰がその役割かは
+/// 局面が決めることなので、`Score.liable` と `claim_tile` から呼び出し側が解決する。
 public enum Payment: Sendable, Equatable {
     /// 放銃者が払う点数。
     case ロン(Int)
     /// `親` は親の支払い（和了者自身が親なら nil）、`子` は子1人あたり。
     case ツモ(親: Int?, 子: Int)
+    /// 包（責任払い）。ツモ和了なので責任者が全額を1人で負う。
+    case 責任払い(Int)
+    /// 包とロンが重なった場合。責任者と放銃者で分ける。
+    /// 100点未満の端数と本場は放銃者が持つため、額は必ずしも同じでない。
+    case 折半(責任者: Int, 放銃者: Int)
 
     /// 支払いの合計（供託は含まない）。
     public var total: Int {
         switch self {
-        case .ロン(let amount):
+        case let .ロン(amount):
             return amount
-        case .ツモ(let dealer, let nonDealer):
+        case let .ツモ(dealer, nonDealer):
             // 親が和了したときは子3人が同額、子が和了したときは親1人＋子2人。
             guard let dealer else { return nonDealer * 3 }
             return dealer + nonDealer * 2
+        case let .責任払い(amount):
+            return amount
+        case let .折半(liable, discarder):
+            return liable + discarder
         }
     }
 }
@@ -39,6 +51,11 @@ public struct Score: Sendable, Equatable {
     public let dora: DoraCount
     /// 支払いの内訳。
     public let payment: Payment
+    /// 包（責任払い）の責任者。付かなければ nil。
+    ///
+    /// 放銃者が責任者本人だった場合は、折半する相手が居ないので通常のロンと
+    /// 支払いが同じになる。そのときはここも nil にする（特別扱いが無いため）。
+    public let liable: Player?
     /// 本場。
     public let honba: Int
     /// 供託リーチ棒。
@@ -58,9 +75,11 @@ public struct ScoreCalculator: Sendable {
 
     /// 評価済みの和了手から点数を求める。**役がなければ nil**（ドラだけでは和了できない）。
     ///
-    /// 役満ではドラを加算しない。
+    /// 役満ではドラを加算しない。`liable` を渡すと包（責任払い）の支払いになる
+    /// （誰が責任者かの判定は `LiabilityDetector` の担当）。
     public func score(
-        _ evaluation: HandEvaluation, dora: DoraCount, honba: Int = 0, kyotaku: Int = 0
+        _ evaluation: HandEvaluation, dora: DoraCount,
+        honba: Int = 0, kyotaku: Int = 0, liable: Player? = nil
     ) -> Score? {
         guard !evaluation.yaku.isEmpty else { return nil }
 
@@ -76,7 +95,9 @@ public struct ScoreCalculator: Sendable {
             limit: limitRank(han: han, fu: fu, yakumanCount: yakumanCount),
             dora: dora,
             payment: payment(base: base, isDealer: isDealer,
-                             winType: evaluation.hand.context.winType, honba: honba),
+                             winType: evaluation.hand.context.winType, honba: honba,
+                             liable: liable != nil),
+            liable: liable,
             honba: honba, kyotaku: kyotaku)
     }
 
@@ -146,7 +167,21 @@ public struct ScoreCalculator: Sendable {
 
     // MARK: - 支払い
 
-    private func payment(base: Int, isDealer: Bool, winType: WinType, honba: Int) -> Payment {
+    private func payment(
+        base: Int, isDealer: Bool, winType: WinType, honba: Int, liable: Bool = false
+    ) -> Payment {
+        // 包は「ロンされたのと同じ全額」を責任者に負わせる。
+        if liable {
+            let whole = roundUp100(base * (isDealer ? 6 : 4)) + 300 * honba
+            switch winType {
+            case .ツモ:
+                return .責任払い(whole)
+            case .ロン:
+                let half = whole / 2 / 100 * 100
+                return .折半(責任者: half, 放銃者: whole - half)
+            }
+        }
+
         switch winType {
         case .ロン:
             return .ロン(roundUp100(base * (isDealer ? 6 : 4)) + 300 * honba)
