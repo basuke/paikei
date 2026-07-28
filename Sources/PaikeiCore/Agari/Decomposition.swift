@@ -138,7 +138,7 @@ public enum Decomposition {
         let tiles = meld.tiles.map(\.normalized).sorted()
         switch meld.kind {
         case .チー:
-            return TileGroup(kind: .順子, tiles: tiles, isConcealed: false, calledFrom: .kamicha)
+            return TileGroup(kind: .順子, tiles: tiles, isConcealed: false, calledFrom: .上家)
         case .ポン:
             return TileGroup(kind: .刻子, tiles: tiles, isConcealed: false, calledFrom: meld.from)
         case .大明槓, .加槓:

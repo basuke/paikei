@@ -52,7 +52,7 @@ extension GameState {
         if matching.count >= 3 { options.append(.大明槓(手牌から: Array(matching.prefix(3)))) }
 
         // チーは上家の打牌のみ。
-        if discarder == player.seated(.kamicha) {
+        if discarder == player.seated(.上家) {
             options += チーの構成(tile, in: hand).map { .チー(手牌から: $0) }
         }
         return options

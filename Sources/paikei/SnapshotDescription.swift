@@ -29,7 +29,7 @@ enum SnapshotDescription {
     }
 
     private static func playerLine(_ player: Player, _ ps: PlayerState) -> String {
-        var parts = ["[\(playerName(player))]"]
+        var parts = ["[\(player.displayName)]"]
         if let seat = ps.seat { parts.append(seatName(seat)) }
         if let score = ps.score { parts.append("\(score)点") }
         if ps.riichi == true { parts.append("リーチ") }
@@ -46,9 +46,9 @@ enum SnapshotDescription {
         case .静止:
             return "静止状態"
         case let .打牌待ち(player, context):
-            return "打牌待ち（\(playerName(player)), \(discardContext(context))）"
+            return "打牌待ち（\(player.displayName), \(discardContext(context))）"
         case let .応答待ち(tile, from, context):
-            return "応答待ち（\(playerName(from))が\(TileFormatter.tile(tile))を打牌, \(claimContext(context))）"
+            return "応答待ち（\(from.displayName)が\(TileFormatter.tile(tile))を打牌, \(claimContext(context))）"
         }
     }
 
@@ -83,9 +83,4 @@ enum SnapshotDescription {
 
     private static func seatName(_ w: Wind) -> String { "\(w)家" }
 
-    private static func playerName(_ p: Player) -> String {
-        switch p {
-        case .myself: "自分"; case .shimocha: "下家"; case .toimen: "対面"; case .kamicha: "上家"
-        }
-    }
 }

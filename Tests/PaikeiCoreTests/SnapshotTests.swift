@@ -16,7 +16,7 @@ struct スナップショットパース {
     @Test("最小形: 手牌とツモのみ")
     func 最小形手牌とツモのみ() throws {
         let state = try SnapshotParser.parse(loadFixture("minimal"))
-        let me = try #require(state.players[.myself])
+        let me = try #require(state.players[.自分])
         #expect(me.hand?.count == 13)
         #expect(me.draw == Tile(suit: .索子, rank: 5))
         #expect(state.bakaze == nil)  // 未記述 = 不明
@@ -33,15 +33,15 @@ struct スナップショットパース {
         #expect(state.wall == 42)
         #expect(state.players.count == 4)
 
-        let me = try #require(state.players[.myself])
+        let me = try #require(state.players[.自分])
         #expect(me.seat == .西)
         #expect(me.draw == Tile(suit: .索子, rank: 5, isRed: true))  // 0s
 
-        let shimo = try #require(state.players[.shimocha])
+        let shimo = try #require(state.players[.下家])
         #expect(shimo.riichi == true)
         #expect(shimo.river.contains { $0.declaresRiichi })
 
-        let toimen = try #require(state.players[.toimen])
+        let toimen = try #require(state.players[.対面])
         #expect(toimen.melds.first?.kind == .ポン)
     }
 
@@ -52,7 +52,7 @@ struct スナップショットパース {
         #expect(state.honba == nil)
         #expect(state.kyotaku == 0)          // 0 は「不明」ではなく既知の0
         #expect(state.wall == nil)
-        let me = try #require(state.players[.myself])
+        let me = try #require(state.players[.自分])
         #expect(me.seat == nil)
         #expect(me.score == nil)
         #expect(me.hand?.count == 13)
@@ -63,10 +63,10 @@ struct スナップショットパース {
         let state = try SnapshotParser.parse(loadFixture("from-mjai"))
         let claim = try #require(state.claim)
         #expect(claim.tile == Tile(suit: .萬子, rank: 1))
-        #expect(claim.from == .toimen)
+        #expect(claim.from == .対面)
         #expect(claim.kind == .打牌)
 
-        let shimo = try #require(state.players[.shimocha])
+        let shimo = try #require(state.players[.下家])
         #expect(shimo.melds.first?.kind == .チー)
         #expect(shimo.river.contains { $0.wasCalledAway })  // 7p+^
     }

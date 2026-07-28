@@ -12,7 +12,7 @@ import Testing
         GameState(
             bakaze: bakaze, kyoku: 1, honba: honba, kyotaku: kyotaku,
             doraMarkers: dora,
-            players: [.myself: PlayerState(
+            players: [.自分: PlayerState(
                 seat: seat, hand: try Tile.parseHand(hand), draw: draw,
                 melds: melds, riichi: riichi)],
             claim: claim)
@@ -33,7 +33,7 @@ import Testing
     @Test func 全て既知なら仮定なしで答える() throws {
         // ドラ表示3p（4pが手牌に1枚）。下家が6sを打った応答待ち＝ロンの前提も揃っている。
         let s = try state(dora: [try Tile.parse("3p")],
-                          claim: ClaimTile(tile: try Tile.parse("6s"), from: .shimocha))
+                          claim: ClaimTile(tile: try Tile.parse("6s"), from: .下家))
         let (score, yaku, assumptions) = try scored(
             try s.score(winningTile: try Tile.parse("6s"), winType: .ロン))
 
@@ -67,7 +67,7 @@ import Testing
 
     @Test func 裏ドラ表示牌が無ければ仮定() throws {
         let s = try state(dora: [try Tile.parse("3p")], riichi: true,
-                          claim: ClaimTile(tile: try Tile.parse("6s"), from: .shimocha))
+                          claim: ClaimTile(tile: try Tile.parse("6s"), from: .下家))
         let (_, _, assumptions) = try scored(
             try s.score(winningTile: try Tile.parse("6s"), winType: .ロン))
         #expect(assumptions == [.裏ドラ表示牌不明])
@@ -125,7 +125,7 @@ import Testing
     }
 
     @Test func 応答待ちの対象牌へのロンも局面が裏づけている() throws {
-        let s = try state(claim: ClaimTile(tile: try Tile.parse("6s"), from: .shimocha))
+        let s = try state(claim: ClaimTile(tile: try Tile.parse("6s"), from: .下家))
         let (_, _, assumptions) = try scored(
             try s.score(winningTile: try Tile.parse("6s"), winType: .ロン))
         #expect(!assumptions.contains { if case .仮定した和了 = $0 { true } else { false } })
@@ -147,7 +147,7 @@ import Testing
         #expect(ronAssumptions.first == .仮定した和了(try Tile.parse("6s"), .ロン))
 
         // 応答待ちの対象は1zなのに6sのロンを指定。
-        let claimed = try state(claim: ClaimTile(tile: try Tile.parse("1z"), from: .shimocha))
+        let claimed = try state(claim: ClaimTile(tile: try Tile.parse("1z"), from: .下家))
         let (_, _, otherTile) = try scored(
             try claimed.score(winningTile: try Tile.parse("6s"), winType: .ロン))
         #expect(otherTile.first == .仮定した和了(try Tile.parse("6s"), .ロン))
@@ -156,7 +156,7 @@ import Testing
     @Test("自分が出した牌ではロンできない（フリテン）")
     func 自分が出した牌ではロンできない() throws {
         // 応答待ちの牌も打った本人にとっては捨て牌なので、その牌でロンはできない。
-        let s = try state(claim: ClaimTile(tile: try Tile.parse("6s"), from: .myself))
+        let s = try state(claim: ClaimTile(tile: try Tile.parse("6s"), from: .自分))
         #expect(try s.score(winningTile: try Tile.parse("6s"), winType: .ロン)
                 == .和了できない(.フリテン(捨てた待ち: [Tile(suit: .索子, rank: 6)!])))
     }
@@ -173,7 +173,7 @@ import Testing
     func 風で役が変わる手は風が不明なら仮定せずに断る() throws {
         let s = try windTripletState()
         #expect(try s.score(winningTile: try Tile.parse("1z"), winType: .ロン)
-                == .情報不足([.場風, .席風(.myself)]))
+                == .情報不足([.場風, .席風(.自分)]))
     }
 
     @Test("片方だけ不明なら、足りない方だけを挙げる")
@@ -184,7 +184,7 @@ import Testing
 
         let noSeat = try windTripletState(bakaze: .南)
         #expect(try noSeat.score(winningTile: try Tile.parse("1z"), winType: .ロン)
-                == .情報不足([.席風(.myself)]))
+                == .情報不足([.席風(.自分)]))
     }
 
     @Test("風を与えれば答えが出る。与える値で結果が変わることも確認")
@@ -204,9 +204,9 @@ import Testing
     func 風牌だらけでも答えが変わらないなら答える() throws {
         let s = GameState(
             bakaze: nil, kyoku: nil, honba: 0, kyotaku: 0,
-            players: [.myself: PlayerState(
+            players: [.自分: PlayerState(
                 seat: nil, hand: try Tile.parseHand("19m19p19s1234567z"), riichi: false)],
-            claim: ClaimTile(tile: try Tile.parse("1z"), from: .toimen))
+            claim: ClaimTile(tile: try Tile.parse("1z"), from: .対面))
         let (score, yaku, assumptions) = try scored(
             try s.score(winningTile: try Tile.parse("1z"), winType: .ロン))
         #expect(yaku == [.国士無双])
@@ -226,15 +226,15 @@ import Testing
     // MARK: - 断る
 
     @Test func 手牌が不明なら必要な情報を宣言して断る() throws {
-        let s = GameState(players: [.myself: PlayerState(seat: .西, hand: nil)])
+        let s = GameState(players: [.自分: PlayerState(seat: .西, hand: nil)])
         #expect(try s.score(winningTile: try Tile.parse("6s"), winType: .ロン)
-                == .情報不足([.手牌(.myself)]))
+                == .情報不足([.手牌(.自分)]))
     }
 
     @Test func そもそもプレイヤーが観測されていなければ断る() throws {
         let s = try state()
-        #expect(try s.score(for: .toimen, winningTile: try Tile.parse("6s"), winType: .ロン)
-                == .情報不足([.手牌(.toimen)]))
+        #expect(try s.score(for: .対面, winningTile: try Tile.parse("6s"), winType: .ロン)
+                == .情報不足([.手牌(.対面)]))
     }
 
     @Test("枚数が合わない手牌は多牌・少牌として和了放棄")
@@ -273,7 +273,7 @@ import Testing
         let s = GameState(
             bakaze: .東, honba: 0, kyotaku: 0,
             doraMarkers: [try Tile.parse("4p")],
-            players: [.myself: PlayerState(
+            players: [.自分: PlayerState(
                 seat: .西, hand: try Tile.parseHand("345m678p456s55p"),
                 melds: [try Meld.parse("pon(2'22m,L)")], riichi: false)])
         #expect(try s.score(winningTile: try Tile.parse("5p"), winType: .ロン,

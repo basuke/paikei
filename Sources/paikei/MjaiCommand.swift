@@ -59,7 +59,7 @@ struct MjaiCommand: ParsableCommand {
                 return (.なし, true)
             case .対局開始, .局開始, .局終了, .進行:
                 guard let timeline = session.timeline,
-                      let action = try bot.action(for: .myself, in: timeline) else {
+                      let action = try bot.action(for: .自分, in: timeline) else {
                     return (.なし, false)
                 }
                 return (.行動(action), false)

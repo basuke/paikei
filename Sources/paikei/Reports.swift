@@ -11,7 +11,7 @@ import PaikeiCore
 enum ShantenReport {
     /// `top` が 0 なら受け入れのみ、1以上なら14枚形で何切るを `top` 件表示する。
     static func text(for state: GameState, top: Int) throws -> String {
-        guard let me = state.players[.myself], let hand = me.hand else {
+        guard let me = state.players[.自分], let hand = me.hand else {
             throw ReportError("自分の手牌が不明のためシャンテン計算ができません")
         }
         // 多牌・少牌にシャンテン数を出しても意味がない（和了放棄）。数字を出さずに断る。
@@ -21,7 +21,7 @@ enum ShantenReport {
                 + "（手牌\(hand.count)枚、副露\(me.melds.count)組）。和了放棄のため解析しません")
         }
         let melds = me.melds.count
-        let visible = state.visibleTiles(from: .myself)
+        let visible = state.visibleTiles(from: .自分)
         var tiles = hand
         if let draw = me.draw { tiles.append(draw) }
 
@@ -85,18 +85,18 @@ enum SafetyReport {
     ) throws -> String {
         let targets: [Player]
         if let target {
-            guard let player = Player(rawValue: target), player != .myself else {
+            guard let player = Player(rawValue: target), player != .自分 else {
                 throw ReportError("対象は shimocha/toimen/kamicha で指定してください: \(target)")
             }
             targets = [player]
         } else {
-            targets = Player.allCases.filter { $0 != .myself && state.players[$0]?.riichi == true }
+            targets = Player.allCases.filter { $0 != .自分 && state.players[$0]?.riichi == true }
             guard !targets.isEmpty else {
                 throw ReportError("リーチ者がいません。対象プレイヤーを指定してください")
             }
         }
 
-        guard let me = state.players[.myself], let hand = me.hand else {
+        guard let me = state.players[.自分], let hand = me.hand else {
             throw ReportError("自分の手牌が不明のため安全度を判定できません")
         }
         var tiles = hand
@@ -115,11 +115,11 @@ enum SafetyReport {
 enum FuritenReport {
     /// 履歴込み（同巡内フリテンも見る）。
     static func text(for timeline: GameTimeline, at steps: Int? = nil) throws -> String {
-        text(status: try timeline.furiten(of: .myself, at: steps))
+        text(status: try timeline.furiten(of: .自分, at: steps))
     }
 
     static func text(for state: GameState) -> String {
-        text(status: state.furiten(of: .myself))
+        text(status: state.furiten(of: .自分))
     }
 
     private static func text(status: FuritenStatus?) -> String {
@@ -150,7 +150,7 @@ enum ClaimOptionsReport {
         guard case let .応答待ち(tile, discarder, _) = phase else {
             return "応答待ちの局面ではありません"
         }
-        let head = "\(name(discarder))の\(TileFormatter.tile(tile))に対して:"
+        let head = "\(discarder.displayName)の\(TileFormatter.tile(tile))に対して:"
         guard !options.isEmpty else { return head + " スルーのみ" }
         return ([head] + options.map { "  - " + describe($0) }).joined(separator: "\n")
     }
@@ -164,11 +164,6 @@ enum ClaimOptionsReport {
         }
     }
 
-    private static func name(_ player: Player) -> String {
-        switch player {
-        case .myself: "自分"; case .shimocha: "下家"; case .toimen: "対面"; case .kamicha: "上家"
-        }
-    }
 }
 
 // MARK: - 点数
@@ -176,7 +171,7 @@ enum ClaimOptionsReport {
 enum ScoreReport {
     /// 履歴込み（一発を自動で導出し、同巡内フリテンでロンを断る）。
     static func text(
-        for timeline: GameTimeline, at steps: Int? = nil, player: Player = .myself,
+        for timeline: GameTimeline, at steps: Int? = nil, player: Player = .自分,
         winningTile: Tile, winType: WinType, options: WinOptions,
         bakaze: Wind? = nil, seat: Wind? = nil
     ) throws -> String {
@@ -193,7 +188,7 @@ enum ScoreReport {
     }
 
     static func text(
-        for state: GameState, player: Player = .myself,
+        for state: GameState, player: Player = .自分,
         winningTile: Tile, winType: WinType, options: WinOptions,
         bakaze: Wind? = nil, seat: Wind? = nil
     ) throws -> String {
@@ -253,7 +248,7 @@ enum ScoreReport {
         }
 
         var timeline = timeline
-        if riichi { timeline.snapshot.players[.myself, default: PlayerState()].riichi = true }
+        if riichi { timeline.snapshot.players[.自分, default: PlayerState()].riichi = true }
         return try text(for: timeline, at: steps, winningTile: tile, winType: winType,
                         options: options, bakaze: bakaze, seat: seat)
     }

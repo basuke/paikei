@@ -9,7 +9,7 @@ struct 副露の表記 {
         #expect(meld.kind == .ポン)
         #expect(meld.tiles == [Tile(suit: .筒子, rank: 5)!, Tile(suit: .筒子, rank: 5)!, Tile(suit: .筒子, rank: 5)!])
         #expect(meld.calledIndex == 0)
-        #expect(meld.from == .kamicha)
+        #expect(meld.from == .上家)
     }
 
     @Test("赤5の帰属: 上家が赤を捨てた pon(0'55p) と 自分の手に赤 pon(05'5p) を区別")
@@ -29,7 +29,7 @@ struct 副露の表記 {
         let meld = try Meld.parse("chi(6'78p)")
         #expect(meld.kind == .チー)
         #expect(meld.calledIndex == 0)
-        #expect(meld.from == .kamicha)
+        #expect(meld.from == .上家)
         #expect(meld.notation == "chi(6'78p)")
     }
 
@@ -48,14 +48,14 @@ struct 副露の表記 {
         #expect(meld.kind == .加槓)
         #expect(meld.tiles.count == 4)
         #expect(meld.calledIndex == 0)
-        #expect(meld.from == .kamicha)
+        #expect(meld.from == .上家)
     }
 
     @Test("大明槓: 4枚、方向あり")
     func 大明槓は方向あり() throws {
         let meld = try Meld.parse("daiminkan(9'999s,C)")
         #expect(meld.kind == .大明槓)
-        #expect(meld.from == .toimen)
+        #expect(meld.from == .対面)
     }
 
     @Test func 不正な構造はエラー() {
@@ -75,14 +75,14 @@ struct 副露の表記 {
         let meld = try Meld.parse("daiminkan(0'555s,R)")
         #expect(meld.tiles[0].isRed)
         #expect(meld.calledIndex == 0)
-        #expect(meld.from == .shimocha)
+        #expect(meld.from == .下家)
     }
 
     @Test("外周・方向前後の空白を許容する")
     func 前後の空白を許容する() throws {
         let meld = try Meld.parse("  pon(5'55p, L)  ")
         #expect(meld.kind == .ポン)
-        #expect(meld.from == .kamicha)
+        #expect(meld.from == .上家)
     }
 
     @Test("ラウンドトリップ: parse → notation → parse",

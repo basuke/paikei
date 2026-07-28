@@ -102,7 +102,7 @@ extension GameState {
     /// `options` が矛盾している（一発なのに立直がない等）ときは `WinContextError` を投げる。
     /// 観測の不足（`declined`）と違い、これは呼び出し側の入力の誤り。
     public func score(
-        for player: Player = .myself,
+        for player: Player = .自分,
         winningTile: Tile,
         winType: WinType,
         options: WinOptions = WinOptions(),

@@ -117,7 +117,7 @@ enum ReplCommands {
     /// 先頭の語がプレイヤー名なら取り出す。無ければ自分。
     private static func actorPrefix(_ args: [String]) -> (actor: Player, rest: [String]) {
         guard let first = args.first, let player = Player(rawValue: first) else {
-            return (.myself, args)
+            return (.自分, args)
         }
         return (player, Array(args.dropFirst()))
     }

@@ -8,7 +8,7 @@ extension GameTimeline {
     ///
     /// `at` は解析する時点（nil なら末尾）。
     public func score(
-        for player: Player = .myself,
+        for player: Player = .自分,
         winningTile: Tile,
         winType: WinType,
         options: WinOptions = WinOptions(),

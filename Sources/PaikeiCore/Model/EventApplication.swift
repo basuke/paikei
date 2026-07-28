@@ -26,7 +26,7 @@ extension GameState {
 
         case let .チー(actor, tile, consumed):
             try state.requireValidHand(actor)
-            try state.applyCall(kind: .チー, actor: actor, target: actor.seated(.kamicha),
+            try state.applyCall(kind: .チー, actor: actor, target: actor.seated(.上家),
                                 tile: tile, consumed: consumed, event: event)
 
         case let .ポン(actor, target, tile, consumed):

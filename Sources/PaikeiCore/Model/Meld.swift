@@ -1,8 +1,10 @@
 /// 副露を鳴いた方向（仕様§4）。鳴いた相手を副露者から見た相対位置で表す。
+///
+/// rawValue は `.paikei` の表記トークン（仕様§4）なので ASCII 固定。
 public enum CallDirection: String, Sendable {
-    case kamicha = "L"  // 上家から
-    case toimen = "C"   // 対面から
-    case shimocha = "R" // 下家から
+    case 上家 = "L"
+    case 対面 = "C"
+    case 下家 = "R"
 }
 
 /// 副露（鳴き）。牌列・鳴いた牌の位置・方向を保持する値型（仕様§4）。
@@ -76,7 +78,7 @@ extension Meld {
 
         try validate(kind: kind, tiles: tiles, calledIndex: calledIndex, from: from)
         // チーは方向表記を持たないが、意味上は常に上家からの鳴き。
-        let resolvedFrom = (kind == .チー) ? .kamicha : from
+        let resolvedFrom = (kind == .チー) ? .上家 : from
         return Meld(kind: kind, tiles: tiles, calledIndex: calledIndex, from: resolvedFrom)
     }
 

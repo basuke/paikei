@@ -69,9 +69,9 @@ enum TileFormatter {
 
     private static func directionName(_ dir: CallDirection) -> String {
         switch dir {
-        case .kamicha: "上家"
-        case .toimen: "対面"
-        case .shimocha: "下家"
+        case .上家: "上家"
+        case .対面: "対面"
+        case .下家: "下家"
         }
     }
 

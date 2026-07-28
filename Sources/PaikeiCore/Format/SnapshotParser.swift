@@ -37,7 +37,7 @@ public enum SnapshotParser {
             // - プレイヤーフィールドはセクション無し（最小形§9.1）なら暗黙で self。
             // - 卓フィールド（claim_tile 含む）はプレイヤーセクションの後に来ても卓に属す。
             if playerFieldKeys.contains(key) {
-                let player = current ?? .myself
+                let player = current ?? .自分
                 current = player
                 try applyPlayerField(key: key, value: value, player: player, into: &state)
             } else {

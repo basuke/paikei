@@ -38,7 +38,7 @@ struct MJAIプロトコルの対話 {
                 response = .参加(名前: "Paikei", 部屋: "default")
             default:
                 if let timeline = session.timeline,
-                   let action = try bot.action(for: .myself, in: timeline) {
+                   let action = try bot.action(for: .自分, in: timeline) {
                     response = .行動(action)
                 } else {
                     response = .なし
@@ -89,20 +89,20 @@ struct MJAIプロトコルの対話 {
         #expect(state.wall == 70)  // 136 - 王牌14 - 配牌52
 
         // 親が絶対座席0（＝対面）なので、自分は西家。
-        #expect(state.players[.toimen]?.seat == .東)
-        #expect(state.players[.kamicha]?.seat == .南)
-        #expect(state.players[.myself]?.seat == .西)
-        #expect(state.players[.shimocha]?.seat == .北)
+        #expect(state.players[.対面]?.seat == .東)
+        #expect(state.players[.上家]?.seat == .南)
+        #expect(state.players[.自分]?.seat == .西)
+        #expect(state.players[.下家]?.seat == .北)
 
-        #expect(state.players[.myself]?.hand == (try Tile.parseHand("123456789m11p55s")))
-        #expect(state.players[.kamicha]?.score == 24000)
+        #expect(state.players[.自分]?.hand == (try Tile.parseHand("123456789m11p55s")))
+        #expect(state.players[.上家]?.score == 24000)
         // 配牌直後なので「立直していない」と言い切れる（不明ではない）。
-        #expect(state.players[.myself]?.riichi == false)
+        #expect(state.players[.自分]?.riichi == false)
     }
 
     @Test func 他家の配牌は不明のまま() throws {
         let session = try 対局開始まで()
-        #expect(try #require(session.state).players[.shimocha]?.hand == nil)
+        #expect(try #require(session.state).players[.下家]?.hand == nil)
     }
 
     // MARK: - 断るべきところ
@@ -139,22 +139,22 @@ struct MJAIプロトコルの対話 {
     func mjai方言のラウンドトリップ() throws {
         let format = StreamFormat.mjai(selfActor: 2)
         let events: [Event] = [
-            .ツモ(手番: .myself, 牌: try Tile.parse("0m")),
-            .ツモ(手番: .shimocha, 牌: nil),
-            .打牌(手番: .myself, 牌: try Tile.parse("1z"), ツモ切り: false),
-            .打牌(手番: .toimen, 牌: try Tile.parse("7z"), ツモ切り: nil),
-            .チー(手番: .myself, 牌: try Tile.parse("3m"), 手牌から: try Tile.parseHand("45m")),
-            .ポン(手番: .myself, 相手: .kamicha, 牌: try Tile.parse("5p"),
+            .ツモ(手番: .自分, 牌: try Tile.parse("0m")),
+            .ツモ(手番: .下家, 牌: nil),
+            .打牌(手番: .自分, 牌: try Tile.parse("1z"), ツモ切り: false),
+            .打牌(手番: .対面, 牌: try Tile.parse("7z"), ツモ切り: nil),
+            .チー(手番: .自分, 牌: try Tile.parse("3m"), 手牌から: try Tile.parseHand("45m")),
+            .ポン(手番: .自分, 相手: .上家, 牌: try Tile.parse("5p"),
                  手牌から: try Tile.parseHand("05p")),
-            .大明槓(手番: .shimocha, 相手: .toimen, 牌: try Tile.parse("2s"),
+            .大明槓(手番: .下家, 相手: .対面, 牌: try Tile.parse("2s"),
                    手牌から: try Tile.parseHand("222s")),
-            .加槓(手番: .kamicha, 牌: try Tile.parse("5p")),
-            .暗槓(手番: .myself, 手牌から: try Tile.parseHand("1111z")),
-            .立直(手番: .myself),
-            .立直成立(手番: .myself),
+            .加槓(手番: .上家, 牌: try Tile.parse("5p")),
+            .暗槓(手番: .自分, 手牌から: try Tile.parseHand("1111z")),
+            .立直(手番: .自分),
+            .立直成立(手番: .自分),
             .新ドラ(表示牌: try Tile.parse("4s")),
-            .和了(手番: .myself, 相手: .shimocha, 牌: try Tile.parse("6p")),
-            .和了(手番: .toimen, 相手: .toimen, 牌: nil),
+            .和了(手番: .自分, 相手: .下家, 牌: try Tile.parse("6p")),
+            .和了(手番: .対面, 相手: .対面, 牌: nil),
             .流局,
         ]
         for event in events {
@@ -167,11 +167,11 @@ struct MJAIプロトコルの対話 {
     @Test func 応答は絶対座席で書き出す() throws {
         let session = try 対局開始まで()
         #expect(try session.line(for: .なし) == #"{"type":"none"}"#)
-        #expect(try session.line(for: .行動(.打牌(手番: .myself, 牌: try Tile.parse("1z"),
+        #expect(try session.line(for: .行動(.打牌(手番: .自分, 牌: try Tile.parse("1z"),
                                               ツモ切り: false)))
                 == #"{"type":"dahai","actor":2,"pai":"E","tsumogiri":false}"#)
         // 下家は self+1 なので絶対座席3。
-        #expect(try session.line(for: .行動(.ポン(手番: .myself, 相手: .shimocha,
+        #expect(try session.line(for: .行動(.ポン(手番: .自分, 相手: .下家,
                                               牌: try Tile.parse("0p"),
                                               手牌から: try Tile.parseHand("55p"))))
                 == #"{"type":"pon","actor":2,"target":3,"pai":"5pr","consumed":["5p","5p"]}"#)
@@ -238,49 +238,49 @@ struct 最小の打ち手 {
             bakaze: .東, kyoku: 1, honba: 0, kyotaku: 0,
             doraMarkers: [try Tile.parse("3p")], wall: 40,
             players: [
-                .myself: PlayerState(seat: .西, hand: try Tile.parseHand(hand),
+                .自分: PlayerState(seat: .西, hand: try Tile.parseHand(hand),
                                      draw: try draw.map { try Tile.parse($0) },
                                      riichi: riichi, score: 25000),
-                .kamicha: PlayerState(seat: .南),
-                .shimocha: PlayerState(seat: .北),
+                .上家: PlayerState(seat: .南),
+                .下家: PlayerState(seat: .北),
             ],
             claim: claim))
     }
 
     @Test func 他家の手番では何もしない() throws {
-        #expect(try bot.action(for: .myself, in: timeline(hand: "123456789m11p55s")) == nil)
+        #expect(try bot.action(for: .自分, in: timeline(hand: "123456789m11p55s")) == nil)
     }
 
     @Test func 受け入れが最大の牌を切る() throws {
         // テンパイを崩さない9sだけが正解。
         let t = try timeline(hand: "123456789m11p55s", draw: "9s")
-        #expect(try bot.action(for: .myself, in: t)
-                == .打牌(手番: .myself, 牌: try Tile.parse("9s"), ツモ切り: true))
+        #expect(try bot.action(for: .自分, in: t)
+                == .打牌(手番: .自分, 牌: try Tile.parse("9s"), ツモ切り: true))
     }
 
     @Test func 同じ数字なら赤5を残す() throws {
         // 国士1シャンテン。要らないのは重なった5sで、赤でない方を切る。
         let t = try timeline(hand: "19m19p09s1234567z", draw: "5s")
-        #expect(try bot.action(for: .myself, in: t)
-                == .打牌(手番: .myself, 牌: try Tile.parse("5s"), ツモ切り: true))
+        #expect(try bot.action(for: .自分, in: t)
+                == .打牌(手番: .自分, 牌: try Tile.parse("5s"), ツモ切り: true))
     }
 
     @Test func 立直後はツモ切りしかしない() throws {
         let t = try timeline(hand: "123456789m11p55s", draw: "7z", riichi: true)
-        #expect(try bot.action(for: .myself, in: t)
-                == .打牌(手番: .myself, 牌: try Tile.parse("7z"), ツモ切り: true))
+        #expect(try bot.action(for: .自分, in: t)
+                == .打牌(手番: .自分, 牌: try Tile.parse("7z"), ツモ切り: true))
     }
 
     @Test func 鳴ける形でも鳴かない() throws {
         // 55s があるので5sはポンできるが、ロンできる手なのでロンを選ぶ。
         let ron = try timeline(hand: "123456789m11p55s",
-                               claim: ClaimTile(tile: try Tile.parse("5s"), from: .kamicha))
-        #expect(try bot.action(for: .myself, in: ron)
-                == .和了(手番: .myself, 相手: .kamicha, 牌: try Tile.parse("5s")))
+                               claim: ClaimTile(tile: try Tile.parse("5s"), from: .上家))
+        #expect(try bot.action(for: .自分, in: ron)
+                == .和了(手番: .自分, 相手: .上家, 牌: try Tile.parse("5s")))
 
         // 和了形になっても役が無ければロンできない。ポンできても鳴かずに見送る。
         let pass = try timeline(hand: "111m456m789m99p33s",
-                                claim: ClaimTile(tile: try Tile.parse("9p"), from: .kamicha))
-        #expect(try bot.action(for: .myself, in: pass) == nil)
+                                claim: ClaimTile(tile: try Tile.parse("9p"), from: .上家))
+        #expect(try bot.action(for: .自分, in: pass) == nil)
     }
 }

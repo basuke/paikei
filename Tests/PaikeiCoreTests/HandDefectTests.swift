@@ -54,16 +54,16 @@ struct 多牌少牌 {
 
     @Test func 卓全体から異常のあるプレイヤーを列挙する() throws {
         let state = GameState(players: [
-            .myself: try player("123m456m789p55s11z"),        // 正常
-            .shimocha: try player("123m456m789p55s1z"),       // 少牌
-            .toimen: try player("123m456m789p55s111z2z"),     // 多牌
-            .kamicha: PlayerState(hand: nil),                 // 不明
+            .自分: try player("123m456m789p55s11z"),        // 正常
+            .下家: try player("123m456m789p55s1z"),       // 少牌
+            .対面: try player("123m456m789p55s111z2z"),     // 多牌
+            .上家: PlayerState(hand: nil),                 // 不明
         ])
         let defects = state.handDefects
         #expect(defects.count == 2)
-        #expect(defects.first?.player == .shimocha)
+        #expect(defects.first?.player == .下家)
         #expect(defects.first?.defect == .少牌(不足: 1))
-        #expect(defects.last?.player == .toimen)
+        #expect(defects.last?.player == .対面)
         #expect(defects.last?.defect == .多牌(超過: 1))
     }
 
@@ -74,7 +74,7 @@ struct 多牌少牌 {
         // 14枚の和了形に1枚足した15枚。形としては和了しているが多牌。
         let state = GameState(
             bakaze: .東, honba: 0, kyotaku: 0,
-            players: [.myself: PlayerState(
+            players: [.自分: PlayerState(
                 seat: .西,
                 hand: try Tile.parseHand("234567m234p456s99p1z"),
                 riichi: false)])
@@ -83,15 +83,15 @@ struct 多牌少牌 {
     }
 
     @Test func 少牌はフリテン判定でも聴牌とみなさない() throws {
-        let state = GameState(players: [.myself: PlayerState(
+        let state = GameState(players: [.自分: PlayerState(
             hand: try Tile.parseHand("123456789m112p"))])  // 12枚
-        #expect(state.furiten(of: .myself) == .枚数異常(.少牌(不足: 1)))
+        #expect(state.furiten(of: .自分) == .枚数異常(.少牌(不足: 1)))
     }
 
     @Test func 正常な手牌のフリテン判定は従来どおり() throws {
-        let state = GameState(players: [.myself: PlayerState(
+        let state = GameState(players: [.自分: PlayerState(
             hand: try Tile.parseHand("123456789m1123p"))])  // 13枚
-        guard case .フリテンなし? = state.furiten(of: .myself) else {
+        guard case .フリテンなし? = state.furiten(of: .自分) else {
             Issue.record("テンパイのはず")
             return
         }

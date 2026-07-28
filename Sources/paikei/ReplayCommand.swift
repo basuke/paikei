@@ -51,38 +51,33 @@ enum EventDescription {
     static func text(_ event: Event) -> String {
         switch event {
         case let .ツモ(actor, tile):
-            return "\(name(actor))がツモ\(tile.map { "（\(TileFormatter.tile($0))）" } ?? "")"
+            return "\(actor.displayName)がツモ\(tile.map { "（\(TileFormatter.tile($0))）" } ?? "")"
         case let .打牌(actor, tile, tsumogiri):
             let manner = tsumogiri.map { $0 ? "ツモ切り" : "手出し" } ?? "打牌"
-            return "\(name(actor))が\(TileFormatter.tile(tile))を\(manner)"
+            return "\(actor.displayName)が\(TileFormatter.tile(tile))を\(manner)"
         case let .チー(actor, tile, _):
-            return "\(name(actor))が\(TileFormatter.tile(tile))をチー"
+            return "\(actor.displayName)が\(TileFormatter.tile(tile))をチー"
         case let .ポン(actor, target, tile, _):
-            return "\(name(actor))が\(name(target))の\(TileFormatter.tile(tile))をポン"
+            return "\(actor.displayName)が\(target.displayName)の\(TileFormatter.tile(tile))をポン"
         case let .大明槓(actor, target, tile, _):
-            return "\(name(actor))が\(name(target))の\(TileFormatter.tile(tile))を大明槓"
+            return "\(actor.displayName)が\(target.displayName)の\(TileFormatter.tile(tile))を大明槓"
         case let .加槓(actor, tile):
-            return "\(name(actor))が\(TileFormatter.tile(tile))を加槓"
+            return "\(actor.displayName)が\(TileFormatter.tile(tile))を加槓"
         case let .暗槓(actor, consumed):
             let tile = consumed.first.map { TileFormatter.tile($0.normalized) } ?? "?"
-            return "\(name(actor))が\(tile)を暗槓"
+            return "\(actor.displayName)が\(tile)を暗槓"
         case let .立直(actor):
-            return "\(name(actor))がリーチ宣言"
+            return "\(actor.displayName)がリーチ宣言"
         case let .立直成立(actor):
-            return "\(name(actor))のリーチ成立"
+            return "\(actor.displayName)のリーチ成立"
         case let .新ドラ(marker):
             return "新ドラ表示: \(TileFormatter.tile(marker))"
         case let .和了(actor, target, tile):
-            let how = actor == target ? "ツモ和了" : "\(name(target))からロン"
-            return "\(name(actor))が\(how)\(tile.map { "（\(TileFormatter.tile($0))）" } ?? "")"
+            let how = actor == target ? "ツモ和了" : "\(target.displayName)からロン"
+            return "\(actor.displayName)が\(how)\(tile.map { "（\(TileFormatter.tile($0))）" } ?? "")"
         case .流局:
             return "流局"
         }
     }
 
-    private static func name(_ player: Player) -> String {
-        switch player {
-        case .myself: "自分"; case .shimocha: "下家"; case .toimen: "対面"; case .kamicha: "上家"
-        }
-    }
 }

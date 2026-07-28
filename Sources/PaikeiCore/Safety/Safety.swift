@@ -66,14 +66,14 @@ public struct SafetyAnalyzer: Sendable {
     /// 履歴込みで判定する。立直後に場へ通った牌も現物として扱える（仕様§5）。
     ///
     /// `at` は解析する時点（nil なら末尾）。
-    public init(timeline: GameTimeline, target: Player, viewer: Player = .myself,
+    public init(timeline: GameTimeline, target: Player, viewer: Player = .自分,
                 at steps: Int? = nil) throws {
         let state = try timeline.state(at: steps)
         let passed = try timeline.通った牌(against: target)
         self.init(state: state, target: target, viewer: viewer, additionalSafe: passed)
     }
 
-    public init(state: GameState, target: Player, viewer: Player = .myself) {
+    public init(state: GameState, target: Player, viewer: Player = .自分) {
         self.init(state: state, target: target, viewer: viewer, additionalSafe: [])
     }
 

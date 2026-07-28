@@ -1,12 +1,16 @@
 /// カメラ相対のプレイヤー位置（仕様§3.2）。
 ///
 /// 席風（東家/南家…）ではなく「自分から見た物理的な位置」を主キーにする。
-/// 正規化出力・列挙の順序は self → shimocha → toimen → kamicha（宣言順）。
+/// 正規化出力・列挙の順序は 自分 → 下家 → 対面 → 上家（宣言順 = 手番順）。
+///
+/// rawValue は `.paikei` の表記トークン（仕様§3.2）なので ASCII 固定。
 public enum Player: String, Sendable, CaseIterable {
-    case myself = "self"      // 自分（`self` は予約語のため myself）
-    case shimocha = "shimocha" // 下家（自分の右）
-    case toimen = "toimen"     // 対面
-    case kamicha = "kamicha"   // 上家（自分の左）
+    case 自分 = "self"
+    /// 自分の右。
+    case 下家 = "shimocha"
+    case 対面 = "toimen"
+    /// 自分の左。
+    case 上家 = "kamicha"
 }
 
 extension Player {
@@ -19,14 +23,14 @@ extension Player {
 
     /// このプレイヤーから見て `direction` の位置にいるプレイヤー。
     ///
-    /// 例: `.shimocha.seated(.kamicha) == .myself`（下家から見た上家は自分）。
+    /// 例: `.下家.seated(.上家) == .自分`（下家から見た上家は自分）。
     /// 副露の「誰から鳴いたか」を絶対位置に解決するのに使う（仕様§5）。
     public func seated(_ direction: CallDirection) -> Player {
         let offset: Int
         switch direction {
-        case .shimocha: offset = 1
-        case .toimen: offset = 2
-        case .kamicha: offset = 3
+        case .下家: offset = 1
+        case .対面: offset = 2
+        case .上家: offset = 3
         }
         let all = Player.allCases  // 宣言順 = 手番順（self → shimocha → toimen → kamicha）
         return all[(order + offset) % all.count]
@@ -36,7 +40,7 @@ extension Player {
     ///
     /// イベントから副露を組み立てるとき（`pon` の `target` → 方向）に使う。
     public func direction(to other: Player) -> CallDirection? {
-        for direction in [CallDirection.shimocha, .toimen, .kamicha]
+        for direction in [CallDirection.下家, .対面, .上家]
             where seated(direction) == other {
             return direction
         }

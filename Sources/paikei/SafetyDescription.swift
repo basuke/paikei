@@ -3,7 +3,7 @@ import PaikeiCore
 /// 安全度の判定結果を人間向けテキストに整形する（プレゼンテーション層）。
 enum SafetyDescription {
     static func text(_ judged: [TileSafety], target: Player, isRiichi: Bool) -> String {
-        var lines = ["\(playerName(target))\(isRiichi ? "（リーチ）" : "")への安全度:"]
+        var lines = ["\(target.displayName)\(isRiichi ? "（リーチ）" : "")への安全度:"]
         for level in [SafetyLevel.現物, .両面否定, .弱い否定, .無スジ] {
             let group = judged.filter { $0.level == level }
             guard !group.isEmpty else { continue }
@@ -29,9 +29,4 @@ enum SafetyDescription {
         }
     }
 
-    private static func playerName(_ player: Player) -> String {
-        switch player {
-        case .myself: "自分"; case .shimocha: "下家"; case .toimen: "対面"; case .kamicha: "上家"
-        }
-    }
 }

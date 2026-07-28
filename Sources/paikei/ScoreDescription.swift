@@ -147,20 +147,15 @@ enum ScoreDescription {
     private static func requirement(_ requirement: Requirement) -> String {
         switch requirement {
         case .手牌(let player):
-            return "\(playerName(player))の手牌"
+            return "\(player.displayName)の手牌"
         case .場風:
             return "場風（この手は場風によって役が変わります。--bakaze で指定できます）"
         case .席風(let player):
-            return "\(playerName(player))の席風"
+            return "\(player.displayName)の席風"
                 + "（この手は自風によって役が変わります。--seat で指定できます）"
         case .和了牌の欠落(let tile):
             return "手牌が14枚形ですが、和了牌 \(TileFormatter.tile(tile)) が含まれていません"
         }
     }
 
-    private static func playerName(_ player: Player) -> String {
-        switch player {
-        case .myself: "自分"; case .shimocha: "下家"; case .toimen: "対面"; case .kamicha: "上家"
-        }
-    }
 }
