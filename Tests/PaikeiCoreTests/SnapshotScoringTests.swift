@@ -153,12 +153,12 @@ import Testing
         #expect(otherTile.first == .仮定した和了(try Tile.parse("6s"), .ロン))
     }
 
-    @Test("自分が出した牌ではロンできない（裏づけにならない）")
+    @Test("自分が出した牌ではロンできない（フリテン）")
     func 自分が出した牌ではロンできない() throws {
+        // 応答待ちの牌も打った本人にとっては捨て牌なので、その牌でロンはできない。
         let s = try state(claim: ClaimTile(tile: try Tile.parse("6s"), from: .myself))
-        let (_, _, assumptions) = try scored(
-            try s.score(winningTile: try Tile.parse("6s"), winType: .ロン))
-        #expect(assumptions.first == .仮定した和了(try Tile.parse("6s"), .ロン))
+        #expect(try s.score(winningTile: try Tile.parse("6s"), winType: .ロン)
+                == .和了できない(.フリテン(捨てた待ち: [Tile(suit: .索子, rank: 6)!])))
     }
 
     // MARK: - 風が答えを変えるときは断る

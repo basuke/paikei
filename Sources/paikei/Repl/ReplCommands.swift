@@ -40,6 +40,11 @@ enum ReplCommands {
             print(try ScoreReport.text(for: session.document, at: session.position, args: args))
         case "furiten":
             print(try FuritenReport.text(for: session.document, at: session.position))
+        case "options", "opts":
+            let (actor, _) = actorPrefix(args)
+            print(ClaimOptionsReport.text(
+                try session.document.可能な応答(for: actor, at: session.position),
+                player: actor, phase: session.state.phase))
 
         // MARK: ストリーム
         case "step":
@@ -207,6 +212,7 @@ enum ReplCommands {
                   score <牌> tsumo|ron [ippatsu haitei rinshan chankan riichi
                                            double-riichi ura=1m bakaze=E seat=W]
                   furiten                  フリテン判定
+                  options [家]             いま取れる応答（鳴き・ロン）
         ストリーム step [N] / back [N]      適用位置を進める / 戻す
                   seek <N>                 t0 から N イベント適用した時点へ
                   events                   イベント一覧

@@ -143,6 +143,34 @@ enum FuritenReport {
     }
 }
 
+// MARK: - 応答の選択肢
+
+enum ClaimOptionsReport {
+    static func text(_ options: [ClaimOption], player: Player, phase: Phase) -> String {
+        guard case let .応答待ち(tile, discarder, _) = phase else {
+            return "応答待ちの局面ではありません"
+        }
+        let head = "\(name(discarder))の\(TileFormatter.tile(tile))に対して:"
+        guard !options.isEmpty else { return head + " スルーのみ" }
+        return ([head] + options.map { "  - " + describe($0) }).joined(separator: "\n")
+    }
+
+    private static func describe(_ option: ClaimOption) -> String {
+        switch option {
+        case .ロン: "ロン"
+        case .ポン(let tiles): "ポン（\(TileFormatter.tiles(tiles)) を使う）"
+        case .チー(let tiles): "チー（\(TileFormatter.tiles(tiles)) を使う）"
+        case .大明槓(let tiles): "大明槓（\(TileFormatter.tiles(tiles)) を使う）"
+        }
+    }
+
+    private static func name(_ player: Player) -> String {
+        switch player {
+        case .myself: "自分"; case .shimocha: "下家"; case .toimen: "対面"; case .kamicha: "上家"
+        }
+    }
+}
+
 // MARK: - 点数
 
 enum ScoreReport {

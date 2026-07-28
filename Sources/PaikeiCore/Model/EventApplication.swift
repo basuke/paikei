@@ -100,7 +100,7 @@ extension GameState {
         switch claim.kind {
         case .打牌, .立直:
             update(claim.from) {
-                $0.river.append(RiverTile(tile: claim.tile,
+                $0.river.append(RiverTile(tile: claim.tile, manner: claim.manner,
                                           declaresRiichi: claim.kind == .立直))
                 // 宣言牌が場に出ている＝リーチ宣言済み。安牌・フリテン判定が依存する。
                 if claim.kind == .立直 { $0.riichi = true }
@@ -144,9 +144,13 @@ extension GameState {
 
         // リーチ宣言牌: riichi が立っていて、まだ河に宣言牌が無い最初の打牌。
         let declares = ps.riichi == true && !ps.river.contains(where: \.declaresRiichi)
-        ps.river.append(RiverTile(tile: tile, manner: manner, declaresRiichi: declares))
         ps.discardOrigin = nil
         players[actor] = ps
+
+        // 打った牌はまだ河に確定しない。誰かが反応するかもしれないので応答対象に置く
+        // （仕様§3.4）。次のイベントで resolveClaim が河へ流す。
+        claim = ClaimTile(tile: tile, from: actor,
+                          kind: declares ? .立直 : .打牌, manner: manner)
     }
 
     /// 手出しとして手牌から1枚除き、ツモ牌を手牌へ合流させる。
@@ -184,9 +188,18 @@ extension GameState {
     }
 
     /// 鳴かれた牌を出所から消費する。応答対象が一致すればそれ、無ければ河の末尾。
+    ///
+    /// 鳴かれた牌は河の末尾に `^`（物理的に不在）として残す。実物は副露側にあるが、
+    /// 論理的にはその位置で捨てられた牌なので、巡目や捨て牌の並びが読める（仕様§5）。
     private mutating func consumeDiscard(of target: Player, tile: Tile) throws {
         if let claim, claim.from == target, claim.tile.normalized == tile.normalized {
-            self.claim = nil  // 河に入る前に鳴かれた（^ は付かない、仕様§5）
+            self.claim = nil
+            update(target) {
+                $0.river.append(RiverTile(tile: claim.tile, manner: claim.manner,
+                                          declaresRiichi: claim.kind == .立直,
+                                          wasCalledAway: true))
+                if claim.kind == .立直 { $0.riichi = true }
+            }
             return
         }
         resolveClaim()  // 無関係な応答対象が残っていれば先に流す

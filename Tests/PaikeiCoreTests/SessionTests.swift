@@ -33,7 +33,8 @@ struct セッションの保存と再現 {
         ]
         #expect(try doc.state(at: 0).players[.myself]?.draw == nil)
         #expect(try doc.state(at: 1).players[.myself]?.draw == Tile(suit: .索子, rank: 6))
-        #expect(try doc.state(at: 2).players[.myself]?.river.count == 1)
+        // 末尾の打牌は応答待ち。河へは次のイベントで確定する。
+        #expect(try doc.state(at: 2).claim?.tile == Tile(suit: .字牌, rank: 1))
     }
 
     @Test func 巻き戻した位置からの操作は先の履歴を捨てる() throws {
@@ -49,7 +50,7 @@ struct セッションの保存と再現 {
 
         #expect(doc.events.count == 2)
         let final = try doc.state()
-        #expect(final.players[.myself]?.river.map(\.tile.mpsz) == ["6s"])
+        #expect(final.claim?.tile.mpsz == "6s")
         #expect(final.players[.myself]?.hand?.count == 13)
     }
 }

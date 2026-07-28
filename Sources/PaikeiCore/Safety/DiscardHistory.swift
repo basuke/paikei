@@ -9,6 +9,11 @@ extension GameState {
     public func logicalDiscards(of player: Player) -> [Tile] {
         var tiles = players[player]?.river.map(\.tile) ?? []
 
+        // 応答待ちの牌はまだ河に無いが、打った本人にとっては捨て牌（フリテンになる）。
+        if let claim, claim.from == player, claim.kind == .打牌 || claim.kind == .立直 {
+            tiles.append(claim.tile)
+        }
+
         // 他家の副露のうち、鳴かれた牌（calledIndex）の出所が player のもの。
         // 鳴いた方向は副露者から見た相対位置なので絶対位置に解決する（チーは常に上家）。
         for (caller, state) in players where caller != player {

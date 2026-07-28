@@ -36,8 +36,17 @@ struct イベント適用 {
         let me = try #require(s.players[.myself])
         #expect(me.draw == nil)
         #expect(me.hand?.count == 13)
-        #expect(me.river.last == RiverTile(tile: try Tile.parse("6s"), manner: .ツモ切り))
-        #expect(s.phase == .静止)
+        // 打った牌はまだ河に確定せず、応答対象として置かれる（仕様§3.4）。
+        #expect(me.river.isEmpty)
+        #expect(s.claim == ClaimTile(tile: try Tile.parse("6s"), from: .myself,
+                                     manner: .ツモ切り))
+        #expect(s.phase == .応答待ち(try Tile.parse("6s"), 打牌者: .myself, .打牌))
+
+        // 誰も反応しなければ次のイベントで河に確定する。
+        let next = try s.applying(.ツモ(手番: .shimocha, 牌: nil))
+        #expect(next.players[.myself]?.river.last
+                == RiverTile(tile: try Tile.parse("6s"), manner: .ツモ切り))
+        #expect(next.claim == nil)
     }
 
     @Test("手出し: 手牌から抜け、ツモ牌が手に入る")
@@ -49,7 +58,7 @@ struct イベント適用 {
         #expect(me.hand?.count == 13)
         #expect(me.hand?.filter { $0.suit == .字牌 }.count == 1)  // 1z が1枚減った
         #expect(me.hand?.contains(Tile(suit: .索子, rank: 6)!) == true)  // 6s が合流
-        #expect(me.river.last?.manner == .手出し)
+        #expect(s.claim?.manner == .手出し)
     }
 
     @Test func 手牌に無い牌の打牌は矛盾() throws {
@@ -77,8 +86,7 @@ struct イベント適用 {
             .打牌(手番: .myself, 牌: try Tile.parse("6s"), ツモ切り: true))
         let me = try #require(s.players[.myself])
         #expect(me.hand?.count == 13)  // 河に出した分が手牌から減る
-        #expect(me.river.last?.manner == .ツモ切り)
-        #expect(s.phase == .静止)
+        #expect(s.claim?.manner == .ツモ切り)
     }
 
     @Test func ツモも14枚形でもない状態のツモ切りは矛盾() throws {
@@ -97,7 +105,7 @@ struct イベント適用 {
             .applying(.打牌(手番: .toimen, 牌: try Tile.parse("5p"), ツモ切り: nil))
         let toimen = try #require(s.players[.toimen])
         #expect(toimen.hand == nil)
-        #expect(toimen.river.map(\.tile) == [Tile(suit: .筒子, rank: 5)!])
+        #expect(s.claim?.tile == Tile(suit: .筒子, rank: 5))
         #expect(s.wall == 41)  // 山は既知なので減る
     }
 
@@ -113,7 +121,7 @@ struct イベント適用 {
             .applying(.立直成立(手番: .myself))
         let me = try #require(s.players[.myself])
         #expect(me.riichi == true)
-        #expect(me.river.last?.declaresRiichi == true)
+        #expect(me.river.last?.declaresRiichi == true)  // 立直成立が宣言牌を河へ流す
         #expect(me.score == 24000)
         #expect(s.kyotaku == 1)
 
@@ -238,14 +246,20 @@ struct 応答対象の解決 {
             claim: ClaimTile(tile: try Tile.parse("5p"), from: .toimen, kind: kind))
     }
 
-    @Test("鳴かれたら河に入らない（^ も付かない）")
-    func 鳴かれたら河に入らない() throws {
+    @Test("鳴かれた牌は ^ 付きで河に残る（実物は副露側）")
+    func 鳴かれた牌は被鳴きとして河に残る() throws {
         let s = try claimed().applying(.ポン(
             手番: .myself, 相手: .toimen,
             牌: try Tile.parse("5p"), 手牌から: try Tile.parseHand("55p")))
         #expect(s.claim == nil)
-        #expect(s.players[.toimen]?.river.map(\.tile.mpsz) == ["9m"])  // 5p は河に無い
         #expect(s.players[.myself]?.melds.count == 1)
+
+        // 捨てた位置は残るので巡目や並びが読める。物理的には不在なので ^（仕様§5）。
+        let last = try #require(s.players[.toimen]?.river.last)
+        #expect(last.tile == Tile(suit: .筒子, rank: 5))
+        #expect(last.wasCalledAway)
+        // 物理カウントからは除外され、副露側で数えられる（二重に数えない）。
+        #expect(s.visibleTiles(from: .myself).filter { $0.mpsz == "5p" }.count == 3)
     }
 
     @Test func スルーされたら打牌者の河に確定する() throws {

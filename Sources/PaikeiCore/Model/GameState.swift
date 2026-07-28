@@ -17,11 +17,18 @@ public struct ClaimTile: Sendable, Equatable {
     /// 牌を出したプレイヤー。
     public var from: Player
     public var kind: Kind
+    /// 打牌属性（手出し/ツモ切り）。スルーされて河に確定するときに引き継ぐ。
+    ///
+    /// `.paikei` の `claim_tile:` はこれを表記できないため（仕様§3.4）、
+    /// ファイル経由では常に nil になる。イベント適用の途中でのみ値を持つ。
+    public var manner: RiverTile.Manner?
 
-    public init(tile: Tile, from: Player, kind: Kind = .打牌) {
+    public init(tile: Tile, from: Player, kind: Kind = .打牌,
+                manner: RiverTile.Manner? = nil) {
         self.tile = tile
         self.from = from
         self.kind = kind
+        self.manner = manner
     }
 }
 

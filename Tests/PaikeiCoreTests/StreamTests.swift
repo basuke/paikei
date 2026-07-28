@@ -123,7 +123,9 @@ struct ストリームドキュメント {
         let t1 = try doc.state(at: 1)
         #expect(t1.players[.myself]?.draw == Tile(suit: .索子, rank: 6))
         let final = try doc.state()  // 既定は末尾（§8.3）
-        #expect(final.players[.myself]?.river.count == 1)
+        // 末尾の打牌はまだ応答待ちで、河には確定していない。
+        #expect(final.claim?.tile == Tile(suit: .字牌, rank: 1))
+        #expect(final.players[.myself]?.river.isEmpty == true)
         #expect(final.wall == 41)
     }
 
@@ -177,7 +179,8 @@ struct ストリームドキュメント {
 
         let final = try doc.state()
         // 最初のイベントで claim_tile(1m) がスルーされ、対面の河に確定する。
-        #expect(final.claim == nil)
-        #expect(final.players[.toimen]?.river.last?.tile == Tile(suit: .萬子, rank: 1))
+        #expect(final.players[.toimen]?.river.map(\.tile.mpsz).contains("1m") == true)
+        // 末尾は自分の打牌なので、その牌が応答待ちとして残る。
+        #expect(final.claim?.from == .myself)
     }
 }
