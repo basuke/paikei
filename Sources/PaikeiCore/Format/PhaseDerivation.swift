@@ -13,7 +13,7 @@ extension GameState {
             case .加槓: context = .加槓
             case .暗槓: context = .暗槓
             }
-            return .応答待ち(claim.tile, 打牌者: claim.from, context)
+            return .応答待ち(claim.tile, from: claim.from, context)
         }
 
         // 2a. draw: があるプレイヤーは打牌待ち（ツモ直後）。

@@ -138,10 +138,10 @@ struct 応答の選択肢 {
 
     @Test func 同巡内フリテンならロンが外れる() throws {
         let t = GameTimeline(snapshot: try state(hand: 待ち用), events: [
-            .ツモ(手番: .自分, 牌: try Tile.parse("9p")),
-            .打牌(手番: .自分, 牌: try Tile.parse("9p"), ツモ切り: true),
-            .打牌(手番: .上家, 牌: try Tile.parse("1z"), ツモ切り: nil),  // 見逃し
-            .打牌(手番: .対面, 牌: try Tile.parse("1z"), ツモ切り: nil),
+            .ツモ(of: .自分, 牌: try Tile.parse("9p")),
+            .打牌(of: .自分, 牌: try Tile.parse("9p"), ツモ切り: true),
+            .打牌(of: .上家, 牌: try Tile.parse("1z"), ツモ切り: nil),  // 見逃し
+            .打牌(of: .対面, 牌: try Tile.parse("1z"), ツモ切り: nil),
         ])
         // 直前に同じ牌を見逃しているので、いまロンはできない。
         #expect(try t.可能な応答(for: .自分).contains(.ロン) == false)
@@ -152,7 +152,7 @@ struct 応答の選択肢 {
     @Test func 打牌を明示して問える() throws {
         // 応答待ちでなくても「この牌が出たら鳴けるか」を試算できる。
         let s = try state(hand: 鳴き用)
-        #expect(s.可能な応答(for: .自分, 打牌: try Tile.parse("1z"), 打牌者: .対面)
+        #expect(s.可能な応答(for: .自分, 打牌: try Tile.parse("1z"), from: .対面)
                 == [.ポン(手牌から: try Tile.parseHand("11z"))])
     }
 }

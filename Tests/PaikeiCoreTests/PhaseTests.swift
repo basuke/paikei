@@ -20,7 +20,7 @@ struct フェーズ導出 {
     @Test("claim_tile があれば応答待ち")
     func claim_tileがあれば応答待ち() throws {
         let state = try SnapshotParser.parse(loadFixture("from-mjai"))
-        #expect(state.phase == .応答待ち(Tile(suit: .萬子, rank: 1)!, 打牌者: .対面, .打牌))
+        #expect(state.phase == .応答待ち(Tile(suit: .萬子, rank: 1)!, from: .対面, .打牌))
     }
 
     @Test("claim の kind が ClaimContext に対応する")
@@ -31,7 +31,7 @@ struct フェーズ導出 {
             (.加槓, .加槓), (.暗槓, .暗槓)
         ] {
             let state = GameState(claim: ClaimTile(tile: tile, from: .下家, kind: kind))
-            #expect(state.phase == .応答待ち(tile, 打牌者: .下家, ctx))
+            #expect(state.phase == .応答待ち(tile, from: .下家, ctx))
         }
     }
 

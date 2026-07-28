@@ -6,7 +6,7 @@ public enum Phase: Sendable, Equatable {
     /// あるプレイヤーが14枚目を持ち打牌を選択中。文脈が nil なら14枚目の由来が不明。
     case 打牌待ち(Player, DiscardContext?)
     /// 他家のアクション（`claim_tile`）への反応フェーズ。
-    case 応答待ち(Tile, 打牌者: Player, ClaimContext)
+    case 応答待ち(Tile, from: Player, ClaimContext)
 }
 
 /// 打牌待ちの文脈（14枚目の由来、仕様§7.3）。不明は nil で表す。

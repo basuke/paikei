@@ -212,7 +212,7 @@ extension GameState {
         guard let index = ps.river.lastIndex(where: {
             !$0.wasCalledAway && $0.tile.normalized == tile.normalized
         }) else {
-            throw EventApplicationError.河にない牌(打牌者: target, 牌: tile)
+            throw EventApplicationError.河にない牌(from: target, 牌: tile)
         }
         let old = ps.river[index]
         ps.river[index] = RiverTile(tile: old.tile, manner: old.manner,

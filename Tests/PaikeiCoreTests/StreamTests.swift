@@ -6,23 +6,23 @@ struct ストリームのJSONLines {
     @Test("全イベント種別が paikei 方言でラウンドトリップする")
     func 全イベント種別がpaikei方言でラウンドトリップする() throws {
         let events: [Event] = [
-            .ツモ(手番: .自分, 牌: try Tile.parse("6s")),
-            .ツモ(手番: .対面, 牌: nil),
-            .打牌(手番: .自分, 牌: try Tile.parse("1z"), ツモ切り: false),
-            .打牌(手番: .上家, 牌: try Tile.parse("0p"), ツモ切り: true),
-            .打牌(手番: .対面, 牌: try Tile.parse("9m"), ツモ切り: nil),
-            .チー(手番: .自分, 牌: try Tile.parse("4m"), 手牌から: try Tile.parseHand("35m")),
-            .ポン(手番: .下家, 相手: .対面, 牌: try Tile.parse("5p"),
+            .ツモ(of: .自分, 牌: try Tile.parse("6s")),
+            .ツモ(of: .対面, 牌: nil),
+            .打牌(of: .自分, 牌: try Tile.parse("1z"), ツモ切り: false),
+            .打牌(of: .上家, 牌: try Tile.parse("0p"), ツモ切り: true),
+            .打牌(of: .対面, 牌: try Tile.parse("9m"), ツモ切り: nil),
+            .チー(of: .自分, 牌: try Tile.parse("4m"), 手牌から: try Tile.parseHand("35m")),
+            .ポン(of: .下家, from: .対面, 牌: try Tile.parse("5p"),
                  手牌から: try Tile.parseHand("05p")),
-            .大明槓(手番: .自分, 相手: .上家, 牌: try Tile.parse("9s"),
+            .大明槓(of: .自分, from: .上家, 牌: try Tile.parse("9s"),
                        手牌から: try Tile.parseHand("999s")),
-            .加槓(手番: .自分, 牌: try Tile.parse("5s")),
-            .暗槓(手番: .対面, 手牌から: try Tile.parseHand("1111z")),
-            .立直(手番: .下家),
-            .立直成立(手番: .下家),
+            .加槓(of: .自分, 牌: try Tile.parse("5s")),
+            .暗槓(of: .対面, 手牌から: try Tile.parseHand("1111z")),
+            .立直(of: .下家),
+            .立直成立(of: .下家),
             .新ドラ(表示牌: try Tile.parse("3p")),
-            .和了(手番: .自分, 相手: .対面, 牌: try Tile.parse("1m")),
-            .和了(手番: .自分, 相手: .自分, 牌: nil),
+            .和了(of: .自分, from: .対面, 牌: try Tile.parse("1m")),
+            .和了(of: .自分, from: .自分, 牌: nil),
             .流局(理由: nil),
             .流局(理由: .九種九牌),
             .流局(理由: .荒牌平局),
@@ -54,7 +54,7 @@ struct ストリームのJSONLines {
     func 仕様8の例をパースする() throws {
         let line = #"{"type":"pon","actor":"toimen","target":"self","pai":"1z","consumed":["1z","1z"]}"#
         let event = try EventCoding.event(fromLine: line, format: .paikei)
-        #expect(event == .ポン(手番: .対面, 相手: .自分,
+        #expect(event == .ポン(of: .対面, from: .自分,
                               牌: try Tile.parse("1z"),
                               手牌から: try Tile.parseHand("11z")))
     }
@@ -94,12 +94,12 @@ struct ストリームmjai方言 {
         let format = StreamFormat.mjai(selfActor: 2)
         let tsumo = try EventCoding.event(
             fromLine: #"{"type":"tsumo","actor":2,"pai":"W"}"#, format: format)
-        #expect(tsumo == .ツモ(手番: .自分, 牌: try Tile.parse("3z")))
+        #expect(tsumo == .ツモ(of: .自分, 牌: try Tile.parse("3z")))
 
         let pon = try EventCoding.event(
             fromLine: #"{"type":"pon","actor":3,"target":0,"pai":"5pr","consumed":["5p","5p"]}"#,
             format: format)
-        #expect(pon == .ポン(手番: .下家, 相手: .対面,
+        #expect(pon == .ポン(of: .下家, from: .対面,
                             牌: Tile(suit: .筒子, rank: 5, isRed: true)!,
                             手牌から: try Tile.parseHand("55p")))
     }
@@ -177,7 +177,7 @@ struct ストリームドキュメント {
             [stream] format=mjai self_actor=2  # 自分は絶対座席2
             {"type":"tsumo","actor":2,"pai":"6s"}
             """)
-        #expect(doc.events == [.ツモ(手番: .自分, 牌: try Tile.parse("6s"))])
+        #expect(doc.events == [.ツモ(of: .自分, 牌: try Tile.parse("6s"))])
     }
 
     @Test("mjai は self_actor が必須、未知の format はエラー")

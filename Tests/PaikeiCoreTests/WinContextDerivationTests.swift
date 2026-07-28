@@ -102,9 +102,9 @@ struct 嶺上開花の導出 {
                     .下家: PlayerState(seat: .西),
                 ]),
             events: [
-                .ツモ(手番: .自分, 牌: try Tile.parse("5s")),
-                .暗槓(手番: .自分, 手牌から: try Tile.parseHand("1111m")),
-                .ツモ(手番: .自分, 牌: try Tile.parse("9p")),
+                .ツモ(of: .自分, 牌: try Tile.parse("5s")),
+                .暗槓(of: .自分, 手牌から: try Tile.parseHand("1111m")),
+                .ツモ(of: .自分, 牌: try Tile.parse("9p")),
             ])
     }
 
@@ -118,8 +118,8 @@ struct 嶺上開花の導出 {
     @Test func 他家の槓では嶺上ツモにならない() throws {
         var t = try timeline()
         t.events = [
-            .暗槓(手番: .下家, 手牌から: try Tile.parseHand("2222s")),
-            .ツモ(手番: .自分, 牌: try Tile.parse("9p")),
+            .暗槓(of: .下家, 手牌から: try Tile.parseHand("2222s")),
+            .ツモ(of: .自分, 牌: try Tile.parse("9p")),
         ]
         #expect(!t.嶺上ツモか(of: .自分))
     }

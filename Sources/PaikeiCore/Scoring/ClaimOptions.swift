@@ -20,7 +20,7 @@ extension GameState {
     /// 決まらない場合は入れない（`score` が情報不足として断るケース）。
     public func 可能な応答(for player: Player, rules: RuleSet = .standard) -> [ClaimOption] {
         guard case let .応答待ち(tile, discarder, context) = phase else { return [] }
-        return 可能な応答(for: player, 打牌: tile, 打牌者: discarder,
+        return 可能な応答(for: player, 打牌: tile, from: discarder,
                         context: context, rules: rules)
     }
 
@@ -29,7 +29,7 @@ extension GameState {
     /// 局面が応答待ちである必要はない。bot が `dahai` を受けた直後に、
     /// 状態を進める前に判断するのはこちら。
     public func 可能な応答(
-        for player: Player, 打牌 tile: Tile, 打牌者 discarder: Player,
+        for player: Player, 打牌 tile: Tile, from discarder: Player,
         context: ClaimContext = .打牌, rules: RuleSet = .standard
     ) -> [ClaimOption] {
         guard discarder != player,
@@ -107,12 +107,12 @@ extension GameTimeline {
 
     /// 打牌を明示して問う版（履歴込み）。
     public func 可能な応答(
-        for player: Player, 打牌 tile: Tile, 打牌者 discarder: Player,
+        for player: Player, 打牌 tile: Tile, from discarder: Player,
         context: ClaimContext = .打牌, rules: RuleSet = .standard, at steps: Int? = nil
     ) throws -> [ClaimOption] {
         let count = try resolve(steps)
         let current = try state(at: count)
-        return 除外(current.可能な応答(for: player, 打牌: tile, 打牌者: discarder,
+        return 除外(current.可能な応答(for: player, 打牌: tile, from: discarder,
                                   context: context, rules: rules),
                   for: player, at: count, in: current)
     }

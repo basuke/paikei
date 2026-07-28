@@ -21,7 +21,7 @@ public struct SimpleBot: Bot {
             guard try timeline.可能な応答(for: player, rules: rules).contains(.ロン) else {
                 return nil
             }
-            return .和了(手番: player, 相手: discarder, 牌: tile)
+            return .和了(of: player, from: discarder, 牌: tile)
 
         case let .打牌待ち(who, _) where who == player:
             return try 手番の行動(player, in: state)
@@ -39,12 +39,12 @@ public struct SimpleBot: Bot {
         if let draw = ps.draw,
            case .点数 = try state.score(
                for: player, winningTile: draw, winType: .ツモ, rules: rules) {
-            return .和了(手番: player, 相手: player, 牌: draw)
+            return .和了(of: player, from: player, 牌: draw)
         }
 
         // 立直後は手を変えられない。
         if ps.riichi == true, let draw = ps.draw {
-            return .打牌(手番: player, 牌: draw, ツモ切り: true)
+            return .打牌(of: player, 牌: draw, ツモ切り: true)
         }
 
         guard let best = Acceptance.discards(
@@ -57,6 +57,6 @@ public struct SimpleBot: Bot {
         guard let tile = candidates.first(where: { !$0.isRed }) ?? candidates.first else {
             return nil
         }
-        return .打牌(手番: player, 牌: tile, ツモ切り: tile == ps.draw)
+        return .打牌(of: player, 牌: tile, ツモ切り: tile == ps.draw)
     }
 }

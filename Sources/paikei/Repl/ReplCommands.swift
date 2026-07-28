@@ -62,17 +62,17 @@ enum ReplCommands {
         // 先頭にプレイヤー名を置ける（省略時は自分）。例: `discard toimen 5p`
         case "tsumo":
             let (actor, rest) = actorPrefix(args)
-            try transition(&session, .ツモ(手番: actor, 牌: try rest.first.map(Tile.parse)))
+            try transition(&session, .ツモ(of: actor, 牌: try rest.first.map(Tile.parse)))
         case "discard", "dahai":
             let (actor, rest) = actorPrefix(args)
             guard let text = rest.first else {
                 throw ReplError("使い方: discard [プレイヤー] <牌> [tsumogiri]")
             }
             let tsumogiri = rest.dropFirst().contains("tsumogiri")
-            try transition(&session, .打牌(手番: actor, 牌: try Tile.parse(text),
+            try transition(&session, .打牌(of: actor, 牌: try Tile.parse(text),
                                           ツモ切り: tsumogiri ? true : nil))
         case "riichi":
-            try transition(&session, .立直(手番: actorPrefix(args).actor))
+            try transition(&session, .立直(of: actorPrefix(args).actor))
         case "dora":
             guard let text = args.first else { throw ReplError("使い方: dora <表示牌>") }
             try transition(&session, .新ドラ(表示牌: try Tile.parse(text)))
@@ -81,30 +81,30 @@ enum ReplCommands {
         case "pon":
             let (actor, rest) = actorPrefix(args)
             let (tile, target) = try 鳴きの対象(rest, session, actor: actor, usage: "pon")
-            try transition(&session, .ポン(手番: actor, 相手: target, 牌: tile,
+            try transition(&session, .ポン(of: actor, from: target, 牌: tile,
                                           手牌から: try 手牌から同種(tile, 2, session, actor)))
         case "kan", "daiminkan":
             let (actor, rest) = actorPrefix(args)
             let (tile, target) = try 鳴きの対象(rest, session, actor: actor, usage: "kan")
-            try transition(&session, .大明槓(手番: actor, 相手: target, 牌: tile,
+            try transition(&session, .大明槓(of: actor, from: target, 牌: tile,
                                             手牌から: try 手牌から同種(tile, 3, session, actor)))
         case "chi":
             let (actor, rest) = actorPrefix(args)
             guard rest.count >= 2 else {
                 throw ReplError("使い方: chi <牌> <手牌から>（例: chi 4m 35m）")
             }
-            try transition(&session, .チー(手番: actor, 牌: try Tile.parse(rest[0]),
+            try transition(&session, .チー(of: actor, 牌: try Tile.parse(rest[0]),
                                           手牌から: try Tile.parseHand(rest[1])))
         case "ankan":
             let (actor, rest) = actorPrefix(args)
             guard let text = rest.first else { throw ReplError("使い方: ankan <牌>") }
             let tile = try Tile.parse(text)
-            try transition(&session, .暗槓(手番: actor,
+            try transition(&session, .暗槓(of: actor,
                                           手牌から: try 手牌から同種(tile, 4, session, actor)))
         case "kakan":
             let (actor, rest) = actorPrefix(args)
             guard let text = rest.first else { throw ReplError("使い方: kakan <牌>") }
-            try transition(&session, .加槓(手番: actor, 牌: try Tile.parse(text)))
+            try transition(&session, .加槓(of: actor, 牌: try Tile.parse(text)))
 
         default:
             throw ReplError("未知のコマンド: \(name)（`help` で一覧）")

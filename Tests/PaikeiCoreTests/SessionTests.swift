@@ -16,9 +16,9 @@ struct セッションの保存と再現 {
     @Test func 操作履歴を足したドキュメントがラウンドトリップする() throws {
         var doc = try GameTimeline.parse(text)
         doc.events = [
-            .ツモ(手番: .自分, 牌: try Tile.parse("6s")),
-            .打牌(手番: .自分, 牌: try Tile.parse("1z"), ツモ切り: false),
-            .立直(手番: .自分),
+            .ツモ(of: .自分, 牌: try Tile.parse("6s")),
+            .打牌(of: .自分, 牌: try Tile.parse("1z"), ツモ切り: false),
+            .立直(of: .自分),
         ]
         let reloaded = try GameTimeline.parse(doc.serialized())
         #expect(reloaded == doc)
@@ -28,8 +28,8 @@ struct セッションの保存と再現 {
     @Test func 途中の位置と末尾で状態が変わる() throws {
         var doc = try GameTimeline.parse(text)
         doc.events = [
-            .ツモ(手番: .自分, 牌: try Tile.parse("6s")),
-            .打牌(手番: .自分, 牌: try Tile.parse("1z"), ツモ切り: false),
+            .ツモ(of: .自分, 牌: try Tile.parse("6s")),
+            .打牌(of: .自分, 牌: try Tile.parse("1z"), ツモ切り: false),
         ]
         #expect(try doc.state(at: 0).players[.自分]?.draw == nil)
         #expect(try doc.state(at: 1).players[.自分]?.draw == Tile(suit: .索子, rank: 6))
@@ -41,12 +41,12 @@ struct セッションの保存と再現 {
         // REPL の apply が行う「分岐は持たない」挙動を、同じ手順で確認する。
         var doc = try GameTimeline.parse(text)
         doc.events = [
-            .ツモ(手番: .自分, 牌: try Tile.parse("6s")),
-            .打牌(手番: .自分, 牌: try Tile.parse("1z"), ツモ切り: false),
+            .ツモ(of: .自分, 牌: try Tile.parse("6s")),
+            .打牌(of: .自分, 牌: try Tile.parse("1z"), ツモ切り: false),
         ]
         let position = 1  // ツモまで戻る
         doc.events = Array(doc.events.prefix(position))
-            + [.打牌(手番: .自分, 牌: try Tile.parse("6s"), ツモ切り: true)]
+            + [.打牌(of: .自分, 牌: try Tile.parse("6s"), ツモ切り: true)]
 
         #expect(doc.events.count == 2)
         let final = try doc.state()

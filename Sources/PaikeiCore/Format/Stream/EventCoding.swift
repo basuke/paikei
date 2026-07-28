@@ -19,40 +19,40 @@ enum EventCoding {
 
         switch type {
         case "tsumo":
-            return .ツモ(手番: try decoder.player("actor"),
+            return .ツモ(of: try decoder.player("actor"),
                         牌: try decoder.tileOrUnknown("pai"))
         case "dahai":
-            return .打牌(手番: try decoder.player("actor"),
+            return .打牌(of: try decoder.player("actor"),
                         牌: try decoder.tile("pai"),
                         ツモ切り: fields["tsumogiri"] as? Bool)
         case "chi":
-            return .チー(手番: try decoder.player("actor"),
+            return .チー(of: try decoder.player("actor"),
                         牌: try decoder.tile("pai"),
                         手牌から: try decoder.tiles("consumed"))
         case "pon":
-            return .ポン(手番: try decoder.player("actor"),
-                        相手: try decoder.player("target"),
+            return .ポン(of: try decoder.player("actor"),
+                        from: try decoder.player("target"),
                         牌: try decoder.tile("pai"),
                         手牌から: try decoder.tiles("consumed"))
         case "daiminkan":
-            return .大明槓(手番: try decoder.player("actor"),
-                          相手: try decoder.player("target"),
+            return .大明槓(of: try decoder.player("actor"),
+                          from: try decoder.player("target"),
                           牌: try decoder.tile("pai"),
                           手牌から: try decoder.tiles("consumed"))
         case "kakan":
-            return .加槓(手番: try decoder.player("actor"), 牌: try decoder.tile("pai"))
+            return .加槓(of: try decoder.player("actor"), 牌: try decoder.tile("pai"))
         case "ankan":
-            return .暗槓(手番: try decoder.player("actor"),
+            return .暗槓(of: try decoder.player("actor"),
                         手牌から: try decoder.tiles("consumed"))
         case "reach":
-            return .立直(手番: try decoder.player("actor"))
+            return .立直(of: try decoder.player("actor"))
         case "reach_accepted":
-            return .立直成立(手番: try decoder.player("actor"))
+            return .立直成立(of: try decoder.player("actor"))
         case "dora":
             return .新ドラ(表示牌: try decoder.tile("dora_marker"))
         case "hora":
-            return .和了(手番: try decoder.player("actor"),
-                        相手: try decoder.player("target"),
+            return .和了(of: try decoder.player("actor"),
+                        from: try decoder.player("target"),
                         牌: try decoder.tileIfPresent("pai"))
         case "ryukyoku":
             return .流局(理由: (fields["reason"] as? String).map(RyukyokuReason.init(token:)))

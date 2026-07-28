@@ -14,7 +14,7 @@ struct イベント適用 {
 
     @Test("ツモ: draw が立ち、山が減り、打牌待ちになる")
     func ツモでdrawが立ち山が減る() throws {
-        let s = try base().applying(.ツモ(手番: .自分, 牌: try Tile.parse("6s")))
+        let s = try base().applying(.ツモ(of: .自分, 牌: try Tile.parse("6s")))
         #expect(s.players[.自分]?.draw == Tile(suit: .索子, rank: 6))
         #expect(s.wall == 41)
         #expect(s.phase == .打牌待ち(.自分, .ツモ後))
@@ -24,15 +24,15 @@ struct イベント適用 {
         var s = try base()
         s.wall = 0
         #expect(throws: EventApplicationError.山切れ) {
-            _ = try s.applying(.ツモ(手番: .自分, 牌: nil))
+            _ = try s.applying(.ツモ(of: .自分, 牌: nil))
         }
     }
 
     @Test("ツモ切り: 河に付き、手牌は変わらない")
     func ツモ切りは手牌が変わらない() throws {
         let s = try base()
-            .applying(.ツモ(手番: .自分, 牌: try Tile.parse("6s")))
-            .applying(.打牌(手番: .自分, 牌: try Tile.parse("6s"), ツモ切り: true))
+            .applying(.ツモ(of: .自分, 牌: try Tile.parse("6s")))
+            .applying(.打牌(of: .自分, 牌: try Tile.parse("6s"), ツモ切り: true))
         let me = try #require(s.players[.自分])
         #expect(me.draw == nil)
         #expect(me.hand?.count == 13)
@@ -40,10 +40,10 @@ struct イベント適用 {
         #expect(me.river.isEmpty)
         #expect(s.claim == ClaimTile(tile: try Tile.parse("6s"), from: .自分,
                                      manner: .ツモ切り))
-        #expect(s.phase == .応答待ち(try Tile.parse("6s"), 打牌者: .自分, .打牌))
+        #expect(s.phase == .応答待ち(try Tile.parse("6s"), from: .自分, .打牌))
 
         // 誰も反応しなければ次のイベントで河に確定する。
-        let next = try s.applying(.ツモ(手番: .下家, 牌: nil))
+        let next = try s.applying(.ツモ(of: .下家, 牌: nil))
         #expect(next.players[.自分]?.river.last
                 == RiverTile(tile: try Tile.parse("6s"), manner: .ツモ切り))
         #expect(next.claim == nil)
@@ -52,8 +52,8 @@ struct イベント適用 {
     @Test("手出し: 手牌から抜け、ツモ牌が手に入る")
     func 手出しでツモ牌が手に入る() throws {
         let s = try base()
-            .applying(.ツモ(手番: .自分, 牌: try Tile.parse("6s")))
-            .applying(.打牌(手番: .自分, 牌: try Tile.parse("1z"), ツモ切り: false))
+            .applying(.ツモ(of: .自分, 牌: try Tile.parse("6s")))
+            .applying(.打牌(of: .自分, 牌: try Tile.parse("1z"), ツモ切り: false))
         let me = try #require(s.players[.自分])
         #expect(me.hand?.count == 13)
         #expect(me.hand?.filter { $0.suit == .字牌 }.count == 1)  // 1z が1枚減った
@@ -64,14 +64,14 @@ struct イベント適用 {
     @Test func 手牌に無い牌の打牌は矛盾() throws {
         let s = try base()
         #expect(throws: EventApplicationError.手牌にない牌(.自分, Tile(suit: .筒子, rank: 1)!)) {
-            _ = try s.applying(.打牌(手番: .自分, 牌: try Tile.parse("1p"), ツモ切り: false))
+            _ = try s.applying(.打牌(of: .自分, 牌: try Tile.parse("1p"), ツモ切り: false))
         }
     }
 
     @Test func ツモ切り宣言なのにツモ牌と違えば矛盾() throws {
-        let drawn = try base().applying(.ツモ(手番: .自分, 牌: try Tile.parse("6s")))
+        let drawn = try base().applying(.ツモ(of: .自分, 牌: try Tile.parse("6s")))
         #expect(throws: EventApplicationError.self) {
-            _ = try drawn.applying(.打牌(手番: .自分, 牌: try Tile.parse("1z"), ツモ切り: true))
+            _ = try drawn.applying(.打牌(of: .自分, 牌: try Tile.parse("1z"), ツモ切り: true))
         }
     }
 
@@ -83,7 +83,7 @@ struct イベント適用 {
         #expect(state.players[.自分]?.hand?.count == 14)
 
         let s = try state.applying(
-            .打牌(手番: .自分, 牌: try Tile.parse("6s"), ツモ切り: true))
+            .打牌(of: .自分, 牌: try Tile.parse("6s"), ツモ切り: true))
         let me = try #require(s.players[.自分])
         #expect(me.hand?.count == 13)  // 河に出した分が手牌から減る
         #expect(s.claim?.manner == .ツモ切り)
@@ -94,15 +94,15 @@ struct イベント適用 {
             hand: try Tile.parseHand("123m456m789p55s11z"))])  // 13枚、draw なし
         #expect(throws: EventApplicationError.手牌にない牌(.自分, Tile(suit: .索子, rank: 9)!)) {
             _ = try state.applying(
-                .打牌(手番: .自分, 牌: try Tile.parse("9s"), ツモ切り: true))
+                .打牌(of: .自分, 牌: try Tile.parse("9s"), ツモ切り: true))
         }
     }
 
     @Test("手牌が不明な他家は検証せずに通す（不明を増やさない）")
     func 手牌が不明な他家は検証せずに通す() throws {
         let s = try base()
-            .applying(.ツモ(手番: .対面, 牌: nil))
-            .applying(.打牌(手番: .対面, 牌: try Tile.parse("5p"), ツモ切り: nil))
+            .applying(.ツモ(of: .対面, 牌: nil))
+            .applying(.打牌(of: .対面, 牌: try Tile.parse("5p"), ツモ切り: nil))
         let toimen = try #require(s.players[.対面])
         #expect(toimen.hand == nil)
         #expect(s.claim?.tile == Tile(suit: .筒子, rank: 5))
@@ -115,10 +115,10 @@ struct イベント適用 {
             kyotaku: 0,
             players: [.自分: PlayerState(
                 hand: try Tile.parseHand("123456789m1123p"), score: 25000)])
-            .applying(.ツモ(手番: .自分, 牌: try Tile.parse("9s")))
-            .applying(.立直(手番: .自分))
-            .applying(.打牌(手番: .自分, 牌: try Tile.parse("9s"), ツモ切り: true))
-            .applying(.立直成立(手番: .自分))
+            .applying(.ツモ(of: .自分, 牌: try Tile.parse("9s")))
+            .applying(.立直(of: .自分))
+            .applying(.打牌(of: .自分, 牌: try Tile.parse("9s"), ツモ切り: true))
+            .applying(.立直成立(of: .自分))
         let me = try #require(s.players[.自分])
         #expect(me.riichi == true)
         #expect(me.river.last?.declaresRiichi == true)  // 立直成立が宣言牌を河へ流す
@@ -127,8 +127,8 @@ struct イベント適用 {
 
         // 2枚目の打牌には * が付かない。
         let next = try s
-            .applying(.ツモ(手番: .自分, 牌: try Tile.parse("9s")))
-            .applying(.打牌(手番: .自分, 牌: try Tile.parse("9s"), ツモ切り: true))
+            .applying(.ツモ(of: .自分, 牌: try Tile.parse("9s")))
+            .applying(.打牌(of: .自分, 牌: try Tile.parse("9s"), ツモ切り: true))
         #expect(next.players[.自分]?.river.filter(\.declaresRiichi).count == 1)
     }
 
@@ -137,9 +137,9 @@ struct イベント適用 {
         var state = try base()
         state.players[.自分]?.hand = try Tile.parseHand("123m456m789p55p11z")
         let s = try state
-            .applying(.ツモ(手番: .対面, 牌: nil))
-            .applying(.打牌(手番: .対面, 牌: try Tile.parse("5p"), ツモ切り: nil))
-            .applying(.ポン(手番: .自分, 相手: .対面, 牌: try Tile.parse("5p"),
+            .applying(.ツモ(of: .対面, 牌: nil))
+            .applying(.打牌(of: .対面, 牌: try Tile.parse("5p"), ツモ切り: nil))
+            .applying(.ポン(of: .自分, from: .対面, 牌: try Tile.parse("5p"),
                            手牌から: try Tile.parseHand("55p")))
 
         #expect(s.players[.対面]?.river.last?.wasCalledAway == true)
@@ -154,9 +154,9 @@ struct イベント適用 {
         var state = try base()
         state.players[.自分]?.hand = try Tile.parseHand("135m456m789p55s11z")
         let s = try state
-            .applying(.ツモ(手番: .上家, 牌: nil))
-            .applying(.打牌(手番: .上家, 牌: try Tile.parse("4m"), ツモ切り: nil))
-            .applying(.チー(手番: .自分, 牌: try Tile.parse("4m"),
+            .applying(.ツモ(of: .上家, 牌: nil))
+            .applying(.打牌(of: .上家, 牌: try Tile.parse("4m"), ツモ切り: nil))
+            .applying(.チー(of: .自分, 牌: try Tile.parse("4m"),
                            手牌から: try Tile.parseHand("35m")))
         let meld = try #require(s.players[.自分]?.melds.first)
         #expect(meld.kind == .チー)
@@ -167,8 +167,8 @@ struct イベント適用 {
     @Test func 河に無い牌は鳴けない() throws {
         var state = try base()
         state.players[.自分]?.hand = try Tile.parseHand("123m456m789p55p11z")
-        #expect(throws: EventApplicationError.河にない牌(打牌者: .対面, 牌: Tile(suit: .筒子, rank: 5)!)) {
-            _ = try state.applying(.ポン(手番: .自分, 相手: .対面,
+        #expect(throws: EventApplicationError.河にない牌(from: .対面, 牌: Tile(suit: .筒子, rank: 5)!)) {
+            _ = try state.applying(.ポン(of: .自分, from: .対面,
                                        牌: try Tile.parse("5p"),
                                        手牌から: try Tile.parseHand("55p")))
         }
@@ -178,7 +178,7 @@ struct イベント適用 {
         var state = try base()
         state.players[.自分]?.hand = try Tile.parseHand("1111m456m789p55s1z")
 
-        let ankan = try state.applying(.暗槓(手番: .自分, 手牌から: try Tile.parseHand("1111m")))
+        let ankan = try state.applying(.暗槓(of: .自分, 手牌から: try Tile.parseHand("1111m")))
         #expect(ankan.players[.自分]?.melds.first?.kind == .暗槓)
         #expect(ankan.players[.自分]?.hand?.count == 9)
 
@@ -188,8 +188,8 @@ struct イベント適用 {
             hand: try Tile.parseHand("123m456m789p1z"),
             melds: [try Meld.parse("pon(5'55s,L)")])
         let kakan = try ponned
-            .applying(.ツモ(手番: .自分, 牌: try Tile.parse("5s")))
-            .applying(.加槓(手番: .自分, 牌: try Tile.parse("5s")))
+            .applying(.ツモ(of: .自分, 牌: try Tile.parse("5s")))
+            .applying(.加槓(of: .自分, 牌: try Tile.parse("5s")))
         let meld = try #require(kakan.players[.自分]?.melds.first)
         #expect(meld.kind == .加槓)
         #expect(meld.tiles.count == 4)
@@ -197,7 +197,7 @@ struct イベント適用 {
 
         // ポンが無ければ加槓できない。
         #expect(throws: EventApplicationError.ポンなしの加槓(.自分, Tile(suit: .索子, rank: 9)!)) {
-            _ = try ponned.applying(.加槓(手番: .自分, 牌: try Tile.parse("9s")))
+            _ = try ponned.applying(.加槓(of: .自分, 牌: try Tile.parse("9s")))
         }
     }
 
@@ -208,14 +208,14 @@ struct イベント適用 {
             hand: try Tile.parseHand("123m456m789p1z"),
             melds: [try Meld.parse("pon(5'55s,L)")])
         let kakan = try ponned
-            .applying(.ツモ(手番: .自分, 牌: try Tile.parse("5s")))
-            .applying(.加槓(手番: .自分, 牌: try Tile.parse("5s")))
-        #expect(kakan.phase == .応答待ち(try Tile.parse("5s"), 打牌者: .自分, .加槓))
+            .applying(.ツモ(of: .自分, 牌: try Tile.parse("5s")))
+            .applying(.加槓(of: .自分, 牌: try Tile.parse("5s")))
+        #expect(kakan.phase == .応答待ち(try Tile.parse("5s"), from: .自分, .加槓))
 
         var state = try base()
         state.players[.自分]?.hand = try Tile.parseHand("1111m456m789p55s1z")
-        let ankan = try state.applying(.暗槓(手番: .自分, 手牌から: try Tile.parseHand("1111m")))
-        #expect(ankan.phase == .応答待ち(try Tile.parse("1m"), 打牌者: .自分, .暗槓))
+        let ankan = try state.applying(.暗槓(of: .自分, 手牌から: try Tile.parseHand("1111m")))
+        #expect(ankan.phase == .応答待ち(try Tile.parse("1m"), from: .自分, .暗槓))
 
         // 牌は既に副露として見えている。応答対象としても数えると二重になる。
         #expect(ankan.visibleTiles(from: .対面)
@@ -231,21 +231,21 @@ struct イベント適用 {
             river: [RiverTile(tile: try Tile.parse("5s"))])
 
         #expect(throws: EventApplicationError.枚数異常での宣言(.自分, .少牌(不足: 1))) {
-            _ = try state.applying(.立直(手番: .自分))
+            _ = try state.applying(.立直(of: .自分))
         }
         #expect(throws: EventApplicationError.枚数異常での宣言(.自分, .少牌(不足: 1))) {
-            _ = try state.applying(.ポン(手番: .自分, 相手: .対面,
+            _ = try state.applying(.ポン(of: .自分, from: .対面,
                                        牌: try Tile.parse("5s"),
                                        手牌から: try Tile.parseHand("55s")))
         }
         #expect(throws: EventApplicationError.枚数異常での宣言(.自分, .少牌(不足: 1))) {
-            _ = try state.applying(.暗槓(手番: .自分, 手牌から: try Tile.parseHand("1111m")))
+            _ = try state.applying(.暗槓(of: .自分, 手牌から: try Tile.parseHand("1111m")))
         }
     }
 
     @Test func 手牌が不明な他家の宣言は枚数を検証しない() throws {
         // 「既知の状態としか矛盾を見ない」（仕様§8.3）。
-        let s = try base().applying(.立直(手番: .対面))
+        let s = try base().applying(.立直(of: .対面))
         #expect(s.players[.対面]?.riichi == true)
     }
 
@@ -270,7 +270,7 @@ struct 応答対象の解決 {
     @Test("鳴かれた牌は ^ 付きで河に残る（実物は副露側）")
     func 鳴かれた牌は被鳴きとして河に残る() throws {
         let s = try claimed().applying(.ポン(
-            手番: .自分, 相手: .対面,
+            of: .自分, from: .対面,
             牌: try Tile.parse("5p"), 手牌から: try Tile.parseHand("55p")))
         #expect(s.claim == nil)
         #expect(s.players[.自分]?.melds.count == 1)
@@ -284,14 +284,14 @@ struct 応答対象の解決 {
     }
 
     @Test func スルーされたら打牌者の河に確定する() throws {
-        let s = try claimed().applying(.ツモ(手番: .上家, 牌: nil))
+        let s = try claimed().applying(.ツモ(of: .上家, 牌: nil))
         #expect(s.claim == nil)
         #expect(s.players[.対面]?.river.map(\.tile.mpsz) == ["9m", "5p"])
     }
 
     @Test("リーチ宣言牌のスルーは * 付きで河に入り、riichi が立つ")
     func リーチ宣言牌のスルー() throws {
-        let s = try claimed(kind: .立直).applying(.立直成立(手番: .対面))
+        let s = try claimed(kind: .立直).applying(.立直成立(of: .対面))
         let toimen = try #require(s.players[.対面])
         let last = try #require(toimen.river.last)
         #expect(last.tile == Tile(suit: .筒子, rank: 5))
@@ -304,14 +304,14 @@ struct 応答対象の解決 {
     func reach_accepted単独でもriichiが立つ() throws {
         var state = GameState(kyotaku: 0)
         state.players[.対面] = PlayerState(score: 25000)
-        let s = try state.applying(.立直成立(手番: .対面))
+        let s = try state.applying(.立直成立(of: .対面))
         #expect(s.players[.対面]?.riichi == true)
         #expect(s.kyotaku == 1)
     }
 
     @Test func ロンは応答対象を消費して終局() throws {
         let s = try claimed().applying(.和了(
-            手番: .自分, 相手: .対面, 牌: try Tile.parse("5p")))
+            of: .自分, from: .対面, 牌: try Tile.parse("5p")))
         #expect(s.claim == nil)
         #expect(s.players[.対面]?.river.map(\.tile.mpsz) == ["9m"])
     }
@@ -320,7 +320,7 @@ struct 応答対象の解決 {
     func 加槓の応答のスルーは河に何も足さない() throws {
         var state = try claimed(kind: .加槓)
         state.players[.対面]?.melds = [try Meld.parse("kakan(5'555p,L)")]
-        let s = try state.applying(.ツモ(手番: .対面, 牌: nil))
+        let s = try state.applying(.ツモ(of: .対面, 牌: nil))
         #expect(s.claim == nil)
         #expect(s.players[.対面]?.river.map(\.tile.mpsz) == ["9m"])
     }
