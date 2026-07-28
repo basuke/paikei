@@ -12,12 +12,18 @@ public enum GameResult: Sendable, Equatable {
 extension GameResult {
     /// この結末で親が続投するか。
     ///
-    /// 和了なら親の和了、流局なら親のテンパイで連荘。流局時の連荘条件は流派差が
+    /// 和了なら親の和了、荒牌平局なら親のテンパイで連荘。流局時の連荘条件は流派差が
     /// あるが（ノーテンでも連荘とする卓もある）、主流のテンパイ連荘を採る。
+    ///
+    /// 途中流局（九種九牌・四風連打など）はテンパイによらず連荘。ノーテン罰符が
+    /// 無いので `テンパイ` は空で渡ってくることになり、そちらでは判定できない。
     func dealerContinues(dealer: Player) -> Bool {
         switch self {
-        case let .和了(winner, _, _): winner == dealer
-        case let .流局(_, tenpai, _): tenpai.contains(dealer)
+        case let .和了(winner, _, _):
+            return winner == dealer
+        case let .流局(reason, tenpai, _):
+            if let reason, reason != .荒牌平局 { return true }
+            return tenpai.contains(dealer)
         }
     }
 

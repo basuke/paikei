@@ -33,8 +33,8 @@ public struct FinishedGame: Sendable, Equatable {
 /// - ウマ・オカの精算。`standings` は持ち点の順位までを返す
 /// - テンパイやめ（オーラスで親がテンパイ流局・トップなら終局）。`agariyame` は
 ///   和了だけを見る
-/// - 途中流局（四風連打など）で本場が増えるか。`GameResult.流局` として通常の
-///   流局と同じに扱う
+/// - 途中流局（四風連打など）で本場が増えるか。連荘だけは理由から判定するが、
+///   本場は通常の流局と同じに増やす
 public struct Match: Sendable, Equatable {
     public let rules: MatchRules
     /// 起家（東1局の親）。同点時の順位付けの基準にもなる。

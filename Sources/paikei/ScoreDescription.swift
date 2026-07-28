@@ -160,6 +160,8 @@ enum ScoreDescription {
                 + "（この手は自風によって役が変わります。--seat で指定できます）"
         case .和了牌の欠落(let tile):
             return "手牌が14枚形ですが、和了牌 \(TileFormatter.tile(tile)) が含まれていません"
+        case .和了牌(let player):
+            return "\(player.displayName)が何で和了したか（ストリームにも局面にも牌がありません）"
         }
     }
 

@@ -75,6 +75,8 @@ public enum Requirement: Sendable, Equatable {
     case 席風(Player)
     /// 手牌が14枚形なのに、和了牌がその中に無い。
     case 和了牌の欠落(Tile)
+    /// 何で和了したかが分からない（和了イベントに牌が無く、局面からも導けない）。
+    case 和了牌(Player)
 }
 
 /// 和了していない理由。
