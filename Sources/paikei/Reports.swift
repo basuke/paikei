@@ -268,9 +268,9 @@ enum NagashiManganReport {
             return "流し満貫は成立していません（捨て牌が全て幺九牌で、1枚も鳴かれていないこと）"
         }
         return results.map { result in
-            let 支払い = result.payment.map(payment)
+            let detail = result.payment.map(payment)
                 ?? "支払いは席風が不明なため不定（親か子かで変わります）"
-            return "\(result.player.displayName): 流し満貫 — \(支払い)"
+            return "\(result.player.displayName): 流し満貫 — \(detail)"
         }.joined(separator: "\n")
     }
 

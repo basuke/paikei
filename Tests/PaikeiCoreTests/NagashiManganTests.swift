@@ -37,8 +37,17 @@ struct 流し満貫の判定 {
         #expect(結果.first?.payment == .ツモ(親: nil, 子: 4000))
     }
 
-    @Test func 本場が乗る() throws {
+    @Test("流局扱いなら積み棒は乗らない（既定）")
+    func 流局扱いなら積み棒は乗らない() throws {
+        // 積み棒は和了者が受け取るもの。流局では動かず次局へ持ち越す。
         let 結果 = try state(自分の河: "1m 9m 1z 7z", honba: 2).流し満貫()
+        #expect(結果.first?.payment == .ツモ(親: 4000, 子: 2000))
+    }
+
+    @Test("和了扱いにすると積み棒が乗る")
+    func 和了扱いなら積み棒が乗る() throws {
+        let 結果 = try state(自分の河: "1m 9m 1z 7z", honba: 2)
+            .流し満貫(rules: RuleSet(nagashiMangan: .和了))
         #expect(結果.first?.payment == .ツモ(親: 4200, 子: 2200))
     }
 
@@ -66,7 +75,7 @@ struct 流し満貫の判定 {
 
     @Test func ルールで無効にできる() throws {
         let s = try state(自分の河: "1m 9m 1z 7z")
-        #expect(s.流し満貫(rules: RuleSet(nagashiMangan: false)).isEmpty)
+        #expect(s.流し満貫(rules: RuleSet(nagashiMangan: nil)).isEmpty)
     }
 
     // MARK: - 不明の扱い

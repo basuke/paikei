@@ -14,6 +14,20 @@ public enum 人和の扱い: Sendable, Hashable {
     }
 }
 
+/// 流し満貫の扱い。流局のままとするか、和了とみなすか。
+///
+/// 点数移動（満貫のツモ払い）はどちらも同じで、違うのは積み棒と供託の扱い。
+/// 現代の主流は流局扱い。
+public enum 流し満貫の扱い: Sendable, Equatable {
+    /// 流局扱い。積み棒も供託も動かさず次局へ持ち越す。
+    case 流局
+    /// 和了扱い。積み棒を受け取る。
+    ///
+    /// 供託の帰属（複数人成立時の裁定）と連荘・親流れは局をまたぐ進行なので
+    /// ライブラリの担当外（仕様§10の論点7）。
+    case 和了
+}
+
 /// ルールオプション（仕様§10の論点3、CLAUDE.md の既定値）。
 ///
 /// ハードコードを避け、点数・役計算はこの構造体を参照する。
@@ -34,8 +48,8 @@ public struct RuleSet: Sendable, Equatable {
     public var liability: Bool
     /// 人和の扱い。nil なら採用しない（既定）。
     public var renhou: 人和の扱い?
-    /// 流し満貫を認めるか。
-    public var nagashiMangan: Bool
+    /// 流し満貫の扱い。nil なら採用しない。
+    public var nagashiMangan: 流し満貫の扱い?
     /// 大明槓の責任払いを認めるか。鳴かせた牌で槓させ、嶺上開花で和了られたときに負う。
     /// 包より採用が分かれるので既定は無効。
     public var daiminkanLiability: Bool
@@ -50,7 +64,7 @@ public struct RuleSet: Sendable, Equatable {
         liability: Bool = true,
         daiminkanLiability: Bool = false,
         renhou: 人和の扱い? = nil,
-        nagashiMangan: Bool = true
+        nagashiMangan: 流し満貫の扱い? = .流局
     ) {
         self.kuitan = kuitan
         self.redFives = redFives

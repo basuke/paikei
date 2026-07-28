@@ -19,9 +19,11 @@ extension GameState {
     /// 自分が鳴いているかどうかは関係ない — 見るのは自分の河だけ。
     ///
     /// 鳴かれたかどうかは河の `^` と、他家の副露から導出する（仕様§5）。
-    /// 支払いは満貫のツモ払いで、本場は付き、供託は次局へ持ち越すので加えない。
+    ///
+    /// 支払いは満貫のツモ払い。積み棒が乗るかは `RuleSet` の扱い次第で、
+    /// 流局扱いなら乗らない（積み棒は和了者が受け取るもの）。
     public func 流し満貫(rules: RuleSet = .standard) -> [NagashiMangan] {
-        guard rules.nagashiMangan else { return [] }
+        guard let handling = rules.nagashiMangan else { return [] }
 
         return Player.allCases.compactMap { player in
             guard let ps = players[player], !ps.river.isEmpty,
@@ -30,7 +32,8 @@ extension GameState {
 
             let payment = ps.seat.map { seat in
                 ScoreCalculator(rules: rules).payment(
-                    han: 5, fu: 0, isDealer: seat == .東, winType: .ツモ, honba: honba ?? 0)
+                    han: 5, fu: 0, isDealer: seat == .東, winType: .ツモ,
+                    honba: handling == .和了 ? (honba ?? 0) : 0)
             }
             return NagashiMangan(player: player, payment: payment)
         }
