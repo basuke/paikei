@@ -85,7 +85,14 @@ extension GameTimeline {
         }
         // 自分の行動が無ければ窓は全体。あればその直後から。
         let start = window.map { $0 + 1 } ?? 0
-        return events[start..<count].compactMap {
+
+        // いま応答対象になっている打牌は窓の外。まだ通していない — これから
+        // ロンするか見逃すかを決めるところなので、見逃し済みとして数えない（仕様§3.4）。
+        var end = count
+        if current.claim != nil, count > start, case .打牌 = events[count - 1] {
+            end = count - 1
+        }
+        return events[start..<end].compactMap {
             if case let .打牌(actor, tile, _) = $0, actor != player,
                waits.contains(tile.normalized) {
                 tile.normalized

@@ -201,6 +201,27 @@ struct イベント適用 {
         }
     }
 
+    @Test("槓の直後は槍槓の応答待ち")
+    func 槓の直後は応答待ち() throws {
+        var ponned = try base()
+        ponned.players[.myself] = PlayerState(
+            hand: try Tile.parseHand("123m456m789p1z"),
+            melds: [try Meld.parse("pon(5'55s,L)")])
+        let kakan = try ponned
+            .applying(.ツモ(手番: .myself, 牌: try Tile.parse("5s")))
+            .applying(.加槓(手番: .myself, 牌: try Tile.parse("5s")))
+        #expect(kakan.phase == .応答待ち(try Tile.parse("5s"), 打牌者: .myself, .加槓))
+
+        var state = try base()
+        state.players[.myself]?.hand = try Tile.parseHand("1111m456m789p55s1z")
+        let ankan = try state.applying(.暗槓(手番: .myself, 手牌から: try Tile.parseHand("1111m")))
+        #expect(ankan.phase == .応答待ち(try Tile.parse("1m"), 打牌者: .myself, .暗槓))
+
+        // 牌は既に副露として見えている。応答対象としても数えると二重になる。
+        #expect(ankan.visibleTiles(from: .toimen)
+                .filter { $0.normalized == (try! Tile.parse("1m")) }.count == 4)
+    }
+
     @Test("多牌・少牌の手では立直も鳴きもできない")
     func 枚数異常では宣言できない() throws {
         // 12枚の少牌。和了放棄なので立直も鳴きも通らない。

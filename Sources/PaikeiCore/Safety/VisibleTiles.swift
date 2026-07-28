@@ -12,7 +12,10 @@ extension GameState {
             tiles += ps.river.filter { !$0.wasCalledAway }.map(\.tile)
             for meld in ps.melds { tiles += meld.tiles }
         }
-        if let claim { tiles.append(claim.tile) }
+        // 加槓・暗槓の応答対象は既に副露として数えているので、足すと二重になる。
+        if let claim, claim.kind == .打牌 || claim.kind == .立直 {
+            tiles.append(claim.tile)
+        }
         return tiles
     }
 }

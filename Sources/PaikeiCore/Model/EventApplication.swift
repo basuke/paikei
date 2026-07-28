@@ -43,6 +43,8 @@ extension GameState {
             state.resolveClaim()
             try state.requireValidHand(actor)
             try state.applyKakan(actor: actor, tile: tile)
+            // 牌は既に副露の中にあるが、槍槓の検討対象として応答待ちにする（仕様§3.4）。
+            state.claim = ClaimTile(tile: tile, from: actor, kind: .加槓)
 
         case let .暗槓(actor, consumed):
             state.resolveClaim()
@@ -54,6 +56,8 @@ extension GameState {
             state.update(actor) {
                 $0.melds.append(Meld(kind: .暗槓, tiles: consumed, calledIndex: nil, from: nil))
             }
+            // 暗槓を槍槓できるのは国士無双だけ。検討自体は応答待ちとして通す。
+            state.claim = ClaimTile(tile: consumed[0], from: actor, kind: .暗槓)
 
         case let .立直(actor):
             state.resolveClaim()

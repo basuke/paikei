@@ -65,13 +65,31 @@ struct 履歴からの導出 {
     // MARK: - 同巡内フリテン
 
     @Test func 見逃した直後は同巡内フリテン() throws {
-        // 自分がツモ切りした直後に、対面が当たり牌 4p を捨てた（ロンせずスルー）。
+        // 自分がツモ切りした直後に、対面が当たり牌 4p を捨て、次のツモへ流れた
+        // （＝ロンせずスルーが確定した）。
+        let t = try timeline(events: [
+            .ツモ(手番: .myself, 牌: try Tile.parse("9s")),
+            .打牌(手番: .myself, 牌: try Tile.parse("9s"), ツモ切り: true),
+            .打牌(手番: .toimen, 牌: try Tile.parse("4p"), ツモ切り: nil),
+            .ツモ(手番: .kamicha, 牌: nil),
+        ])
+        #expect(try t.同巡内フリテン(of: .myself))
+    }
+
+    @Test("応答待ちの牌そのものは見逃しに数えない")
+    func 応答待ちの牌そのものは見逃しに数えない() throws {
+        // 対面が 4p を出した直後。まだロンするか見逃すかを決めていない。
         let t = try timeline(events: [
             .ツモ(手番: .myself, 牌: try Tile.parse("9s")),
             .打牌(手番: .myself, 牌: try Tile.parse("9s"), ツモ切り: true),
             .打牌(手番: .toimen, 牌: try Tile.parse("4p"), ツモ切り: nil),
         ])
-        #expect(try t.同巡内フリテン(of: .myself))
+        #expect(try !t.同巡内フリテン(of: .myself))
+        #expect(try t.可能な応答(for: .myself).contains(.ロン))
+        guard case .点数 = try t.score(winningTile: try Tile.parse("4p"), winType: .ロン) else {
+            Issue.record("応答待ちの牌でロンできるはず")
+            return
+        }
     }
 
     @Test func 自分のツモで同巡内フリテンは解消する() throws {
