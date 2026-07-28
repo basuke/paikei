@@ -31,10 +31,19 @@ enum TileFormatter {
     private static let suitKanji: [Suit: String] = [.萬子: "萬", .筒子: "筒", .索子: "索"]
     private static let honorNames = ["東", "南", "西", "北", "白", "發", "中"]  // 1z〜7z
 
-    /// 牌1枚。赤5は「赤」を付け、端末なら赤字にする。
+    /// 牌1枚。端末なら赤5を赤字にする。
+    ///
+    /// Unicode には赤5の符号位置が無いので印で補う。色はパイプに流すと消えるため、
+    /// 色だけに頼らない。
     static func tile(_ t: Tile) -> String {
-        let body = style == .unicode ? t.unicodeTile : kanjiTile(t)
-        return t.isRed ? red("赤" + body) : body
+        switch style {
+        case .kanji:
+            let body = kanjiTile(t)
+            return t.isRed ? red("赤" + body) : body
+        case .unicode:
+            let body = t.unicodeTile
+            return t.isRed ? red(body + "*") : body
+        }
     }
 
     private static func kanjiTile(_ t: Tile) -> String {
