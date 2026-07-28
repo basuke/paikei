@@ -54,7 +54,7 @@ extension MatchState {
     }
 
     /// この局が規定の最終局（オーラス）か。
-    public func isLastKyoku(rules: MatchRules) -> Bool {
+    public func オーラスか(rules: MatchRules) -> Bool {
         bakaze == rules.length.lastBakaze && kyoku == 4
     }
 
@@ -65,7 +65,7 @@ extension MatchState {
     ///
     /// 西入（オーラスで規定点に届かなければ延長）は未実装。規定局数を終えたら終局する。
     public func applying(
-        _ result: KyokuResult, at end: GameState, rules: MatchRules = .standard
+        _ result: GameResult, at end: GameState, rules: MatchRules = .standard
     ) -> MatchProgress {
         var next = self
 
@@ -93,7 +93,7 @@ extension MatchState {
         if rules.bankruptcyEnds, next.scores.values.contains(where: { $0 < 0 }) {
             return .終局(next)
         }
-        if isLastKyoku(rules: rules), 最終局で終わるか(result, continues: continues,
+        if オーラスか(rules: rules), 最終局で終わるか(result, continues: continues,
                                                     scores: next.scores, rules: rules) {
             return .終局(next)
         }
@@ -104,7 +104,7 @@ extension MatchState {
 
     /// オーラスを終えて対局が終わるか。
     private func 最終局で終わるか(
-        _ result: KyokuResult, continues: Bool, scores: [Player: Int], rules: MatchRules
+        _ result: GameResult, continues: Bool, scores: [Player: Int], rules: MatchRules
     ) -> Bool {
         // 親が流れれば規定局数を終えたということ。
         guard continues else { return true }

@@ -361,7 +361,7 @@ struct 点数の保存則 {
                           honba: 0, kyotaku: 0)
         let 流し = NagashiMangan(player: .対面, payment: .ツモ(親: 4000, 子: 2000))
 
-        let 結末: [KyokuResult] = [
+        let 結末: [GameResult] = [
             .和了(of: .自分, from: .下家, 満貫ロン),          // 親のロン（連荘）
             .和了(of: .下家, from: .自分, 満貫ロン),          // 子のロン
             .和了(of: .下家, from: .下家, 子のツモ),          // 子のツモ
@@ -408,7 +408,7 @@ struct 点数の保存則 {
         while !match.isFinished, 回数 < 100 {
             let timeline = GameTimeline(snapshot: match.state.snapshot())
             // 和了と流局を交互に混ぜる。
-            let result: KyokuResult = 回数 % 3 == 0
+            let result: GameResult = 回数 % 3 == 0
                 ? .流局(理由: .荒牌平局, テンパイ: [match.state.dealer.seated(.対面)], 流し満貫: [])
                 : .和了(of: match.state.dealer.seated(.下家),
                        from: match.state.dealer.seated(.対面), 満貫)

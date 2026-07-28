@@ -39,13 +39,13 @@
   - `Safety/` … 論理捨て牌履歴・フリテン・安牌・見えている牌
   - `Format/` … `.paikei` の入出力。`Format/Stream/` は仕様§8とMJAI方言
   - `Bot/` … 局面から手を決める打ち手
-  - `Game/` … 局の連鎖（`Match` / `MatchState` / `KyokuResult`）。半荘・東風戦
+  - `Match/` … 局の連鎖（`Match` / `MatchState` / `GameResult`）。半荘・東風戦
 - `Sources/paikei/` … CLI実行ファイル（PaikeiCoreに依存）
 - `Tests/PaikeiCoreTests/Fixtures/` … 仕様§9のサンプルとシャンテン正解データ
 
 設計原則:
 
-- **ライブラリ内の依存は一方向**: Model/Shanten/Agari/Scoring/Safety/Bot/Game（ドメイン層）は
+- **ライブラリ内の依存は一方向**: Model/Shanten/Agari/Scoring/Safety/Bot/Match（ドメイン層）は
   Format/ の型を一切参照しない。フォーマットは入出力の1形式にすぎず、
   依存は常に Format → ドメイン層 の向きのみ
 - 全て値型（struct/enum）。ロジックは純粋関数にしてテスト容易性を最優先
@@ -130,7 +130,7 @@ REPLのコマンドは局面フェーズ（仕様§7）で有効性をチェッ�
 ### 既知の未実装（意識して残しているもの）
 
 - **裁定を持たない**。応答の優先順位（頭ハネ）、途中流局の成立、テンパイ判定は
-  卓が決めること。`Game/` は結果（`KyokuResult`）を受けて点数移動と局の繋ぎ方だけを担う
+  卓が決めること。`Match/` は結果（`GameResult`）を受けて点数移動と局の繋ぎ方だけを担う
 - **西入とウマ・オカが無い**。規定局数を終えたら終局し、`Match.standings` は
   持ち点の順位までを返す
 - **`Event` は局の中だけ**。和了イベントは応答対象を消費するだけで持ち点を動かさない。

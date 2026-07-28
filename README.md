@@ -160,7 +160,7 @@ Sources/PaikeiCore/
   Safety/    論理捨て牌履歴・フリテン・安牌・見えている牌
   Format/    .paikei の入出力（Format/Stream/ はイベント列と MJAI 方言）
   Bot/       局面から手を決める打ち手
-  Game/      局の連鎖（半荘・東風戦）
+  Match/     局の連鎖（半荘・東風戦）
 Sources/paikei/   CLI（1発実行・REPL・MJAI bot）
 ```
 

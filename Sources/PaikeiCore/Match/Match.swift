@@ -8,14 +8,14 @@ public enum MatchError: Error, Equatable, Sendable {
 }
 
 /// 終わった1局の記録。
-public struct FinishedKyoku: Sendable, Equatable {
+public struct FinishedGame: Sendable, Equatable {
     /// 局が始まった時点の状況（場風・局数・本場・供託・持ち点）。
     public let start: MatchState
     /// 局の進行（初期局面 + イベント列）。
     public let timeline: GameTimeline
-    public let result: KyokuResult
+    public let result: GameResult
 
-    public init(start: MatchState, timeline: GameTimeline, result: KyokuResult) {
+    public init(start: MatchState, timeline: GameTimeline, result: GameResult) {
         self.start = start
         self.timeline = timeline
         self.result = result
@@ -25,7 +25,7 @@ public struct FinishedKyoku: Sendable, Equatable {
 /// 対局（東風戦・半荘戦）。局の連なりとその記録。
 ///
 /// **裁定は持たない**。誰が和了したか（頭ハネ）、誰がテンパイか、途中流局が
-/// 成立したかは卓が決めることで、この型はその結果（`KyokuResult`）を受けて
+/// 成立したかは卓が決めることで、この型はその結果（`GameResult`）を受けて
 /// 点数移動と局の繋ぎ方だけを担う。
 ///
 /// 未実装の流派差:
@@ -33,14 +33,14 @@ public struct FinishedKyoku: Sendable, Equatable {
 /// - ウマ・オカの精算。`standings` は持ち点の順位までを返す
 /// - テンパイやめ（オーラスで親がテンパイ流局・トップなら終局）。`agariyame` は
 ///   和了だけを見る
-/// - 途中流局（四風連打など）で本場が増えるか。`KyokuResult.流局` として通常の
+/// - 途中流局（四風連打など）で本場が増えるか。`GameResult.流局` として通常の
 ///   流局と同じに扱う
 public struct Match: Sendable, Equatable {
     public let rules: MatchRules
     /// 起家（東1局の親）。同点時の順位付けの基準にもなる。
     public let firstDealer: Player
     /// 終わった局。
-    public private(set) var records: [FinishedKyoku]
+    public private(set) var records: [FinishedGame]
     /// いまの状況（終局後は最終状態）。
     public private(set) var state: MatchState
     public private(set) var isFinished: Bool
@@ -60,11 +60,11 @@ public struct Match: Sendable, Equatable {
     ///
     /// `timeline` は局の全記録。初期局面がいまの状況と合っているかを検査し、
     /// 末尾の状態から持ち点と供託を読む。
-    public mutating func finish(_ timeline: GameTimeline, result: KyokuResult) throws {
+    public mutating func finish(_ timeline: GameTimeline, result: GameResult) throws {
         guard !isFinished else { throw MatchError.終局済み }
         try 突き合わせ(timeline.snapshot)
         let end = try timeline.state()
-        records.append(FinishedKyoku(start: state, timeline: timeline, result: result))
+        records.append(FinishedGame(start: state, timeline: timeline, result: result))
 
         switch state.applying(result, at: end, rules: rules) {
         case let .続行(next):

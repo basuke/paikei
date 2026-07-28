@@ -2,14 +2,14 @@
 ///
 /// 誰が和了したか（頭ハネの裁定）も、誰がテンパイだったかも、卓が決めること。
 /// ここはその結果を受けて点数移動と局の繋ぎ方を決める（仕様§10の論点7）。
-public enum KyokuResult: Sendable, Equatable {
+public enum GameResult: Sendable, Equatable {
     /// 和了。`from` が `of` 自身ならツモ和了。
     case 和了(of: Player, from: Player, Score)
     /// 流局。`テンパイ` はノーテン罰符の計算に使う。
     case 流局(理由: RyukyokuReason?, テンパイ: Set<Player>, 流し満貫: [NagashiMangan])
 }
 
-extension KyokuResult {
+extension GameResult {
     /// この結末で親が続投するか。
     ///
     /// 和了なら親の和了、流局なら親のテンパイで連荘。流局時の連荘条件は流派差が
