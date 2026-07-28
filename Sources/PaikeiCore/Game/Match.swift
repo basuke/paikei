@@ -1,3 +1,12 @@
+/// 対局の進行に関するエラー。
+public enum MatchError: Error, Equatable, Sendable {
+    /// 終局後に局を記録しようとした。
+    case 終局済み
+    /// 記録する局の初期局面が、いまの状況と食い違う。値は与えられた側で、
+    /// 期待値は `Match.state` にある。
+    case 局の不一致(場風: Wind?, 局: Int?, 本場: Int?)
+}
+
 /// 終わった1局の記録。
 public struct FinishedKyoku: Sendable, Equatable {
     /// 局が始まった時点の状況（場風・局数・本場・供託・持ち点）。
@@ -22,6 +31,8 @@ public struct FinishedKyoku: Sendable, Equatable {
 /// 未実装の流派差:
 /// - 西入（オーラスで規定点に届かなければ延長）。規定局数を終えたら終局する
 /// - ウマ・オカの精算。`standings` は持ち点の順位までを返す
+/// - テンパイやめ（オーラスで親がテンパイ流局・トップなら終局）。`agariyame` は
+///   和了だけを見る
 /// - 途中流局（四風連打など）で本場が増えるか。`KyokuResult.流局` として通常の
 ///   流局と同じに扱う
 public struct Match: Sendable, Equatable {
@@ -45,11 +56,13 @@ public struct Match: Sendable, Equatable {
             dealer: firstDealer)
     }
 
-    /// 1局を記録して次へ進める。終局していれば何もしない。
+    /// 1局を記録して次へ進める。
     ///
-    /// `timeline` は局の全記録。末尾の状態から持ち点と供託を読む。
+    /// `timeline` は局の全記録。初期局面がいまの状況と合っているかを検査し、
+    /// 末尾の状態から持ち点と供託を読む。
     public mutating func finish(_ timeline: GameTimeline, result: KyokuResult) throws {
-        guard !isFinished else { return }
+        guard !isFinished else { throw MatchError.終局済み }
+        try 突き合わせ(timeline.snapshot)
         let end = try timeline.state()
         records.append(FinishedKyoku(start: state, timeline: timeline, result: result))
 
@@ -69,6 +82,20 @@ public struct Match: Sendable, Equatable {
             let right = state.scores[rhs] ?? 0
             if left != right { return left > right }
             return 起家からの距離(lhs) < 起家からの距離(rhs)
+        }
+    }
+
+    /// 局の初期局面がいまの状況と合っているか。不明な値は検査しない
+    /// （「既知の状態としか矛盾を見ない」— 仕様§8.3 と同じ方針）。
+    private func 突き合わせ(_ snapshot: GameState) throws {
+        func matches<T: Equatable>(_ given: T?, _ expected: T) -> Bool {
+            given.map { $0 == expected } ?? true
+        }
+        guard matches(snapshot.bakaze, state.bakaze),
+              matches(snapshot.kyoku, state.kyoku),
+              matches(snapshot.honba, state.honba) else {
+            throw MatchError.局の不一致(場風: snapshot.bakaze, 局: snapshot.kyoku,
+                                    本場: snapshot.honba)
         }
     }
 

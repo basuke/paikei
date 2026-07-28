@@ -48,8 +48,9 @@ extension KyokuResult {
             // 流し満貫が成立していればノーテン罰符は無い（主流）。
             guard nagashi.isEmpty else {
                 for one in nagashi {
+                    // 席風が不明なら支払いが決まらないので動かさない。
                     guard case let .ツモ(fromDealer, fromNonDealer)? = one.payment else { continue }
-                    result[one.player, default: 0] += one.payment?.total ?? 0
+                    result[one.player, default: 0] += fromNonDealer * 2 + (fromDealer ?? fromNonDealer)
                     pay(&result, tsumo: (fromDealer, fromNonDealer),
                         winner: one.player, dealer: dealer)
                 }
