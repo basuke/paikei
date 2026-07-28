@@ -155,7 +155,7 @@ struct MJAIプロトコルの対話 {
             .新ドラ(表示牌: try Tile.parse("4s")),
             .和了(手番: .自分, 相手: .下家, 牌: try Tile.parse("6p")),
             .和了(手番: .対面, 相手: .対面, 牌: nil),
-            .流局,
+            .流局(理由: .四風連打),
         ]
         for event in events {
             let line = EventCoding.line(for: event, format: format)
@@ -180,7 +180,7 @@ struct MJAIプロトコルの対話 {
     @Test func 自席が決まる前は応答を書けない() {
         let session = MjaiSession()
         #expect(throws: MjaiSessionError.自席未確定) {
-            _ = try session.line(for: .行動(.流局))
+            _ = try session.line(for: .行動(.流局(理由: nil)))
         }
     }
 

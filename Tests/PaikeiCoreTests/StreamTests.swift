@@ -23,13 +23,31 @@ struct ストリームのJSONLines {
             .新ドラ(表示牌: try Tile.parse("3p")),
             .和了(手番: .自分, 相手: .対面, 牌: try Tile.parse("1m")),
             .和了(手番: .自分, 相手: .自分, 牌: nil),
-            .流局,
+            .流局(理由: nil),
+            .流局(理由: .九種九牌),
+            .流局(理由: .荒牌平局),
+            .流局(理由: .その他("nagashimangan")),
         ]
         for event in events {
             let line = EventCoding.line(for: event)
             #expect(try EventCoding.event(fromLine: line, format: .paikei) == event,
                     "round-trip failed: \(line)")
         }
+    }
+
+    @Test("流局の理由は語彙外でも情報を落とさない")
+    func 流局の理由() throws {
+        #expect(try EventCoding.event(
+            fromLine: #"{"type":"ryukyoku","reason":"suukaikan"}"#, format: .paikei)
+            == .流局(理由: .四開槓))
+        // 知らない理由は生の文字列のまま保つ。
+        #expect(try EventCoding.event(
+            fromLine: #"{"type":"ryukyoku","reason":"unknown_thing"}"#, format: .paikei)
+            == .流局(理由: .その他("unknown_thing")))
+        // 理由が無ければ書き出さない。
+        #expect(EventCoding.line(for: .流局(理由: nil)) == #"{"type":"ryukyoku"}"#)
+        #expect(EventCoding.line(for: .流局(理由: .三家和))
+                == #"{"type":"ryukyoku","reason":"sanchaho"}"#)
     }
 
     @Test("仕様§8の例をパースする")

@@ -22,8 +22,46 @@ public enum Event: Sendable, Equatable {
     case 新ドラ(表示牌: Tile)
     /// `相手` が `手番` 自身ならツモ和了。これ以降のイベントは持たない（仕様§8.3）。
     case 和了(手番: Player, 相手: Player, 牌: Tile?)
-    /// これ以降のイベントは持たない。
-    case 流局
+    /// これ以降のイベントは持たない。`理由` が nil なら書かれていない（不明）。
+    case 流局(理由: RyukyokuReason?)
+}
+
+/// 流局の種別（仕様§8.1）。
+///
+/// **成立したかどうかの判定は持たない**。四風連打も四開槓も「卓が流局と裁定した」
+/// 結果を受け取るだけで、頭ハネの優先順位と同じくライブラリの担当外
+/// （§8.4のbotモードでもサーバが教えてくる）。
+public enum RyukyokuReason: Sendable, Equatable {
+    /// 荒牌平局。山が尽きた通常の流局。
+    case 荒牌平局
+    case 九種九牌
+    case 四風連打
+    case 四家立直
+    case 四開槓
+    case 三家和
+    /// 語彙にない理由。生ログの値をそのまま保つ（読めない値でも情報を落とさない）。
+    case その他(String)
+}
+
+extension RyukyokuReason {
+    /// `.paikei` / MJAI 共通の表記トークン。
+    public var token: String {
+        switch self {
+        case .荒牌平局: "howanpaipingju"
+        case .九種九牌: "kyushukyuhai"
+        case .四風連打: "suufonrenda"
+        case .四家立直: "suucha_riichi"
+        case .四開槓: "suukaikan"
+        case .三家和: "sanchaho"
+        case let .その他(text): text
+        }
+    }
+
+    public init(token: String) {
+        let known: [RyukyokuReason] = [.荒牌平局, .九種九牌, .四風連打,
+                                       .四家立直, .四開槓, .三家和]
+        self = known.first { $0.token == token } ?? .その他(token)
+    }
 }
 
 /// イベント適用のエラー（仕様§8.3: 既知の状態と矛盾するイベント）。

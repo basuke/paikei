@@ -55,7 +55,7 @@ enum EventCoding {
                         相手: try decoder.player("target"),
                         牌: try decoder.tileIfPresent("pai"))
         case "ryukyoku":
-            return .流局
+            return .流局(理由: (fields["reason"] as? String).map(RyukyokuReason.init(token:)))
         default:
             throw StreamParseError.未知のイベント種別(type)
         }
@@ -171,8 +171,9 @@ enum EventCoding {
         case let .和了(actor, target, tile):
             out.add("type", "hora"); out.add("actor", player: actor); out.add("target", player: target)
             if let tile { out.add("pai", tile: tile) }
-        case .流局:
+        case let .流局(reason):
             out.add("type", "ryukyoku")
+            if let reason { out.add("reason", reason.token) }
         }
         return out.line
     }

@@ -1,5 +1,20 @@
 import PaikeiCore
 
+extension RyukyokuReason {
+    /// 人間向けの流局理由。語彙外の値は生の文字列をそのまま見せる。
+    var displayName: String {
+        switch self {
+        case .荒牌平局: "荒牌平局"
+        case .九種九牌: "九種九牌"
+        case .四風連打: "四風連打"
+        case .四家立直: "四家立直"
+        case .四開槓: "四開槓"
+        case .三家和: "三家和"
+        case let .その他(text): text
+        }
+    }
+}
+
 extension Player {
     /// 人間向けの位置名（プレゼンテーション層）。
     ///

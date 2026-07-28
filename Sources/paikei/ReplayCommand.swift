@@ -75,8 +75,9 @@ enum EventDescription {
         case let .和了(actor, target, tile):
             let how = actor == target ? "ツモ和了" : "\(target.displayName)からロン"
             return "\(actor.displayName)が\(how)\(tile.map { "（\(TileFormatter.tile($0))）" } ?? "")"
-        case .流局:
-            return "流局"
+        case let .流局(reason):
+            guard let reason else { return "流局" }
+            return "流局（\(reason.displayName)）"
         }
     }
 
