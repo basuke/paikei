@@ -75,9 +75,9 @@ enum ScoreDescription {
 
     private static func doraBreakdown(_ dora: DoraCount) -> String {
         var parts: [String] = []
-        if dora.dora > 0 { parts.append("ドラ\(dora.dora)") }
-        if dora.red > 0 { parts.append("赤\(dora.red)") }
-        if dora.ura > 0 { parts.append("裏\(dora.ura)") }
+        if dora.表 > 0 { parts.append("ドラ\(dora.表)") }
+        if dora.赤 > 0 { parts.append("赤\(dora.赤)") }
+        if dora.裏 > 0 { parts.append("裏\(dora.裏)") }
         return parts.joined(separator: " ")
     }
 

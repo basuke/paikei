@@ -129,7 +129,7 @@ struct 本場供託と切り上げ満貫 {
         let off = try pinfuDora3(RuleSet(roundUpMangan: false))
         #expect(off.han == 4)          // 平和1 + ドラ3
         #expect(off.fu == 30)          // 平和ロンは30符
-        #expect(off.dora.dora == 3)
+        #expect(off.dora.表 == 3)
         #expect(off.payment == .ロン(7700))
         #expect(off.limit == nil)
 
@@ -185,9 +185,9 @@ struct 本場供託と切り上げ満貫 {
         // 手牌に 5p が2枚（うち1枚は赤）、ドラ表示 4p → 5p がドラ。
         let h = try hand("234m55678p234567s", dora: "4p", ura: "1m", 立直: true, win: "8p")
         let count = DoraCounter().count(h)
-        #expect(count.dora == 2)  // 5p ×2
-        #expect(count.red == 0)
-        #expect(count.ura == 1)   // 裏ドラ表示1m → 2m が手に1枚
+        #expect(count.表 == 2)  // 5p ×2
+        #expect(count.赤 == 0)
+        #expect(count.裏 == 1)   // 裏ドラ表示1m → 2m が手に1枚
         #expect(count.total == 3)
     }
 
@@ -195,31 +195,31 @@ struct 本場供託と切り上げ満貫 {
     func 赤5は赤ドラとして数え表ドラとしても数える() throws {
         let h = try hand("234m05678p234567s", dora: "4p", win: "8p")
         let count = DoraCounter().count(h)
-        #expect(count.red == 1)   // 0p
-        #expect(count.dora == 2)  // 0p も 5p なのでドラ表示4pの対象
+        #expect(count.赤 == 1)   // 0p
+        #expect(count.表 == 2)  // 0p も 5p なのでドラ表示4pの対象
         #expect(count.total == 3)
     }
 
     @Test func 赤なしルールでは赤を数えない() throws {
         let h = try hand("234m05678p234567s", dora: "4p", win: "8p")
-        #expect(DoraCounter(rules: RuleSet(redFives: false)).count(h).red == 0)
+        #expect(DoraCounter(rules: RuleSet(redFives: false)).count(h).赤 == 0)
     }
 
     @Test func 裏ドラは立直しているときだけ数える() throws {
         let withRiichi = try hand("234m55678p234567s", ura: "4p", 立直: true, win: "8p")
-        #expect(DoraCounter().count(withRiichi).ura == 2)
+        #expect(DoraCounter().count(withRiichi).裏 == 2)
 
         let noRiichi = try hand("234m55678p234567s", ura: "4p", 立直: false, win: "8p")
-        #expect(DoraCounter().count(noRiichi).ura == 0)
+        #expect(DoraCounter().count(noRiichi).裏 == 0)
 
         let ruleOff = try hand("234m55678p234567s", ura: "4p", 立直: true, win: "8p")
-        #expect(DoraCounter(rules: RuleSet(裏ドラ: false)).count(ruleOff).ura == 0)
+        #expect(DoraCounter(rules: RuleSet(裏ドラ: false)).count(ruleOff).裏 == 0)
     }
 
     @Test("副露の牌もドラに数える（槓は4枚とも）")
     func 副露の牌もドラに数える() throws {
         let h = try hand("234567p777z99s", melds: ["ankan(1111m)"], dora: "9m", win: "9s")
-        #expect(DoraCounter().count(h).dora == 4)  // 9m表示 → 1m がドラ、暗槓の4枚
+        #expect(DoraCounter().count(h).表 == 4)  // 9m表示 → 1m がドラ、暗槓の4枚
     }
 }
 
@@ -248,7 +248,7 @@ struct 本場供託と切り上げ満貫 {
         let dora = try #require(try ScoreCalculator().score(
             concealed: try Tile.parseHand("234567m234p456s99p"), melds: [], context: withDora))
         #expect(dora.han == plain.han + 1)
-        #expect(dora.dora.dora == 1)
+        #expect(dora.dora.表 == 1)
     }
 
     @Test("役なしは点数にならない（ドラだけでは和了できない）")

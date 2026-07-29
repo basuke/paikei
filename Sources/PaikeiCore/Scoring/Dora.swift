@@ -19,20 +19,20 @@ extension Tile {
 /// ドラの内訳。役ではないため翻数として後から加算する。
 public struct DoraCount: Sendable, Equatable {
     /// 表ドラ。
-    public let dora: Int
+    public let 表: Int
     /// 赤ドラ。
-    public let red: Int
+    public let 赤: Int
     /// 裏ドラ（立直時のみ）。
-    public let ura: Int
+    public let 裏: Int
 
-    public init(dora: Int = 0, red: Int = 0, ura: Int = 0) {
-        self.dora = dora
-        self.red = red
-        self.ura = ura
+    public init(表: Int = 0, 赤: Int = 0, 裏: Int = 0) {
+        self.表 = 表
+        self.赤 = 赤
+        self.裏 = 裏
     }
 
     /// 合計翻数。
-    public var total: Int { dora + red + ura }
+    public var total: Int { 表 + 赤 + 裏 }
 }
 
 /// ドラ・赤・裏ドラを数える。ルール（赤の有無・裏ドラの有無）を注入して使う。
@@ -56,7 +56,7 @@ public struct DoraCounter: Sendable {
         let riichi = ctx.立直 || ctx.ダブル立直
         let ura = (rules.裏ドラ && riichi) ? count(markers: ctx.裏ドラ表示牌, in: tiles) : 0
 
-        return DoraCount(dora: count(markers: ctx.ドラ表示牌, in: tiles), red: red, ura: ura)
+        return DoraCount(表: count(markers: ctx.ドラ表示牌, in: tiles), 赤: red, 裏: ura)
     }
 
     /// 表示牌ごとに、対応するドラ牌が手にある枚数を合計する。
