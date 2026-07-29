@@ -7,17 +7,35 @@ struct ReplayCommand: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "replay",
         abstract: "ストリームを先頭から再生し、各時点の要約を表示する",
-        discussion: "各ステップの番号は analyze などの --at にそのまま渡せる。"
+        discussion: """
+            入力の中身で振る舞いを変える。`.paikei`（1局）ならイベントを1つずつ
+            適用して各時点を表示し、MJAI の生ログ（JSON Lines）なら局ごとの結末と
+            持ち点を追って半荘として再生する。
+
+            各ステップの番号は analyze などの --at にそのまま渡せる（.paikei のとき）。
+            """
     )
 
-    @Argument(help: ".paikei ファイルへのパス")
+    @Argument(help: ".paikei ファイル、または MJAI 生ログ（JSON Lines）へのパス")
     var path: String
 
-    @Flag(name: .long, help: "各ステップの局面要約も表示する")
+    @Flag(name: .long, help: "各ステップの局面要約も表示する（.paikei のとき）")
     var verbose = false
 
     func run() throws {
-        let doc = try DocumentLoading.document(at: path)
+        switch try DocumentLoading.input(at: path) {
+        case let .document(doc):
+            try ひと局を再生(doc)
+        case let .mjaiLog(lines):
+            do {
+                print(try MatchReplay.run(lines: lines))
+            } catch let error as MatchReplay.Failure {
+                throw ValidationError(error.message)
+            }
+        }
+    }
+
+    private func ひと局を再生(_ doc: GameTimeline) throws {
         guard !doc.events.isEmpty else {
             throw ValidationError("このファイルに [stream] がありません")
         }

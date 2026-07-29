@@ -148,7 +148,7 @@ $ paikei analyze <path>            # 局面の要約
 $ paikei shanten <path>            # シャンテン・受け入れ・何切る
 $ paikei score <path> <牌> <tsumo|ron> [フラグ]
 $ paikei safety <path> [相手]      # 現物/スジ/無スジ
-$ paikei replay <path>             # [stream] の再生
+$ paikei replay <path>             # 1局の再生、または MJAI 生ログなら半荘の再生
 $ paikei mjai                      # MJAI botとして標準入出力で対局
 $ paikei                           # REPL起動
 
@@ -158,6 +158,10 @@ PAIKEI_TILES=unicode               # 牌の表示を Unicode 麻雀牌に（既�
 REPLのコマンドは局面フェーズ（仕様§7）で有効性をチェックする
 （例: `score X ron` は応答待ちでのみ有効）。遷移コマンド（`discard` `pon` `chi` …）は
 イベントを生成するので、セッションがそのまま `.paikei` として保存できる（仕様§8.4）。
+
+**コマンドは増やさず、入力の中身で振る舞いを変える**。`replay` は1行目が `{` なら
+MJAI 生ログ（JSON Lines）として半荘を再生し、そうでなければ `.paikei` の1局を再生する。
+`.paikei` は1局が単位なので（仕様§10の論点7）、`Match` に流せる入力は MJAI ログだけ。
 
 ## 実装フェーズと現在地
 

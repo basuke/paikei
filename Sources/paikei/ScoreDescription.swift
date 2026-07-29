@@ -47,7 +47,7 @@ enum ScoreDescription {
     }
 
     /// 「30符4翻 7700点」「満貫 8000点」のような1行。
-    private static func headline(_ score: Score) -> String {
+    static func headline(_ score: Score) -> String {
         var parts: [String] = []
         if let limit = score.limit {
             parts.append(limitName(limit))
@@ -149,7 +149,7 @@ enum ScoreDescription {
         }
     }
 
-    private static func requirement(_ requirement: Requirement) -> String {
+    static func requirement(_ requirement: Requirement) -> String {
         switch requirement {
         case .手牌(let player):
             return "\(player.displayName)の手牌"

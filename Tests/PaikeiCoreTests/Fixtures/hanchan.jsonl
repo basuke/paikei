@@ -1,0 +1,17 @@
+{"type":"start_game","names":["Paikei","A","B","C"],"id":0}
+{"type":"start_kyoku","bakaze":"E","kyoku":1,"honba":0,"kyotaku":0,"oya":0,"dora_marker":"C","scores":[25000,25000,25000,25000],"tehais":[["1m","2m","3m","4m","5m","6m","7m","8m","9m","1s","1s","2s","2s"],["1p","4p","7p","2s","5s","8s","3m","6m","9m","E","S","W","N"],["1p","2p","3p","4p","5p","6p","7p","8p","9p","W","W","N","N"],["1p","2p","3p","4p","5p","6p","7p","8p","9p","P","P","F","F"]]}
+{"type":"tsumo","actor":0,"pai":"5p"}
+{"type":"dahai","actor":0,"pai":"5p","tsumogiri":true}
+{"type":"tsumo","actor":1,"pai":"9s"}
+{"type":"dahai","actor":1,"pai":"9s","tsumogiri":true}
+{"type":"tsumo","actor":2,"pai":"C"}
+{"type":"dahai","actor":2,"pai":"C","tsumogiri":true}
+{"type":"tsumo","actor":3,"pai":"F"}
+{"type":"dahai","actor":3,"pai":"F","tsumogiri":true}
+{"type":"tsumo","actor":0,"pai":"1s"}
+{"type":"hora","actor":0,"target":0,"pai":"1s"}
+{"type":"end_kyoku"}
+{"type":"start_kyoku","bakaze":"E","kyoku":1,"honba":1,"kyotaku":0,"oya":0,"dora_marker":"C","scores":[31000,23000,23000,23000],"tehais":[["1m","2m","3m","4m","5m","6m","7m","8m","9m","1s","1s","2s","2s"],["1p","4p","7p","2s","5s","8s","3m","6m","9m","E","S","W","N"],["1p","2p","3p","4p","5p","6p","7p","8p","9p","W","W","N","N"],["1p","2p","3p","4p","5p","6p","7p","8p","9p","P","P","F","F"]]}
+{"type":"ryukyoku","reason":"howanpaipingju"}
+{"type":"end_kyoku"}
+{"type":"end_game"}
