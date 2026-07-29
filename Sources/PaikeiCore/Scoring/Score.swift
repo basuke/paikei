@@ -48,7 +48,7 @@ public struct Score: Sendable, Equatable {
     /// 満貫以上の区分。満貫未満なら nil。
     public let limit: LimitRank?
     /// ドラの内訳。
-    public let dora: DoraCount
+    public let ドラ: DoraCount
     /// 支払いの内訳。
     public let payment: Payment
     /// 包（責任払い）の責任者。付かなければ nil。
@@ -78,8 +78,8 @@ public struct ScoreCalculator: Sendable {
     /// 役満ではドラを加算しない。`liable` を渡すと包（責任払い）の支払いになる
     /// （誰が責任者かの判定は `LiabilityDetector` の担当）。
     public func score(
-        _ evaluation: HandEvaluation, dora: DoraCount,
-        本場: Int = 0, 供託: Int = 0, liable: Player? = nil
+        _ evaluation: HandEvaluation, ドラ dora: DoraCount,
+        本場 honba: Int = 0, 供託 kyotaku: Int = 0, liable: Player? = nil
     ) -> Score? {
         guard !evaluation.役.isEmpty else { return nil }
 
@@ -93,23 +93,23 @@ public struct ScoreCalculator: Sendable {
         return Score(
             han: han, fu: fu,
             limit: limitRank(han: han, fu: fu, yakumanCount: yakumanCount),
-            dora: dora,
+            ドラ: dora,
             payment: payment(base: base, isDealer: isDealer,
-                             winType: evaluation.hand.context.winType, 本場: 本場,
+                             winType: evaluation.hand.context.winType, 本場: honba,
                              liable: liable != nil),
             liable: liable,
-            本場: 本場, 供託: 供託)
+            本場: honba, 供託: kyotaku)
     }
 
     /// 手牌から高点法・ドラ計算・点数計算をまとめて行う。和了していなければ nil。
     /// 文脈が矛盾していれば `WinContextError` を投げる。
     public func score(
-        concealed: [Tile], melds: [Meld], context: WinContext, 本場: Int = 0, 供託: Int = 0
+        concealed: [Tile], melds: [Meld], context: WinContext, 本場 honba: Int = 0, 供託 kyotaku: Int = 0
     ) throws -> Score? {
         guard let best = try HandEvaluator(rules: rules)
             .best(concealed: concealed, melds: melds, context: context) else { return nil }
-        return score(best, dora: DoraCounter(rules: rules).count(best.hand),
-                     本場: 本場, 供託: 供託)
+        return score(best, ドラ: DoraCounter(rules: rules).count(best.hand),
+                     本場: honba, 供託: kyotaku)
     }
 
     /// 翻と符だけから支払いを求める（素の点数表）。
@@ -121,10 +121,10 @@ public struct ScoreCalculator: Sendable {
     /// 変換なので、影響するのは切り上げ満貫（`roundUpMangan`）だけ。
     public func payment(
         han: Int, fu: Int, isDealer: Bool, winType: WinType,
-        yakumanCount: Int = 0, 本場: Int = 0
+        yakumanCount: Int = 0, 本場 honba: Int = 0
     ) -> Payment {
         payment(base: basePoints(han: han, fu: fu, yakumanCount: yakumanCount),
-                isDealer: isDealer, winType: winType, 本場: 本場)
+                isDealer: isDealer, winType: winType, 本場: honba)
     }
 
     // MARK: - 基本点
@@ -168,11 +168,11 @@ public struct ScoreCalculator: Sendable {
     // MARK: - 支払い
 
     private func payment(
-        base: Int, isDealer: Bool, winType: WinType, 本場: Int, liable: Bool = false
+        base: Int, isDealer: Bool, winType: WinType, 本場 honba: Int, liable: Bool = false
     ) -> Payment {
         // 包は「ロンされたのと同じ全額」を責任者に負わせる。
         if liable {
-            let whole = roundUp100(base * (isDealer ? 6 : 4)) + 300 * 本場
+            let whole = roundUp100(base * (isDealer ? 6 : 4)) + 300 * honba
             switch winType {
             case .ツモ:
                 return .責任払い(whole)
@@ -184,11 +184,11 @@ public struct ScoreCalculator: Sendable {
 
         switch winType {
         case .ロン:
-            return .ロン(roundUp100(base * (isDealer ? 6 : 4)) + 300 * 本場)
+            return .ロン(roundUp100(base * (isDealer ? 6 : 4)) + 300 * honba)
         case .ツモ:
-            let fromNonDealer = roundUp100(base * (isDealer ? 2 : 1)) + 100 * 本場
+            let fromNonDealer = roundUp100(base * (isDealer ? 2 : 1)) + 100 * honba
             guard !isDealer else { return .ツモ(親: nil, 子: fromNonDealer) }
-            return .ツモ(親: roundUp100(base * 2) + 100 * 本場, 子: fromNonDealer)
+            return .ツモ(親: roundUp100(base * 2) + 100 * honba, 子: fromNonDealer)
         }
     }
 

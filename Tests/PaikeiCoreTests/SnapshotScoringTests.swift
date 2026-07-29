@@ -41,7 +41,7 @@ import Testing
         #expect(yaku == [.平和])
         #expect(score.han == 2)               // 平和1 + ドラ1
         #expect(score.fu == 30)               // 平和ロン
-        #expect(score.dora.表 == 1)
+        #expect(score.ドラ.表 == 1)
         #expect(score.payment == .ロン(2000 + 300))   // 1本場
         #expect(score.total == 2300 + 1000)          // 供託1本
     }
@@ -60,7 +60,7 @@ import Testing
             try s.score(winningTile: try Tile.parse("6s"), winType: .ロン, options: options))
 
         #expect(yaku.isSuperset(of: [.立直, .一発, .平和]))
-        #expect(score.dora.裏 == 1)          // 裏ドラ表示3p → 4p が1枚
+        #expect(score.ドラ.裏 == 1)          // 裏ドラ表示3p → 4p が1枚
         #expect(score.han == 4)               // 立直 + 一発 + 平和 + 裏1
         #expect(!assumptions.contains(.裏ドラ表示牌不明))
     }
@@ -309,7 +309,7 @@ import Testing
         #expect(assumptions.isEmpty)
         #expect(yaku.isSuperset(of: [.中, .門前清自摸和]))  // 暗槓は面前を保つ
         #expect(score.fu == 70)
-        #expect(score.dora.表 == 4)   // ドラ表示9m → 1m、暗槓の4枚
+        #expect(score.ドラ.表 == 4)   // ドラ表示9m → 1m、暗槓の4枚
     }
 }
 

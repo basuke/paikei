@@ -129,7 +129,7 @@ struct 本場供託と切り上げ満貫 {
         let off = try pinfuDora3(RuleSet(roundUpMangan: false))
         #expect(off.han == 4)          // 平和1 + ドラ3
         #expect(off.fu == 30)          // 平和ロンは30符
-        #expect(off.dora.表 == 3)
+        #expect(off.ドラ.表 == 3)
         #expect(off.payment == .ロン(7700))
         #expect(off.limit == nil)
 
@@ -248,7 +248,7 @@ struct 本場供託と切り上げ満貫 {
         let dora = try #require(try ScoreCalculator().score(
             concealed: try Tile.parseHand("234567m234p456s99p"), melds: [], context: withDora))
         #expect(dora.han == plain.han + 1)
-        #expect(dora.dora.表 == 1)
+        #expect(dora.ドラ.表 == 1)
     }
 
     @Test("役なしは点数にならない（ドラだけでは和了できない）")

@@ -56,8 +56,8 @@ enum ScoreDescription {
             parts.append(hanFu(score))
         }
         // 役満はドラを加算しないため、数えた枚数を並べると誤解を招く。
-        if score.dora.total > 0, !役満か(score.limit) {
-            parts.append("[" + doraBreakdown(score.dora) + "]")
+        if score.ドラ.total > 0, !役満か(score.limit) {
+            parts.append("[" + doraBreakdown(score.ドラ) + "]")
         }
         parts.append("\(score.total)点")
         return parts.joined(separator: " ")

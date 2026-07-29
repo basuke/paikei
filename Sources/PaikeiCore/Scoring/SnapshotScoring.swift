@@ -245,7 +245,7 @@ extension GameState {
         if winType == .ロン, liable == claim?.from { liable = nil }
 
         guard let score = ScoreCalculator(rules: rules).score(
-            best, dora: DoraCounter(rules: rules).count(best.hand),
+            best, ドラ: DoraCounter(rules: rules).count(best.hand),
             本場: honbaCount, 供託: kyotakuCount, liable: liable) else {
             return .和了できない(.役なし)
         }
