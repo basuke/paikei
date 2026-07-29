@@ -27,7 +27,7 @@ extension GameState {
 
         return Player.allCases.compactMap { player in
             guard let ps = players[player], !ps.river.isEmpty,
-                  ps.river.allSatisfy({ !$0.wasCalledAway && $0.tile.么九牌か }),
+                  ps.river.allSatisfy({ !$0.鳴かれたか && $0.tile.么九牌か }),
                   !鳴かれた牌があるか(player) else { return nil }
 
             let payment = ps.seat.map { seat in

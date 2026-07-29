@@ -32,7 +32,7 @@ import Testing
         #expect(decomps.count == 1)
         let d = try #require(decomps.first)
         #expect(d.sets.count == 4)
-        #expect(d.sets.contains { !$0.isConcealed && $0.kind == .刻子 })  // 副露のポン
+        #expect(d.sets.contains { !$0.暗か && $0.kind == .刻子 })  // 副露のポン
     }
 
     @Test func 暗槓は4枚の面前グループとして分解に入る() throws {
@@ -43,10 +43,10 @@ import Testing
         #expect(decomps.count == 1)
         let d = try #require(decomps.first)
         #expect(d.sets.count == 4)
-        let kan = try #require(d.sets.first { $0.isKan })
+        let kan = try #require(d.sets.first { $0.槓か })
         #expect(kan.tiles.count == 4)          // 槓は4枚のまま保持
-        #expect(kan.isConcealed)               // 暗槓は面前
-        #expect(kan.kind == .刻子)          // 刻子扱い（isKan で区別）
+        #expect(kan.暗か)               // 暗槓は面前
+        #expect(kan.kind == .刻子)          // 刻子扱い（槓か で区別）
     }
 
     @Test("大明槓・加槓は明刻グループになる")
@@ -55,8 +55,8 @@ import Testing
         for text in ["daiminkan(1'111m,C)", "kakan(1'111m,L)"] {
             let decomps = Decomposition.standard(concealed: concealed, melds: [try Meld.parse(text)])
             let d = try #require(decomps.first)
-            let kan = try #require(d.sets.first { $0.isKan })
-            #expect(!kan.isConcealed, "\(text) は明槓")
+            let kan = try #require(d.sets.first { $0.槓か })
+            #expect(!kan.暗か, "\(text) は明槓")
             #expect(kan.calledFrom != nil)
         }
     }
@@ -70,7 +70,7 @@ import Testing
         #expect(decomps.count == 1)
         let d = try #require(decomps.first)
         #expect(d.sets.count == 4)
-        #expect(d.sets.allSatisfy { $0.isKan })
+        #expect(d.sets.allSatisfy { $0.槓か })
         #expect(d.pair.leadTile == Tile(suit: .索子, rank: 9))
     }
 

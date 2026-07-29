@@ -69,14 +69,14 @@ public struct FuCalculator: Sendable {
     private func setFu(_ group: TileGroup, _ hand: WinningHand) -> Int {
         guard group.kind == .刻子 else { return 0 }
         let terminal = group.leadTile.么九牌か
-        var concealed = group.isConcealed
+        var concealed = group.暗か
         // ロンで完成した暗刻は明刻扱い（順子で置ければ暗刻を維持）。
-        if concealed, !group.isKan, hand.context.winType == .ロン,
+        if concealed, !group.槓か, hand.context.winType == .ロン,
            group.leadTile == hand.context.winningTile.normalized,
            !winningTileInSequence(hand) {
             concealed = false
         }
-        if group.isKan {
+        if group.槓か {
             let base = terminal ? 16 : 8    // 明槓
             return concealed ? base * 2 : base
         } else {

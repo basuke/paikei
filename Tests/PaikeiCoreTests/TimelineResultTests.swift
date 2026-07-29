@@ -202,7 +202,7 @@ struct 局の結末 {
     func 流し満貫を拾う() throws {
         var t = try 流局の卓()
         t.snapshot.players[.対面]?.river = try Tile.parseHand("19m19p19s1z").map {
-            RiverTile(tile: $0, manner: nil, declaresRiichi: false)
+            RiverTile(tile: $0, manner: nil, 立直宣言牌か: false)
         }
 
         guard case let .流局(_, _, 流し満貫) = try 結末(try t.結末()) else {

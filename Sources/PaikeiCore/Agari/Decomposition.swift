@@ -5,7 +5,7 @@
 public struct TileGroup: Hashable, Sendable {
     public enum Kind: Sendable, Hashable {
         case 順子
-        /// 槓を含む。`isKan` で区別する。
+        /// 槓を含む。`槓か` で区別する。
         case 刻子
         case 雀頭
     }
@@ -13,24 +13,24 @@ public struct TileGroup: Hashable, Sendable {
     public let kind: Kind
     /// 構成牌（正規化・昇順）。順子は低→高、槓は同一4枚。
     public let tiles: [Tile]
-    /// 面前か（副露・大明槓は false、暗槓・手牌内の面子は true）。
-    public let isConcealed: Bool
+    /// 暗か（副露・大明槓は false、暗槓・手牌内の面子は true）。
+    public let 暗か: Bool
     /// 槓か（符計算で刻子と区別する）。
-    public let isKan: Bool
+    public let 槓か: Bool
     /// 副露なら鳴いた方向。手牌内・暗槓は nil。
     public let calledFrom: CallDirection?
 
     public init(
         kind: Kind,
         tiles: [Tile],
-        isConcealed: Bool,
-        isKan: Bool = false,
+        暗か: Bool,
+        槓か: Bool = false,
         calledFrom: CallDirection? = nil
     ) {
         self.kind = kind
         self.tiles = tiles
-        self.isConcealed = isConcealed
-        self.isKan = isKan
+        self.暗か = 暗か
+        self.槓か = 槓か
         self.calledFrom = calledFrom
     }
 
@@ -62,7 +62,7 @@ public enum Decomposition {
         for pairIndex in 0..<34 where counts[pairIndex] >= 2 {
             counts[pairIndex] -= 2
             let pairTile = HandCounts.tile(at: pairIndex)
-            let pair = TileGroup(kind: .雀頭, tiles: [pairTile, pairTile], isConcealed: true)
+            let pair = TileGroup(kind: .雀頭, tiles: [pairTile, pairTile], 暗か: true)
 
             for concealedSets in enumerateSets(&counts, from: 0) where concealedSets.count == need {
                 results.insert(HandDecomposition(sets: concealedSets + openSets, pair: pair))
@@ -115,7 +115,7 @@ public enum Decomposition {
         // 刻子
         if c[i] >= 3 {
             c[i] -= 3
-            let group = TileGroup(kind: .刻子, tiles: [tile, tile, tile], isConcealed: true)
+            let group = TileGroup(kind: .刻子, tiles: [tile, tile, tile], 暗か: true)
             for rest in enumerateSets(&c, from: i) { out.append([group] + rest) }
             c[i] += 3
         }
@@ -125,7 +125,7 @@ public enum Decomposition {
             let group = TileGroup(
                 kind: .順子,
                 tiles: [tile, HandCounts.tile(at: i + 1), HandCounts.tile(at: i + 2)],
-                isConcealed: true
+                暗か: true
             )
             for rest in enumerateSets(&c, from: i) { out.append([group] + rest) }
             c[i] += 1; c[i + 1] += 1; c[i + 2] += 1
@@ -138,13 +138,13 @@ public enum Decomposition {
         let tiles = meld.tiles.map(\.normalized).sorted()
         switch meld.kind {
         case .チー:
-            return TileGroup(kind: .順子, tiles: tiles, isConcealed: false, calledFrom: .上家)
+            return TileGroup(kind: .順子, tiles: tiles, 暗か: false, calledFrom: .上家)
         case .ポン:
-            return TileGroup(kind: .刻子, tiles: tiles, isConcealed: false, calledFrom: meld.from)
+            return TileGroup(kind: .刻子, tiles: tiles, 暗か: false, calledFrom: meld.from)
         case .大明槓, .加槓:
-            return TileGroup(kind: .刻子, tiles: tiles, isConcealed: false, isKan: true, calledFrom: meld.from)
+            return TileGroup(kind: .刻子, tiles: tiles, 暗か: false, 槓か: true, calledFrom: meld.from)
         case .暗槓:
-            return TileGroup(kind: .刻子, tiles: tiles, isConcealed: true, isKan: true)
+            return TileGroup(kind: .刻子, tiles: tiles, 暗か: true, 槓か: true)
         }
     }
 }

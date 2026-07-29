@@ -105,7 +105,7 @@ extension GameState {
         case .打牌, .立直:
             update(claim.from) {
                 $0.river.append(RiverTile(tile: claim.tile, manner: claim.manner,
-                                          declaresRiichi: claim.kind == .立直))
+                                          立直宣言牌か: claim.kind == .立直))
                 // 宣言牌が場に出ている＝リーチ宣言済み。安牌・フリテン判定が依存する。
                 if claim.kind == .立直 { $0.riichi = true }
             }
@@ -147,7 +147,7 @@ extension GameState {
         }
 
         // リーチ宣言牌: riichi が立っていて、まだ河に宣言牌が無い最初の打牌。
-        let declares = ps.riichi == true && !ps.river.contains(where: \.declaresRiichi)
+        let declares = ps.riichi == true && !ps.river.contains(where: \.立直宣言牌か)
         ps.discardOrigin = nil
         players[actor] = ps
 
@@ -200,8 +200,8 @@ extension GameState {
             self.claim = nil
             update(target) {
                 $0.river.append(RiverTile(tile: claim.tile, manner: claim.manner,
-                                          declaresRiichi: claim.kind == .立直,
-                                          wasCalledAway: true))
+                                          立直宣言牌か: claim.kind == .立直,
+                                          鳴かれたか: true))
                 if claim.kind == .立直 { $0.riichi = true }
             }
             return
@@ -210,13 +210,13 @@ extension GameState {
 
         var ps = players[target] ?? PlayerState()
         guard let index = ps.river.lastIndex(where: {
-            !$0.wasCalledAway && $0.tile.normalized == tile.normalized
+            !$0.鳴かれたか && $0.tile.normalized == tile.normalized
         }) else {
             throw EventApplicationError.河にない牌(from: target, 牌: tile)
         }
         let old = ps.river[index]
         ps.river[index] = RiverTile(tile: old.tile, manner: old.manner,
-                                    declaresRiichi: old.declaresRiichi, wasCalledAway: true)
+                                    立直宣言牌か: old.立直宣言牌か, 鳴かれたか: true)
         players[target] = ps
     }
 

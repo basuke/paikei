@@ -232,7 +232,7 @@ public struct YakuDetector: Sendable {
         }
 
         // 三槓子 / 四槓子
-        switch d.sets.filter(\.isKan).count {
+        switch d.sets.filter(\.槓か).count {
         case 4: result.append(.四槓子)
         case 3: result.append(.三槓子)
         default: break
@@ -246,12 +246,12 @@ public struct YakuDetector: Sendable {
     /// ロンで完成した刻子は明刻扱い（暗刻に数えない）。
     private func concealedTripletCount(_ hand: WinningHand) -> Int {
         guard let d = hand.decomposition else { return 0 }
-        var count = d.sets.filter { $0.kind == .刻子 && $0.isConcealed }.count
+        var count = d.sets.filter { $0.kind == .刻子 && $0.暗か }.count
         if hand.context.winType == .ロン {
             let w = hand.context.winningTile.normalized
             let inSequence = d.sets.contains { $0.kind == .順子 && $0.tiles.contains(w) }
             let completesConcealedTriplet = d.sets.contains {
-                $0.kind == .刻子 && $0.isConcealed && !$0.isKan && $0.leadTile == w
+                $0.kind == .刻子 && $0.暗か && !$0.槓か && $0.leadTile == w
             }
             if !inSequence && completesConcealedTriplet { count -= 1 }
         }

@@ -39,7 +39,7 @@ struct スナップショットパース {
 
         let shimo = try #require(state.players[.下家])
         #expect(shimo.riichi == true)
-        #expect(shimo.river.contains { $0.declaresRiichi })
+        #expect(shimo.river.contains { $0.立直宣言牌か })
 
         let toimen = try #require(state.players[.対面])
         #expect(toimen.melds.first?.kind == .ポン)
@@ -68,7 +68,7 @@ struct スナップショットパース {
 
         let shimo = try #require(state.players[.下家])
         #expect(shimo.melds.first?.kind == .チー)
-        #expect(shimo.river.contains { $0.wasCalledAway })  // 7p+^
+        #expect(shimo.river.contains { $0.鳴かれたか })  // 7p+^
     }
 
     @Test("ラウンドトリップ: parse → serialize → parse で状態が一致",

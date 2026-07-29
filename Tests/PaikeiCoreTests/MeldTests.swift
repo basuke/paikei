@@ -110,11 +110,11 @@ struct 河の表記 {
     func 状態属性のリーチ宣言と被鳴き() throws {
         let riichi = try RiverTile.parse("4m+*")
         #expect(riichi.manner == .手出し)
-        #expect(riichi.declaresRiichi)
+        #expect(riichi.立直宣言牌か)
 
         let called = try RiverTile.parse("5p-^")
         #expect(called.manner == .ツモ切り)
-        #expect(called.wasCalledAway)
+        #expect(called.鳴かれたか)
     }
 
     @Test func 赤5の河() throws {
@@ -127,8 +127,8 @@ struct 河の表記 {
     func 河の行をまとめてパース() throws {
         let river = try RiverTile.parseLine("1z- 9m+ 5p-^ 4m+* 6p")
         #expect(river.count == 5)
-        #expect(river[2].wasCalledAway)
-        #expect(river[3].declaresRiichi)
+        #expect(river[2].鳴かれたか)
+        #expect(river[3].立直宣言牌か)
         #expect(river[4].manner == nil)
     }
 
@@ -158,7 +158,7 @@ struct 河の表記 {
         // 仕様§5は状態属性の複数付与順を明示しないため * → ^ を正規形と定める。
         // パースは順不同を受理する。
         let a = try RiverTile.parse("4m+*^")
-        #expect(a.declaresRiichi && a.wasCalledAway && a.manner == .手出し)
+        #expect(a.立直宣言牌か && a.鳴かれたか && a.manner == .手出し)
         #expect(a.notation == "4m+*^")
         #expect(try RiverTile.parse("4m+^*") == a)  // 逆順入力も同一
     }

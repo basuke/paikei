@@ -68,7 +68,7 @@ enum TileFormatter {
     static func river(_ river: [RiverTile]) -> String {
         river.map { rt in
             let base = tile(rt.tile)
-            return rt.declaresRiichi ? "【\(base)】" : base
+            return rt.立直宣言牌か ? "【\(base)】" : base
         }.joined(separator: " ")
     }
 

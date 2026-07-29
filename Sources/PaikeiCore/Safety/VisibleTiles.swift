@@ -9,7 +9,7 @@ extension GameState {
     public func visibleTiles(from viewer: Player) -> [Tile] {
         var tiles = doraMarkers
         for ps in players.values {
-            tiles += ps.river.filter { !$0.wasCalledAway }.map(\.tile)
+            tiles += ps.river.filter { !$0.鳴かれたか }.map(\.tile)
             for meld in ps.melds { tiles += meld.tiles }
         }
         // 加槓・暗槓の応答対象は既に副露として数えているので、足すと二重になる。

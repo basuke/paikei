@@ -121,7 +121,7 @@ struct イベント適用 {
             .applying(.立直成立(of: .自分))
         let me = try #require(s.players[.自分])
         #expect(me.riichi == true)
-        #expect(me.river.last?.declaresRiichi == true)  // 立直成立が宣言牌を河へ流す
+        #expect(me.river.last?.立直宣言牌か == true)  // 立直成立が宣言牌を河へ流す
         #expect(me.score == 24000)
         #expect(s.kyotaku == 1)
 
@@ -129,7 +129,7 @@ struct イベント適用 {
         let next = try s
             .applying(.ツモ(of: .自分, 牌: try Tile.parse("9s")))
             .applying(.打牌(of: .自分, 牌: try Tile.parse("9s"), ツモ切り: true))
-        #expect(next.players[.自分]?.river.filter(\.declaresRiichi).count == 1)
+        #expect(next.players[.自分]?.river.filter(\.立直宣言牌か).count == 1)
     }
 
     @Test("ポン: 河の牌に ^ が付き、副露が増え、鳴いた側は打牌待ち")
@@ -142,7 +142,7 @@ struct イベント適用 {
             .applying(.ポン(of: .自分, from: .対面, 牌: try Tile.parse("5p"),
                            手牌から: try Tile.parseHand("55p")))
 
-        #expect(s.players[.対面]?.river.last?.wasCalledAway == true)
+        #expect(s.players[.対面]?.river.last?.鳴かれたか == true)
         let meld = try #require(s.players[.自分]?.melds.first)
         #expect(meld.kind == .ポン)
         #expect(meld.notation == "pon(5'55p,C)")   // 対面から
@@ -278,7 +278,7 @@ struct 応答対象の解決 {
         // 捨てた位置は残るので巡目や並びが読める。物理的には不在なので ^（仕様§5）。
         let last = try #require(s.players[.対面]?.river.last)
         #expect(last.tile == Tile(suit: .筒子, rank: 5))
-        #expect(last.wasCalledAway)
+        #expect(last.鳴かれたか)
         // 物理カウントからは除外され、副露側で数えられる（二重に数えない）。
         #expect(s.visibleTiles(from: .自分).filter { $0.mpsz == "5p" }.count == 3)
     }
@@ -295,7 +295,7 @@ struct 応答対象の解決 {
         let toimen = try #require(s.players[.対面])
         let last = try #require(toimen.river.last)
         #expect(last.tile == Tile(suit: .筒子, rank: 5))
-        #expect(last.declaresRiichi)
+        #expect(last.立直宣言牌か)
         // 宣言牌が場に出ている＝リーチを宣言済み。安牌・フリテン判定が依存する。
         #expect(toimen.riichi == true)
     }

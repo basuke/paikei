@@ -46,7 +46,7 @@ extension RiverTile {
                 throw RiverNotationError.不正な表記(String(text))
             }
         }
-        return RiverTile(tile: tile, manner: manner, declaresRiichi: riichi, wasCalledAway: calledAway)
+        return RiverTile(tile: tile, manner: manner, 立直宣言牌か: riichi, 鳴かれたか: calledAway)
     }
 
     /// この牌1枚の正規化トークン。順序は 打牌属性 → 状態属性（`*` → `^`）。
@@ -57,8 +57,8 @@ extension RiverTile {
         case .ツモ切り: result.append("-")
         case nil: break
         }
-        if declaresRiichi { result.append("*") }
-        if wasCalledAway { result.append("^") }
+        if 立直宣言牌か { result.append("*") }
+        if 鳴かれたか { result.append("^") }
         return result
     }
 }

@@ -13,19 +13,19 @@ public struct RiverTile: Hashable, Sendable {
     /// 打牌属性（履歴層）。ソースが知らなければ nil（無印）。
     public let manner: Manner?
     /// リーチ宣言牌（`*`、実卓で横向き）。
-    public let declaresRiichi: Bool
+    public let 立直宣言牌か: Bool
     /// この位置で捨てたが鳴かれて物理的に不在（`^`、牌譜のみ）。
-    public let wasCalledAway: Bool
+    public let 鳴かれたか: Bool
 
     public init(
         tile: Tile,
         manner: Manner? = nil,
-        declaresRiichi: Bool = false,
-        wasCalledAway: Bool = false
+        立直宣言牌か: Bool = false,
+        鳴かれたか: Bool = false
     ) {
         self.tile = tile
         self.manner = manner
-        self.declaresRiichi = declaresRiichi
-        self.wasCalledAway = wasCalledAway
+        self.立直宣言牌か = 立直宣言牌か
+        self.鳴かれたか = 鳴かれたか
     }
 }
