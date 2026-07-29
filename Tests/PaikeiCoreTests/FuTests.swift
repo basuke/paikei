@@ -17,7 +17,7 @@ import Testing
             winningTile: try Tile.parse(winTile))
         // 高点法（翻→符）は HandEvaluator の責務。
         let best = try #require(try HandEvaluator().best(concealed: tiles, melds: melds, context: ctx))
-        return (best.fu, Set(best.役))
+        return (best.符, Set(best.役))
     }
 
     @Test func 平和ツモは20符() throws {

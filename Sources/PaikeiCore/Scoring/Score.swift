@@ -84,8 +84,8 @@ public struct ScoreCalculator: Sendable {
         guard !evaluation.役.isEmpty else { return nil }
 
         let yakumanCount = evaluation.役.count(where: \.役満か)
-        let han = yakumanCount > 0 ? evaluation.han : evaluation.han + dora.total
-        let fu = evaluation.fu
+        let han = yakumanCount > 0 ? evaluation.翻 : evaluation.翻 + dora.total
+        let fu = evaluation.符
 
         let base = basePoints(han: han, fu: fu, yakumanCount: yakumanCount)
         let isDealer = evaluation.hand.context.seatWind == .東

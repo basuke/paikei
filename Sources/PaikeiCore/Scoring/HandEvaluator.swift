@@ -8,9 +8,9 @@ public struct HandEvaluation: Sendable {
     /// 成立した役（役満成立時は役満のみ）。空なら役なしで和了できない。
     public let 役: [Yaku]
     /// 役の翻合計。役満は1つにつき13。
-    public let han: Int
+    public let 翻: Int
     /// 符（切り上げ済み）。役満・国士では使わない。
-    public let fu: Int
+    public let 符: Int
 
     /// 役満か。
     public var 役満か: Bool { 役.contains(where: \.役満か) }
@@ -34,7 +34,7 @@ public struct HandEvaluator: Sendable {
     public func evaluate(_ hand: WinningHand) throws -> HandEvaluation {
         let yaku = try detector.detect(hand)
         let han = yaku.reduce(0) { $0 + $1.han(menzen: hand.門前か) }
-        return HandEvaluation(hand: hand, 役: yaku, han: han, fu: fuCalculator.calculate(hand))
+        return HandEvaluation(hand: hand, 役: yaku, 翻: han, 符: fuCalculator.calculate(hand))
     }
 
     /// 高点法。全ての読み方から最良を選ぶ。
@@ -47,8 +47,8 @@ public struct HandEvaluator: Sendable {
     /// 判断は点数計算側の責務で、ここでは形の評価に徹する。
     public func best(_ hands: [WinningHand]) throws -> HandEvaluation? {
         try hands.map(evaluate).max { lhs, rhs in
-            if lhs.han != rhs.han { return lhs.han < rhs.han }
-            if lhs.fu != rhs.fu { return lhs.fu < rhs.fu }
+            if lhs.翻 != rhs.翻 { return lhs.翻 < rhs.翻 }
+            if lhs.符 != rhs.符 { return lhs.符 < rhs.符 }
             // キーが小さい方を採る（max なので「大きい＝劣る」と返す）。
             return precedes(canonicalKey(rhs.hand), canonicalKey(lhs.hand))
         }

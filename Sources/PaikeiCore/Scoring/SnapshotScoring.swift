@@ -292,12 +292,12 @@ extension GameState {
         /// 風の選び方による違いを見るための、役と符の組。nil は和了形でないこと。
         struct Outcome: Hashable {
             let 役: Set<Yaku>
-            let fu: Int
+            let 符: Int
         }
         func outcome(round: Wind, 席風: Wind) throws -> Outcome? {
             try HandEvaluator(rules: rules)
                 .best(concealed: concealed, melds: melds, context: context(round, 席風))
-                .map { Outcome(役: Set($0.役), fu: $0.fu) }
+                .map { Outcome(役: Set($0.役), 符: $0.符) }
         }
 
         let rounds = 場風.map { [$0] } ?? Wind.allCases
