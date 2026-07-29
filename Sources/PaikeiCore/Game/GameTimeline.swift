@@ -134,7 +134,7 @@ extension GameTimeline {
         // t0 で宣言牌が応答待ちのまま＝立直した直後。区間は t0 から始まる。
         if let claim = snapshot.claim, claim.kind == .立直, claim.from == player { return 0 }
         // t0 で既に立直済み＝宣言牌がストリームに無いので区間を特定できない（推測しない）。
-        if snapshot.players[player]?.riichi == true { return nil }
+        if snapshot.players[player]?.立直 == true { return nil }
 
         guard let declared = 立直が成立した位置(of: player) else { return nil }
         // 宣言牌そのものは区間の開始なので、区間の外に置く。
@@ -168,11 +168,11 @@ extension GameTimeline {
     ///
     /// t0 で既に立直済みなら 0（＝全イベントが立直後）。
     ///
-    /// riichi を立てるのは `立直` / `立直成立` イベントだけで、一度立ったら降りない。
-    /// だから状態を再生せず、イベントを走査すれば足りる — 再生して各時点の riichi を
+    /// 立直 を立てるのは `立直` / `立直成立` イベントだけで、一度立ったら降りない。
+    /// だから状態を再生せず、イベントを走査すれば足りる — 再生して各時点の 立直 を
     /// 見ると、1回の判定でストリーム全体を n 回再生することになる。
     private func 立直が成立した位置(of player: Player) -> Int? {
-        if snapshot.players[player]?.riichi == true { return 0 }
+        if snapshot.players[player]?.立直 == true { return 0 }
         // 宣言牌が応答待ちのまま t0 になっている場合も、既に立直している。
         if let claim = snapshot.claim, claim.kind == .立直, claim.from == player { return 0 }
 

@@ -168,11 +168,11 @@ struct 本場供託と切り上げ満貫 {
     }
 
     func hand(_ concealed: String, melds: [String] = [],
-              dora: String = "", ura: String = "", riichi: Bool = false,
+              dora: String = "", ura: String = "", 立直: Bool = false,
               win: String) throws -> WinningHand {
         let ctx = WinContext(
             seatWind: .南, roundWind: .東, winType: .ツモ,
-            winningTile: try Tile.parse(win), riichi: riichi,
+            winningTile: try Tile.parse(win), 立直: 立直,
             doraMarkers: try Tile.parseHand(dora), uraMarkers: try Tile.parseHand(ura))
         let hands = WinningHand.readings(
             concealed: try Tile.parseHand(concealed),
@@ -183,7 +183,7 @@ struct 本場供託と切り上げ満貫 {
     @Test("表ドラ・赤ドラ・裏ドラを数える")
     func 表ドラ赤ドラ裏ドラを数える() throws {
         // 手牌に 5p が2枚（うち1枚は赤）、ドラ表示 4p → 5p がドラ。
-        let h = try hand("234m55678p234567s", dora: "4p", ura: "1m", riichi: true, win: "8p")
+        let h = try hand("234m55678p234567s", dora: "4p", ura: "1m", 立直: true, win: "8p")
         let count = DoraCounter().count(h)
         #expect(count.dora == 2)  // 5p ×2
         #expect(count.red == 0)
@@ -206,13 +206,13 @@ struct 本場供託と切り上げ満貫 {
     }
 
     @Test func 裏ドラは立直しているときだけ数える() throws {
-        let withRiichi = try hand("234m55678p234567s", ura: "4p", riichi: true, win: "8p")
+        let withRiichi = try hand("234m55678p234567s", ura: "4p", 立直: true, win: "8p")
         #expect(DoraCounter().count(withRiichi).ura == 2)
 
-        let noRiichi = try hand("234m55678p234567s", ura: "4p", riichi: false, win: "8p")
+        let noRiichi = try hand("234m55678p234567s", ura: "4p", 立直: false, win: "8p")
         #expect(DoraCounter().count(noRiichi).ura == 0)
 
-        let ruleOff = try hand("234m55678p234567s", ura: "4p", riichi: true, win: "8p")
+        let ruleOff = try hand("234m55678p234567s", ura: "4p", 立直: true, win: "8p")
         #expect(DoraCounter(rules: RuleSet(uraDora: false)).count(ruleOff).ura == 0)
     }
 
@@ -227,7 +227,7 @@ struct 本場供託と切り上げ満貫 {
     @Test("平和ツモ（20符3翻）は 700/1300")
     func 平和ツモの支払い() throws {
         let ctx = WinContext(seatWind: .南, roundWind: .東, winType: .ツモ,
-                             winningTile: try Tile.parse("6s"), riichi: true)
+                             winningTile: try Tile.parse("6s"), 立直: true)
         let score = try #require(try ScoreCalculator().score(
             concealed: try Tile.parseHand("234567m234p456s99p"), melds: [], context: ctx))
         #expect(score.han == 3)  // 立直 + 平和 + 門前ツモ
@@ -239,7 +239,7 @@ struct 本場供託と切り上げ満貫 {
 
     @Test func ドラは翻に加算される() throws {
         let base = WinContext(seatWind: .南, roundWind: .東, winType: .ツモ,
-                              winningTile: try Tile.parse("6s"), riichi: true)
+                              winningTile: try Tile.parse("6s"), 立直: true)
         var withDora = base
         withDora.doraMarkers = [try Tile.parse("1p")]  // 2p がドラ、手牌に1枚
 
@@ -285,7 +285,7 @@ struct 本場供託と切り上げ満貫 {
     @Test func 供託は和了者の総取り() throws {
         // 立直のみ（1翻40符）の子ロン。么九暗刻で 20+門前ロン10+8 = 38 → 40符。
         let ctx = WinContext(seatWind: .南, roundWind: .東, winType: .ロン,
-                             winningTile: try Tile.parse("4s"), riichi: true)
+                             winningTile: try Tile.parse("4s"), 立直: true)
         let score = try #require(try ScoreCalculator().score(
             concealed: try Tile.parseHand("111m234p567p234s99m"), melds: [], context: ctx,
             本場: 1, 供託: 2))

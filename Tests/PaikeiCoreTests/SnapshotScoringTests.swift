@@ -5,7 +5,7 @@ import Testing
     /// 平和形（234567m 234p 45s + 99p雀頭）で 6s の両面待ちテンパイの局面を組み立てる。
     func state(
         場風: Wind? = .東, 本場: Int? = 1, 供託: Int? = 1,
-        dora: [Tile] = [], 席風: Wind? = .西, riichi: Bool? = false,
+        dora: [Tile] = [], 席風: Wind? = .西, 立直: Bool? = false,
         hand: String = "234567m234p45s99p", melds: [Meld] = [],
         draw: Tile? = nil, claim: ClaimTile? = nil
     ) throws -> GameState {
@@ -14,7 +14,7 @@ import Testing
             doraMarkers: dora,
             players: [.自分: PlayerState(
                 席風: 席風, hand: try Tile.parseHand(hand), draw: draw,
-                melds: melds, riichi: riichi)],
+                melds: melds, 立直: 立直)],
             claim: claim)
     }
 
@@ -54,7 +54,7 @@ import Testing
 
     @Test("履歴依存の情報はオプションで与える（一発・裏ドラ）")
     func 履歴依存の情報はオプションで与える() throws {
-        let s = try state(riichi: true)
+        let s = try state(立直: true)
         let options = WinOptions(ippatsu: true, uraMarkers: [try Tile.parse("3p")])
         let (score, yaku, assumptions) = try scored(
             try s.score(winningTile: try Tile.parse("6s"), winType: .ロン, options: options))
@@ -66,7 +66,7 @@ import Testing
     }
 
     @Test func 裏ドラ表示牌が無ければ仮定() throws {
-        let s = try state(dora: [try Tile.parse("3p")], riichi: true,
+        let s = try state(dora: [try Tile.parse("3p")], 立直: true,
                           claim: ClaimTile(tile: try Tile.parse("6s"), from: .下家))
         let (_, _, assumptions) = try scored(
             try s.score(winningTile: try Tile.parse("6s"), winType: .ロン))
@@ -77,7 +77,7 @@ import Testing
 
     @Test("立直・ドラ・本場・供託の不明は仮定して答える（答えが低めに出るだけ）")
     func 立直ドラ本場供託の不明は仮定して答える() throws {
-        let s = try state(場風: nil, 本場: nil, 供託: nil, 席風: nil, riichi: nil)
+        let s = try state(場風: nil, 本場: nil, 供託: nil, 席風: nil, 立直: nil)
         let (score, _, assumptions) = try scored(
             try s.score(winningTile: try Tile.parse("6s"), winType: .ロン))
 
@@ -100,7 +100,7 @@ import Testing
                             options: WinOptions(ippatsu: true))
         }
         // 立直済みの局面なら同じオプションでも矛盾しない。
-        let riichied = try state(riichi: true)
+        let riichied = try state(立直: true)
         _ = try scored(try riichied.score(winningTile: try Tile.parse("6s"), winType: .ロン,
                                           options: WinOptions(ippatsu: true)))
     }
@@ -205,7 +205,7 @@ import Testing
         let s = GameState(
             場風: nil, 局: nil, 本場: 0, 供託: 0,
             players: [.自分: PlayerState(
-                席風: nil, hand: try Tile.parseHand("19m19p19s1234567z"), riichi: false)],
+                席風: nil, hand: try Tile.parseHand("19m19p19s1234567z"), 立直: false)],
             claim: ClaimTile(tile: try Tile.parse("1z"), from: .対面))
         let (score, yaku, assumptions) = try scored(
             try s.score(winningTile: try Tile.parse("1z"), winType: .ロン))
@@ -275,7 +275,7 @@ import Testing
             doraMarkers: [try Tile.parse("4p")],
             players: [.自分: PlayerState(
                 席風: .西, hand: try Tile.parseHand("345m678p456s55p"),
-                melds: [try Meld.parse("pon(2'22m,L)")], riichi: false)])
+                melds: [try Meld.parse("pon(2'22m,L)")], 立直: false)])
         #expect(try s.score(winningTile: try Tile.parse("5p"), winType: .ロン,
                         rules: RuleSet(kuitan: false)) == .和了できない(.役なし))
         // 喰いタンありなら断么九で和了できる。

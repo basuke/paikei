@@ -58,7 +58,7 @@ struct フォーマットの表記トークン {
         #expect(me.hand?.count == 13)
         #expect(me.draw?.mpsz == "0s")
         #expect(me.river.count == 4)
-        #expect(me.riichi == true)
+        #expect(me.立直 == true)
         #expect(me.score == 24000)
         #expect(me.discardOrigin == .ツモ)
 

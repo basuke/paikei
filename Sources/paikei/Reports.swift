@@ -90,7 +90,7 @@ enum SafetyReport {
             }
             targets = [player]
         } else {
-            targets = Player.allCases.filter { $0 != .自分 && state.players[$0]?.riichi == true }
+            targets = Player.allCases.filter { $0 != .自分 && state.players[$0]?.立直 == true }
             guard !targets.isEmpty else {
                 throw ReportError("リーチ者がいません。対象プレイヤーを指定してください")
             }
@@ -105,7 +105,7 @@ enum SafetyReport {
         return try targets.map { player in
             SafetyDescription.text(
                 try make(player).judge(tiles),
-                target: player, isRiichi: state.players[player]?.riichi == true)
+                target: player, isRiichi: state.players[player]?.立直 == true)
         }.joined(separator: "\n\n")
     }
 }
@@ -179,7 +179,7 @@ enum ScoreReport {
         if let bakaze { timeline.snapshot.場風 = bakaze }
         if let seat { timeline.snapshot.players[player, default: PlayerState()].席風 = seat }
         if options.doubleRiichi {
-            timeline.snapshot.players[player, default: PlayerState()].riichi = true
+            timeline.snapshot.players[player, default: PlayerState()].立直 = true
         }
         let analysis = try timeline.score(
             for: player, winningTile: winningTile, winType: winType,
@@ -195,7 +195,7 @@ enum ScoreReport {
         var state = state
         if let bakaze { state.場風 = bakaze }
         if let seat { state.players[player, default: PlayerState()].席風 = seat }
-        if options.doubleRiichi { state.players[player, default: PlayerState()].riichi = true }
+        if options.doubleRiichi { state.players[player, default: PlayerState()].立直 = true }
 
         let analysis = try state.score(
             for: player, winningTile: winningTile, winType: winType, options: options)
@@ -248,7 +248,7 @@ enum ScoreReport {
         }
 
         var timeline = timeline
-        if riichi { timeline.snapshot.players[.自分, default: PlayerState()].riichi = true }
+        if riichi { timeline.snapshot.players[.自分, default: PlayerState()].立直 = true }
         return try text(for: timeline, at: steps, winningTile: tile, winType: winType,
                         options: options, bakaze: bakaze, seat: seat)
     }

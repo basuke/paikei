@@ -104,7 +104,7 @@ public struct YakuDetector: Sendable {
         // 矛盾した組み合わせ（一発×立直なし、嶺上×ロン、槍槓×ツモ）は
         // detect 冒頭の validate() で拒否済み。ここではフラグを信頼してよい。
         if ctx.doubleRiichi { result.append(.ダブル立直) }
-        else if ctx.riichi { result.append(.立直) }
+        else if ctx.立直 { result.append(.立直) }
         if ctx.ippatsu && rules.ippatsu { result.append(.一発) }
         if hand.門前か && ctx.winType == .ツモ { result.append(.門前清自摸和) }
         if ctx.lastTile { result.append(ctx.winType == .ツモ ? .海底摸月 : .河底撈魚) }

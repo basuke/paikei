@@ -32,7 +32,7 @@ enum MjaiKyoku {
                 席風: Wind.allCases[(席風 - oya + 4) % 4],
                 hand: hands.indices.contains(席風) ? try hand(hands[席風]) : nil,
                 // 配牌直後なので、誰も立直していないと言い切れる。
-                riichi: false,
+                立直: false,
                 score: scores.indices.contains(席風) ? scores[席風] : nil)
         }
 

@@ -12,7 +12,7 @@ struct フェーズ導出 {
     @Test("リーチ後のツモは afterDrawRiichi")
     func リーチ後のツモはafterDrawRiichi() {
         let ps = PlayerState(hand: try! Tile.parseHand("123m456m789p123s1z").sorted(),  // 13枚
-                             draw: Tile(suit: .字牌, rank: 1), riichi: true)
+                             draw: Tile(suit: .字牌, rank: 1), 立直: true)
         let state = GameState(players: [.自分: ps])
         #expect(state.phase == .打牌待ち(.自分, .立直後ツモ))
     }

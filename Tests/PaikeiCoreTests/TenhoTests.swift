@@ -19,7 +19,7 @@ struct 天和と地和 {
                     draw: try Tile.parse("5s"),
                     melds: try melds.map { try Meld.parse($0) },
                     river: try river.map { RiverTile(tile: try Tile.parse($0)) },
-                    riichi: false, score: 25000),
+                    立直: false, score: 25000),
                 .下家: PlayerState(席風: .北,
                                   melds: try 他家の副露.map { try Meld.parse($0) }),
             ])
@@ -119,7 +119,7 @@ struct 人和 {
                 .自分: PlayerState(
                     席風: 席風, hand: try Tile.parseHand("1133m5577p2299s5s"),
                     river: try river.map { RiverTile(tile: try Tile.parse($0)) },
-                    riichi: false, score: 25000),
+                    立直: false, score: 25000),
                 .上家: PlayerState(席風: .東),
             ],
             claim: ClaimTile(tile: try Tile.parse("5s"), from: .上家))

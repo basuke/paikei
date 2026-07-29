@@ -43,7 +43,7 @@ public struct SimpleBot: Bot {
         }
 
         // 立直後は手を変えられない。
-        if ps.riichi == true, let draw = ps.draw {
+        if ps.立直 == true, let draw = ps.draw {
             return .打牌(of: player, 牌: draw, ツモ切り: true)
         }
 

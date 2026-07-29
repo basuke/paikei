@@ -120,7 +120,7 @@ struct イベント適用 {
             .applying(.打牌(of: .自分, 牌: try Tile.parse("9s"), ツモ切り: true))
             .applying(.立直成立(of: .自分))
         let me = try #require(s.players[.自分])
-        #expect(me.riichi == true)
+        #expect(me.立直 == true)
         #expect(me.river.last?.立直宣言牌か == true)  // 立直成立が宣言牌を河へ流す
         #expect(me.score == 24000)
         #expect(s.供託 == 1)
@@ -246,7 +246,7 @@ struct イベント適用 {
     @Test func 手牌が不明な他家の宣言は枚数を検証しない() throws {
         // 「既知の状態としか矛盾を見ない」（仕様§8.3）。
         let s = try base().applying(.立直(of: .対面))
-        #expect(s.players[.対面]?.riichi == true)
+        #expect(s.players[.対面]?.立直 == true)
     }
 
     @Test func 新ドラ表示() throws {
@@ -289,7 +289,7 @@ struct 応答対象の解決 {
         #expect(s.players[.対面]?.river.map(\.tile.mpsz) == ["9m", "5p"])
     }
 
-    @Test("リーチ宣言牌のスルーは * 付きで河に入り、riichi が立つ")
+    @Test("リーチ宣言牌のスルーは * 付きで河に入り、立直 が立つ")
     func リーチ宣言牌のスルー() throws {
         let s = try claimed(kind: .立直).applying(.立直成立(of: .対面))
         let toimen = try #require(s.players[.対面])
@@ -297,15 +297,15 @@ struct 応答対象の解決 {
         #expect(last.tile == Tile(suit: .筒子, rank: 5))
         #expect(last.立直宣言牌か)
         // 宣言牌が場に出ている＝リーチを宣言済み。安牌・フリテン判定が依存する。
-        #expect(toimen.riichi == true)
+        #expect(toimen.立直 == true)
     }
 
-    @Test("reach_accepted 単独でも riichi が立つ（MJAI由来のログ対策）")
+    @Test("reach_accepted 単独でも 立直 が立つ（MJAI由来のログ対策）")
     func reach_accepted単独でもriichiが立つ() throws {
         var state = GameState(供託: 0)
         state.players[.対面] = PlayerState(score: 25000)
         let s = try state.applying(.立直成立(of: .対面))
-        #expect(s.players[.対面]?.riichi == true)
+        #expect(s.players[.対面]?.立直 == true)
         #expect(s.供託 == 1)
     }
 

@@ -7,7 +7,7 @@ extension GameState {
     /// 応答対象（`claim_tile`）が残っている状態に別のイベントが来たら、
     /// 「誰も鳴かなかった」として対象牌を打牌者の河へ確定させてから適用する。
     ///
-    /// 既知の限界: リーチ宣言牌の `*` は「riichi が true で河にまだ `*` が無い最初の
+    /// 既知の限界: リーチ宣言牌の `*` は「立直 が true で河にまだ `*` が無い最初の
     /// 打牌」に付ける。スナップショットの河から `*` が欠けていた場合は誤った牌に付く。
     public func applying(_ event: Event) throws -> GameState {
         var state = self
@@ -62,14 +62,14 @@ extension GameState {
         case let .立直(actor):
             state.resolveClaim()
             try state.requireValidHand(actor)
-            state.update(actor) { $0.riichi = true }
+            state.update(actor) { $0.立直 = true }
 
         case let .立直成立(actor):
             state.resolveClaim()
             if let kyotaku = state.供託 { state.供託 = kyotaku + 1 }
             state.update(actor) {
                 // 立直を伴わない生ログ（宣言が t0 より前）でもリーチ中として扱う。
-                $0.riichi = true
+                $0.立直 = true
                 if let score = $0.score { $0.score = score - 1000 }
             }
 
@@ -107,7 +107,7 @@ extension GameState {
                 $0.river.append(RiverTile(tile: claim.tile, manner: claim.manner,
                                           立直宣言牌か: claim.kind == .立直))
                 // 宣言牌が場に出ている＝リーチ宣言済み。安牌・フリテン判定が依存する。
-                if claim.kind == .立直 { $0.riichi = true }
+                if claim.kind == .立直 { $0.立直 = true }
             }
         case .加槓, .暗槓:
             break  // 牌は既に副露の中にある（槍槓の検討だった）
@@ -146,8 +146,8 @@ extension GameState {
             manner = nil
         }
 
-        // リーチ宣言牌: riichi が立っていて、まだ河に宣言牌が無い最初の打牌。
-        let declares = ps.riichi == true && !ps.river.contains(where: \.立直宣言牌か)
+        // リーチ宣言牌: 立直 が立っていて、まだ河に宣言牌が無い最初の打牌。
+        let declares = ps.立直 == true && !ps.river.contains(where: \.立直宣言牌か)
         ps.discardOrigin = nil
         players[actor] = ps
 
@@ -202,7 +202,7 @@ extension GameState {
                 $0.river.append(RiverTile(tile: claim.tile, manner: claim.manner,
                                           立直宣言牌か: claim.kind == .立直,
                                           鳴かれたか: true))
-                if claim.kind == .立直 { $0.riichi = true }
+                if claim.kind == .立直 { $0.立直 = true }
             }
             return
         }

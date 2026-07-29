@@ -53,7 +53,7 @@ public struct DoraCounter: Sendable {
 
         let red = rules.redFives ? tiles.count(where: \.赤か) : 0
 
-        let riichi = ctx.riichi || ctx.doubleRiichi
+        let riichi = ctx.立直 || ctx.doubleRiichi
         let ura = (rules.uraDora && riichi) ? count(markers: ctx.uraMarkers, in: tiles) : 0
 
         return DoraCount(dora: count(markers: ctx.doraMarkers, in: tiles), red: red, ura: ura)

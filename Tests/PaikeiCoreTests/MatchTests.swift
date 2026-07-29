@@ -18,7 +18,7 @@ struct 局の連鎖 {
         var s = state.snapshot()
         for player in 立直 {
             s.players[player]?.score = (state.scores[player] ?? 0) - 1000
-            s.players[player]?.riichi = true
+            s.players[player]?.立直 = true
         }
         s.供託 = state.供託 + 立直.count
         return s
@@ -56,7 +56,7 @@ struct 局の連鎖 {
         #expect(snapshot.供託 == 1)
         #expect(snapshot.wall == 70)
         #expect(snapshot.players[.自分]?.席風 == .東)
-        #expect(snapshot.players[.自分]?.riichi == false)
+        #expect(snapshot.players[.自分]?.立直 == false)
         #expect(snapshot.players[.下家]?.score == 25000)
     }
 
@@ -339,7 +339,7 @@ struct 点数の保存則 {
         var s = state.snapshot()
         for player in 立直 {
             s.players[player]?.score = (state.scores[player] ?? 0) - 1000
-            s.players[player]?.riichi = true
+            s.players[player]?.立直 = true
         }
         s.供託 = state.供託 + 立直.count
         return s

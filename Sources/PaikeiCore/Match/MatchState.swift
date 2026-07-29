@@ -48,7 +48,7 @@ extension MatchState {
             場風: 場風, 局: 局, 本場: 本場, 供託: 供託,
             wall: GameState.wallAfterDeal,
             players: Dictionary(uniqueKeysWithValues: Player.allCases.map { player in
-                (player, PlayerState(席風: 席風(of: player), riichi: false,
+                (player, PlayerState(席風: 席風(of: player), 立直: false,
                                      score: scores[player]))
             }))
     }

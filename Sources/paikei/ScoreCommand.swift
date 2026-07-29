@@ -86,7 +86,7 @@ struct ScoreCommand: ParsableCommand {
 
         // 立直の指定はスナップショットへ反映する（ダブル立直も立直の一種）。
         if riichi || doubleRiichi {
-            timeline.snapshot.players[target, default: PlayerState()].riichi = true
+            timeline.snapshot.players[target, default: PlayerState()].立直 = true
         }
 
         let options = WinOptions(

@@ -108,9 +108,9 @@ struct 河の表記 {
 
     @Test("状態属性: リーチ宣言と被鳴き")
     func 状態属性のリーチ宣言と被鳴き() throws {
-        let riichi = try RiverTile.parse("4m+*")
-        #expect(riichi.manner == .手出し)
-        #expect(riichi.立直宣言牌か)
+        let 立直 = try RiverTile.parse("4m+*")
+        #expect(立直.manner == .手出し)
+        #expect(立直.立直宣言牌か)
 
         let called = try RiverTile.parse("5p-^")
         #expect(called.manner == .ツモ切り)

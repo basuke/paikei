@@ -4,14 +4,14 @@ import Testing
 @Suite("履歴からの導出 (GameTimeline)")
 struct 履歴からの導出 {
     /// 自分は 123456789m + 1123p の 1p/4p 待ちテンパイ。他家は手牌不明。
-    func timeline(riichi: Bool = false, events: [Event] = []) throws -> GameTimeline {
+    func timeline(立直: Bool = false, events: [Event] = []) throws -> GameTimeline {
         GameTimeline(
             snapshot: GameState(
                 wall: 40,
                 players: [
                     .自分: PlayerState(
-                        hand: try Tile.parseHand("123456789m1123p"), riichi: riichi),
-                    .下家: PlayerState(riichi: riichi ? false : nil),
+                        hand: try Tile.parseHand("123456789m1123p"), 立直: 立直),
+                    .下家: PlayerState(立直: 立直 ? false : nil),
                     .対面: PlayerState(),
                 ]),
             events: events)
@@ -29,7 +29,7 @@ struct 履歴からの導出 {
 
     @Test func t0で立直済みなら全イベントの打牌が通った牌() throws {
         var t = try timeline()
-        t.snapshot.players[.下家] = PlayerState(riichi: true)
+        t.snapshot.players[.下家] = PlayerState(立直: true)
         t.events = [
             .打牌(of: .対面, 牌: try Tile.parse("5s"), ツモ切り: nil),
             .ツモ(of: .上家, 牌: nil),
@@ -51,7 +51,7 @@ struct 履歴からの導出 {
 
     @Test func 通った牌は安全度判定で現物になる() throws {
         var t = try timeline()
-        t.snapshot.players[.下家] = PlayerState(riichi: true)
+        t.snapshot.players[.下家] = PlayerState(立直: true)
         t.events = [.打牌(of: .対面, 牌: try Tile.parse("5s"), ツモ切り: nil)]
 
         // 下家自身は何も捨てていないので、履歴なしなら現物ゼロ。
@@ -154,7 +154,7 @@ struct 履歴からの導出 {
 
     @Test func t0で立直済みなら一発は判定しない() throws {
         // 宣言牌がストリームに無いので区間を特定できない。推測しない。
-        let t = try timeline(riichi: true, events: [.ツモ(of: .対面, 牌: nil)])
+        let t = try timeline(立直: true, events: [.ツモ(of: .対面, 牌: nil)])
         #expect(!t.一発が生きているか(of: .自分))
     }
 
@@ -164,7 +164,7 @@ struct 履歴からの導出 {
 
     @Test("t0で宣言牌が応答待ちなら、立直は成立していて一発も生きている")
     func t0で宣言牌が応答待ち() throws {
-        // riichi: false のまま claim_tile kind=riichi が残っている局面。
+        // 立直: false のまま claim_tile kind=立直 が残っている局面。
         // 宣言牌はまだ河に確定していないが、立直そのものは済んでいる。
         var t = try timeline()
         t.snapshot.claim = ClaimTile(tile: try Tile.parse("2s"), from: .下家, kind: .立直)

@@ -48,7 +48,7 @@ extension GameState {
             lines.append("melds: \(ps.melds.map(\.notation).joined(separator: " "))")
         }
         if !ps.river.isEmpty { lines.append("river: \(ps.river.riverString())") }
-        if let riichi = ps.riichi { lines.append("riichi: \(riichi)") }
+        if let riichi = ps.立直 { lines.append("riichi: \(riichi)") }
         if let score = ps.score { lines.append("score: \(score)") }
         if let origin = ps.discardOrigin { lines.append("discard_context: \(origin.rawValue)") }
     }

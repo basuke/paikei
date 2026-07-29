@@ -4,11 +4,11 @@ import Testing
 @Suite("応答の選択肢 (ClaimOption)")
 struct 応答の選択肢 {
     /// 東場・自分は南家。他家の手牌は不明。
-    func state(hand: String, riichi: Bool? = false) throws -> GameState {
+    func state(hand: String, 立直: Bool? = false) throws -> GameState {
         GameState(
             場風: .東, 局: 1, 本場: 0, 供託: 0, wall: 40,
             players: [
-                .自分: PlayerState(席風: .南, hand: try Tile.parseHand(hand), riichi: riichi),
+                .自分: PlayerState(席風: .南, hand: try Tile.parseHand(hand), 立直: 立直),
                 .上家: PlayerState(),
                 .対面: PlayerState(),
             ])
@@ -75,7 +75,7 @@ struct 応答の選択肢 {
     // MARK: - 全体の制約
 
     @Test func 立直中は鳴けない() throws {
-        var s = try state(hand: 鳴き用, riichi: true)
+        var s = try state(hand: 鳴き用, 立直: true)
         s.claim = ClaimTile(tile: try Tile.parse("1z"), from: .対面)
         #expect(s.可能な応答(for: .自分).isEmpty)
     }

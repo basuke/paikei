@@ -98,7 +98,7 @@ struct 高点法 {
         let tiles = try Tile.parseHand("234567m234p55p678s")
         let ctx = WinContext(seatWind: .東, roundWind: .東, winType: .ツモ,
                              winningTile: try Tile.parse("8s"),
-                             riichi: true, ippatsu: true)
+                             立直: true, ippatsu: true)
         let on = try #require(try HandEvaluator(rules: RuleSet(ippatsu: true))
             .best(concealed: tiles, melds: [], context: ctx))
         let off = try #require(try HandEvaluator(rules: RuleSet(ippatsu: false))

@@ -77,7 +77,7 @@ struct 多牌少牌 {
             players: [.自分: PlayerState(
                 席風: .西,
                 hand: try Tile.parseHand("234567m234p456s99p1z"),
-                riichi: false)])
+                立直: false)])
         #expect(try state.score(winningTile: try Tile.parse("6s"), winType: .ロン)
                 == .和了できない(.枚数異常(.多牌(超過: 1))))
     }

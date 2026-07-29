@@ -45,7 +45,7 @@ extension GameState {
         // 加槓・暗槓への応答は槍槓ロンのみ（仕様§7.4）。
         guard context == .打牌 || context == .立直宣言 else { return options }
         // 立直後は手を変えられない。河底（山が0）も鳴けない。
-        guard ps.riichi != true, wall != 0 else { return options }
+        guard ps.立直 != true, wall != 0 else { return options }
 
         let matching = hand.filter { $0.normalized == tile.normalized }
         if matching.count >= 2 { options.append(.ポン(手牌から: Array(matching.prefix(2)))) }

@@ -16,10 +16,10 @@ struct 局の結末 {
                 players: [
                     .自分: PlayerState(席風: .東,
                                      hand: try Tile.parseHand("123456789m11s22s"),
-                                     riichi: false, score: 25000),
-                    .下家: PlayerState(席風: .南, riichi: false, score: 25000),
-                    .対面: PlayerState(席風: .西, riichi: false, score: 25000),
-                    .上家: PlayerState(席風: .北, riichi: false, score: 25000),
+                                     立直: false, score: 25000),
+                    .下家: PlayerState(席風: .南, 立直: false, score: 25000),
+                    .対面: PlayerState(席風: .西, 立直: false, score: 25000),
+                    .上家: PlayerState(席風: .北, 立直: false, score: 25000),
                 ]),
             events: events)
     }

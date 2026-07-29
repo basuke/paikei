@@ -10,7 +10,7 @@ import Testing
         round: Wind = .東,
         winType: WinType = .ツモ,
         winTile: String? = nil,
-        riichi: Bool = false,
+        立直: Bool = false,
         doubleRiichi: Bool = false,
         ippatsu: Bool = false,
         afterKan: Bool = false,
@@ -20,7 +20,7 @@ import Testing
         let wt = try Tile.parse(winTile ?? tiles[0].mpsz)
         let ctx = WinContext(
             seatWind: 席風, roundWind: round, winType: winType, winningTile: wt,
-            riichi: riichi, doubleRiichi: doubleRiichi, ippatsu: ippatsu,
+            立直: 立直, doubleRiichi: doubleRiichi, ippatsu: ippatsu,
             afterKan: afterKan, robbingKan: robbingKan)
         let evaluator = HandEvaluator(rules: .standard)
         let best = try #require(try evaluator.best(concealed: tiles, melds: melds, context: ctx))
@@ -33,7 +33,7 @@ import Testing
     }
 
     @Test func 立直() throws {
-        #expect(try best("234567m234p55p678s", riichi: true).contains(.立直))
+        #expect(try best("234567m234p55p678s", 立直: true).contains(.立直))
     }
 
     @Test("一発は立直が前提（立直なしは矛盾としてエラー）")
@@ -41,7 +41,7 @@ import Testing
         #expect(throws: WinContextError(contradictions: [.立直なしの一発])) {
             _ = try self.best("234567m234p55p678s", ippatsu: true)
         }
-        #expect(try best("234567m234p55p678s", riichi: true, ippatsu: true).contains(.一発))
+        #expect(try best("234567m234p55p678s", 立直: true, ippatsu: true).contains(.一発))
         #expect(try best("234567m234p55p678s", doubleRiichi: true, ippatsu: true).contains(.一発))
     }
 

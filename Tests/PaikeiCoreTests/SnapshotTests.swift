@@ -38,7 +38,7 @@ struct スナップショットパース {
         #expect(me.draw == Tile(suit: .索子, rank: 5, 赤か: true))  // 0s
 
         let shimo = try #require(state.players[.下家])
-        #expect(shimo.riichi == true)
+        #expect(shimo.立直 == true)
         #expect(shimo.river.contains { $0.立直宣言牌か })
 
         let toimen = try #require(state.players[.対面])

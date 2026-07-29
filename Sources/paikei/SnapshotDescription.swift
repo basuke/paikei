@@ -32,7 +32,7 @@ enum SnapshotDescription {
         var parts = ["[\(player.displayName)]"]
         if let seat = ps.席風 { parts.append(seatName(seat)) }
         if let score = ps.score { parts.append("\(score)点") }
-        if ps.riichi == true { parts.append("リーチ") }
+        if ps.立直 == true { parts.append("リーチ") }
         if let defect = ps.handDefect { parts.append("⚠\(defectName(defect))") }
         if let hand = ps.hand { parts.append("手牌:\(TileFormatter.hand(hand))") }
         if let draw = ps.draw { parts.append("ツモ:\(TileFormatter.tile(draw))") }

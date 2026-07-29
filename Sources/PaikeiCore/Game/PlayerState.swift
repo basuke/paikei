@@ -22,7 +22,7 @@ public struct PlayerState: Sendable, Equatable {
     /// 河。左から古い順。
     public var river: [RiverTile]
     /// リーチ宣言済みか。nil は不明。
-    public var riichi: Bool?
+    public var 立直: Bool?
     /// 持ち点。nil は不明。
     public var score: Int?
     /// 14枚目の由来ヒント。nil は不明。
@@ -34,7 +34,7 @@ public struct PlayerState: Sendable, Equatable {
         draw: Tile? = nil,
         melds: [Meld] = [],
         river: [RiverTile] = [],
-        riichi: Bool? = nil,
+        立直: Bool? = nil,
         score: Int? = nil,
         discardOrigin: DiscardOrigin? = nil
     ) {
@@ -43,7 +43,7 @@ public struct PlayerState: Sendable, Equatable {
         self.draw = draw
         self.melds = melds
         self.river = river
-        self.riichi = riichi
+        self.立直 = 立直
         self.score = score
         self.discardOrigin = discardOrigin
     }

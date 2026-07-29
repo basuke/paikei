@@ -16,7 +16,7 @@ struct 包の判定 {
                 .自分: PlayerState(席風: .南, hand: try Tile.parseHand(hand),
                                   draw: try draw.map { try Tile.parse($0) },
                                   melds: try melds.map { try Meld.parse($0) },
-                                  riichi: false, score: 25000),
+                                  立直: false, score: 25000),
                 .下家: PlayerState(席風: .西),
                 .対面: PlayerState(席風: .北),
             ],
@@ -81,7 +81,7 @@ struct 包の判定 {
                     席風: .南, hand: try Tile.parseHand("5p"), draw: try Tile.parse("5p"),
                     melds: try ["pon(1'11z,L)", "pon(2'22z,C)",
                                 "pon(3'33z,R)", "pon(4'44z,C)"].map { try Meld.parse($0) },
-                    riichi: false, score: 25000),
+                    立直: false, score: 25000),
                 .対面: PlayerState(席風: .北),
             ])
         let analysis = try state.score(winningTile: try Tile.parse("5p"), winType: .ツモ)
@@ -134,7 +134,7 @@ struct 包の判定 {
                     席風: .南, hand: try Tile.parseHand("234p567p234s8s"),
                     draw: try Tile.parse("8s"),
                     melds: [try Meld.parse("daiminkan(1'111m,C)")],
-                    riichi: false, score: 25000),
+                    立直: false, score: 25000),
                 .対面: PlayerState(席風: .北),
             ])
     }

@@ -123,7 +123,7 @@ public enum SnapshotParser {
             do { ps.river = try RiverTile.parseLine(value) }
             catch { throw SnapshotParseError.不正な値(キー: key, 値: String(value)) }
         case "riichi":
-            ps.riichi = try parseBool(key: key, value: value)
+            ps.立直 = try parseBool(key: key, value: value)
         case "score":
             ps.score = try parseInt(key: key, value: value)
         case "discard_context":

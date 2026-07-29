@@ -97,7 +97,7 @@ struct MJAIプロトコルの対話 {
         #expect(state.players[.自分]?.hand == (try Tile.parseHand("123456789m11p55s")))
         #expect(state.players[.上家]?.score == 24000)
         // 配牌直後なので「立直していない」と言い切れる（不明ではない）。
-        #expect(state.players[.自分]?.riichi == false)
+        #expect(state.players[.自分]?.立直 == false)
     }
 
     @Test func 他家の配牌は不明のまま() throws {
@@ -232,7 +232,7 @@ struct MJAIプロトコルの対話 {
 struct 最小の打ち手 {
     let bot = SimpleBot()
 
-    func timeline(hand: String, draw: String? = nil, riichi: Bool = false,
+    func timeline(hand: String, draw: String? = nil, 立直: Bool = false,
                   claim: ClaimTile? = nil) throws -> GameTimeline {
         GameTimeline(snapshot: GameState(
             場風: .東, 局: 1, 本場: 0, 供託: 0,
@@ -240,7 +240,7 @@ struct 最小の打ち手 {
             players: [
                 .自分: PlayerState(席風: .西, hand: try Tile.parseHand(hand),
                                      draw: try draw.map { try Tile.parse($0) },
-                                     riichi: riichi, score: 25000),
+                                     立直: 立直, score: 25000),
                 .上家: PlayerState(席風: .南),
                 .下家: PlayerState(席風: .北),
             ],
@@ -266,7 +266,7 @@ struct 最小の打ち手 {
     }
 
     @Test func 立直後はツモ切りしかしない() throws {
-        let t = try timeline(hand: "123456789m11p55s", draw: "7z", riichi: true)
+        let t = try timeline(hand: "123456789m11p55s", draw: "7z", 立直: true)
         #expect(try bot.action(for: .自分, in: t)
                 == .打牌(of: .自分, 牌: try Tile.parse("7z"), ツモ切り: true))
     }

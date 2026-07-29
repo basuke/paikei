@@ -177,7 +177,7 @@ extension GameState {
             return value
         }
 
-        let riichi = assume(ps.riichi, false, .立直不明)
+        let riichi = assume(ps.立直, false, .立直不明)
         if doraMarkers.isEmpty { assumptions.append(.ドラ表示牌不明) }
         if riichi && rules.uraDora && options.uraMarkers.isEmpty {
             assumptions.append(.裏ドラ表示牌不明)
@@ -189,7 +189,7 @@ extension GameState {
             WinContext(
                 seatWind: 席風, roundWind: round, winType: winType,
                 winningTile: winningTile,
-                riichi: riichi || options.doubleRiichi,
+                立直: riichi || options.doubleRiichi,
                 doubleRiichi: options.doubleRiichi,
                 ippatsu: options.ippatsu,
                 lastTile: options.lastTile,
