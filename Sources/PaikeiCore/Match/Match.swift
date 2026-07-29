@@ -93,9 +93,9 @@ public struct Match: Sendable, Equatable {
         }
         guard matches(snapshot.場風, state.場風),
               matches(snapshot.局, state.局),
-              matches(snapshot.honba, state.honba) else {
+              matches(snapshot.本場, state.本場) else {
             throw MatchError.局の不一致(場風: snapshot.場風, 局: snapshot.局,
-                                    本場: snapshot.honba)
+                                    本場: snapshot.本場)
         }
     }
 

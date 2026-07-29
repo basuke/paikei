@@ -95,9 +95,9 @@ struct 本場供託と切り上げ満貫 {
     @Test("本場はロンで300点、ツモで各100点")
     func 本場はロンで300点ツモで各100点() {
         let calc = ScoreCalculator()
-        #expect(calc.payment(han: 1, fu: 30, isDealer: false, winType: .ロン, honba: 2).total
+        #expect(calc.payment(han: 1, fu: 30, isDealer: false, winType: .ロン, 本場: 2).total
                 == 1000 + 600)
-        let t = calc.payment(han: 1, fu: 30, isDealer: false, winType: .ツモ, honba: 2)
+        let t = calc.payment(han: 1, fu: 30, isDealer: false, winType: .ツモ, 本場: 2)
         #expect(t == .ツモ(親: 700, 子: 500))  // 各自 +200
         #expect(t.total == 1700)
     }
@@ -288,7 +288,7 @@ struct 本場供託と切り上げ満貫 {
                              winningTile: try Tile.parse("4s"), riichi: true)
         let score = try #require(try ScoreCalculator().score(
             concealed: try Tile.parseHand("111m234p567p234s99m"), melds: [], context: ctx,
-            honba: 1, kyotaku: 2))
+            本場: 1, kyotaku: 2))
         #expect(score.han == 1)
         #expect(score.fu == 40)
         #expect(score.payment == .ロン(1300 + 300))       // 1本場

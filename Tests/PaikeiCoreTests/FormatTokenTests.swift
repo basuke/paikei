@@ -43,7 +43,7 @@ struct フォーマットの表記トークン {
         let state = try SnapshotParser.parse(全キーの局面)
         #expect(state.場風 == .南)
         #expect(state.局 == 3)
-        #expect(state.honba == 2)
+        #expect(state.本場 == 2)
         #expect(state.kyotaku == 1)
         #expect(state.doraMarkers.map(\.mpsz) == ["3p", "7s"])
         #expect(state.wall == 42)

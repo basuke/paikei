@@ -27,7 +27,7 @@ struct スナップショットパース {
         let state = try SnapshotParser.parse(loadFixture("east2-1"))
         #expect(state.場風 == .東)
         #expect(state.局 == 2)
-        #expect(state.honba == 1)
+        #expect(state.本場 == 1)
         #expect(state.kyotaku == 1)
         #expect(state.doraMarkers == [Tile(suit: .筒子, rank: 3)!])
         #expect(state.wall == 42)
@@ -49,7 +49,7 @@ struct スナップショットパース {
     func 部分観測は不明としてnil空になる() throws {
         let state = try SnapshotParser.parse(loadFixture("partial"))
         #expect(state.局 == nil)
-        #expect(state.honba == nil)
+        #expect(state.本場 == nil)
         #expect(state.kyotaku == 0)          // 0 は「不明」ではなく既知の0
         #expect(state.wall == nil)
         let me = try #require(state.players[.自分])

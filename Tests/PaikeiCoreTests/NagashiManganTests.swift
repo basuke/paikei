@@ -6,9 +6,9 @@ import Testing
 struct 流し満貫の判定 {
     /// 河だけを与えた流局間際の局面。手牌は不明のままでよい。
     func state(seat: Wind = .南, 自分の河: String, 他家の副露: [String] = [],
-               honba: Int = 0) throws -> GameState {
+               本場: Int = 0) throws -> GameState {
         GameState(
-            場風: .東, 局: 1, honba: honba, kyotaku: 1, wall: 0,
+            場風: .東, 局: 1, 本場: 本場, kyotaku: 1, wall: 0,
             players: [
                 .自分: PlayerState(seat: seat,
                                   river: try river(自分の河), score: 25000),
@@ -40,13 +40,13 @@ struct 流し満貫の判定 {
     @Test("流局扱いなら積み棒は乗らない（既定）")
     func 流局扱いなら積み棒は乗らない() throws {
         // 積み棒は和了者が受け取るもの。流局では動かず次局へ持ち越す。
-        let 結果 = try state(自分の河: "1m 9m 1z 7z", honba: 2).流し満貫()
+        let 結果 = try state(自分の河: "1m 9m 1z 7z", 本場: 2).流し満貫()
         #expect(結果.first?.payment == .ツモ(親: 4000, 子: 2000))
     }
 
     @Test("和了扱いにすると積み棒が乗る")
     func 和了扱いなら積み棒が乗る() throws {
-        let 結果 = try state(自分の河: "1m 9m 1z 7z", honba: 2)
+        let 結果 = try state(自分の河: "1m 9m 1z 7z", 本場: 2)
             .流し満貫(rules: RuleSet(nagashiMangan: .和了))
         #expect(結果.first?.payment == .ツモ(親: 4200, 子: 2200))
     }

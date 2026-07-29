@@ -182,7 +182,7 @@ extension GameState {
         if riichi && rules.uraDora && options.uraMarkers.isEmpty {
             assumptions.append(.裏ドラ表示牌不明)
         }
-        let honbaCount = assume(honba, 0, .本場不明)
+        let honbaCount = assume(本場, 0, .本場不明)
         let kyotakuCount = assume(kyotaku, 0, .供託不明)
 
         func context(round: Wind, seat: Wind) -> WinContext {
@@ -246,7 +246,7 @@ extension GameState {
 
         guard let score = ScoreCalculator(rules: rules).score(
             best, dora: DoraCounter(rules: rules).count(best.hand),
-            honba: honbaCount, kyotaku: kyotakuCount, liable: liable) else {
+            本場: honbaCount, kyotaku: kyotakuCount, liable: liable) else {
             return .和了できない(.役なし)
         }
         // 役満はドラを加算しないため、ドラ不明は答えに影響しない＝仮定として挙げない。

@@ -33,7 +33,7 @@ extension GameState {
             let payment = ps.seat.map { seat in
                 ScoreCalculator(rules: rules).payment(
                     han: 5, fu: 0, isDealer: seat == .東, winType: .ツモ,
-                    honba: handling == .和了 ? (honba ?? 0) : 0)
+                    本場: handling == .和了 ? (本場 ?? 0) : 0)
             }
             return NagashiMangan(player: player, payment: payment)
         }

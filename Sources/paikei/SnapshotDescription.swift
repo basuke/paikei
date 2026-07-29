@@ -19,7 +19,7 @@ enum SnapshotDescription {
         let ba = state.場風.map(bakazeName) ?? "?"
         let kyoku = state.局.map(String.init) ?? "?"
         var parts = ["\(ba)\(kyoku)局"]
-        if let honba = state.honba, honba > 0 { parts.append("\(honba)本場") }
+        if let honba = state.本場, honba > 0 { parts.append("\(honba)本場") }
         if let kyotaku = state.kyotaku, kyotaku > 0 { parts.append("供託\(kyotaku)") }
         if !state.doraMarkers.isEmpty {
             parts.append("ドラ表示:" + TileFormatter.tiles(state.doraMarkers))

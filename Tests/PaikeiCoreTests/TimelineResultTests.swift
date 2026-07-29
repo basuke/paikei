@@ -10,7 +10,7 @@ struct 局の結末 {
     func timeline(events: [Event] = [], wall: Int = 40) throws -> GameTimeline {
         GameTimeline(
             snapshot: GameState(
-                場風: .東, 局: 1, honba: 0, kyotaku: 0,
+                場風: .東, 局: 1, 本場: 0, kyotaku: 0,
                 doraMarkers: [try Tile.parse("3z")],
                 wall: wall,
                 players: [
@@ -227,6 +227,6 @@ struct 局の結末 {
         #expect(match.state.scores[.自分] == 31000)
         #expect(match.state.scores[.下家] == 23000)
         #expect(match.state.dealer == .自分)
-        #expect(match.state.honba == 1)
+        #expect(match.state.本場 == 1)
     }
 }

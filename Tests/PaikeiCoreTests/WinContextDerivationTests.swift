@@ -8,7 +8,7 @@ struct 和了の文脈フラグの導出 {
     /// 一気通貫のシャンポン待ち（1p / 5s）。ツモでもロンでも役が付く。
     func state(wall: Int?, draw: String? = nil, claim: ClaimTile? = nil) throws -> GameState {
         GameState(
-            場風: .東, 局: 1, honba: 0, kyotaku: 0,
+            場風: .東, 局: 1, 本場: 0, kyotaku: 0,
             doraMarkers: [try Tile.parse("9s")], wall: wall,
             players: [
                 .自分: PlayerState(seat: .南, hand: try Tile.parseHand("123456789m11p55s"),
@@ -93,7 +93,7 @@ struct 嶺上開花の導出 {
     func timeline() throws -> GameTimeline {
         GameTimeline(
             snapshot: GameState(
-                場風: .東, 局: 1, honba: 0, kyotaku: 0,
+                場風: .東, 局: 1, 本場: 0, kyotaku: 0,
                 doraMarkers: [try Tile.parse("9s")], wall: 40,
                 players: [
                     .自分: PlayerState(seat: .南,

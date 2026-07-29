@@ -6,7 +6,7 @@ public struct MatchState: Sendable, Equatable {
     public var 場風: Wind
     /// 局数（1〜4）。
     public var 局: Int
-    public var honba: Int
+    public var 本場: Int
     /// 供託リーチ棒の本数。
     public var kyotaku: Int
     /// 持ち点。4人ぶん揃っている前提。
@@ -15,12 +15,12 @@ public struct MatchState: Sendable, Equatable {
     public var dealer: Player
 
     public init(
-        場風: Wind = .東, 局: Int = 1, honba: Int = 0, kyotaku: Int = 0,
+        場風: Wind = .東, 局: Int = 1, 本場: Int = 0, kyotaku: Int = 0,
         scores: [Player: Int], dealer: Player
     ) {
         self.場風 = 場風
         self.局 = 局
-        self.honba = honba
+        self.本場 = 本場
         self.kyotaku = kyotaku
         self.scores = scores
         self.dealer = dealer
@@ -45,7 +45,7 @@ extension MatchState {
     /// 配牌直後なので山は満杯、立直も全員していないと言い切れる。
     public func snapshot() -> GameState {
         GameState(
-            場風: 場風, 局: 局, honba: honba, kyotaku: kyotaku,
+            場風: 場風, 局: 局, 本場: 本場, kyotaku: kyotaku,
             wall: GameState.wallAfterDeal,
             players: Dictionary(uniqueKeysWithValues: Player.allCases.map { player in
                 (player, PlayerState(seat: seat(of: player), riichi: false,
@@ -83,10 +83,10 @@ extension MatchState {
         switch result {
         case .和了:
             next.kyotaku = 0  // 和了者が総取り（deltas で渡してある）
-            next.honba = continues ? honba + 1 : 0
+            next.本場 = continues ? 本場 + 1 : 0
         case .流局:
             next.kyotaku = pot  // 次局へ持ち越す
-            next.honba = honba + 1
+            next.本場 = 本場 + 1
         }
 
         // トビは局数によらず即終局。

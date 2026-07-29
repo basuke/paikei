@@ -92,7 +92,7 @@ public enum SnapshotParser {
         switch key {
         case "bakaze": state.場風 = try parseWind(key: key, value: value)
         case "kyoku": state.局 = try parseInt(key: key, value: value)
-        case "honba": state.honba = try parseInt(key: key, value: value)
+        case "honba": state.本場 = try parseInt(key: key, value: value)
         case "kyotaku": state.kyotaku = try parseInt(key: key, value: value)
         case "wall": state.wall = try parseInt(key: key, value: value)
         case "dora_markers": state.doraMarkers = try parseTileList(key: key, value: value)
