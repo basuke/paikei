@@ -8,7 +8,7 @@ struct イベント適用 {
         GameState(
             wall: 42,
             players: [.自分: PlayerState(
-                seat: .東, hand: try Tile.parseHand("123m456m789p55s11z"),
+                席風: .東, hand: try Tile.parseHand("123m456m789p55s11z"),
                 score: 25000)])
     }
 

@@ -30,9 +30,9 @@ extension GameState {
                   ps.river.allSatisfy({ !$0.鳴かれたか && $0.tile.么九牌か }),
                   !鳴かれた牌があるか(player) else { return nil }
 
-            let payment = ps.seat.map { seat in
+            let payment = ps.席風.map { 席風 in
                 ScoreCalculator(rules: rules).payment(
-                    han: 5, fu: 0, isDealer: seat == .東, winType: .ツモ,
+                    han: 5, fu: 0, isDealer: 席風 == .東, winType: .ツモ,
                     本場: handling == .和了 ? (本場 ?? 0) : 0)
             }
             return NagashiMangan(player: player, payment: payment)

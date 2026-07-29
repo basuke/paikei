@@ -30,7 +30,7 @@ enum SnapshotDescription {
 
     private static func playerLine(_ player: Player, _ ps: PlayerState) -> String {
         var parts = ["[\(player.displayName)]"]
-        if let seat = ps.seat { parts.append(seatName(seat)) }
+        if let seat = ps.席風 { parts.append(seatName(seat)) }
         if let score = ps.score { parts.append("\(score)点") }
         if ps.riichi == true { parts.append("リーチ") }
         if let defect = ps.handDefect { parts.append("⚠\(defectName(defect))") }

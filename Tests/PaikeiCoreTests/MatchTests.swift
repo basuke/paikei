@@ -42,10 +42,10 @@ struct 局の連鎖 {
     @Test("親が東で、手番順に南・西・北")
     func 席風は親から回る() {
         let s = state(dealer: .下家)
-        #expect(s.seat(of: .下家) == .東)
-        #expect(s.seat(of: .対面) == .南)
-        #expect(s.seat(of: .上家) == .西)
-        #expect(s.seat(of: .自分) == .北)
+        #expect(s.席風(of: .下家) == .東)
+        #expect(s.席風(of: .対面) == .南)
+        #expect(s.席風(of: .上家) == .西)
+        #expect(s.席風(of: .自分) == .北)
     }
 
     @Test("初期局面の骨格は仮定を必要としない")
@@ -55,7 +55,7 @@ struct 局の連鎖 {
         #expect(snapshot.本場 == 2)
         #expect(snapshot.供託 == 1)
         #expect(snapshot.wall == 70)
-        #expect(snapshot.players[.自分]?.seat == .東)
+        #expect(snapshot.players[.自分]?.席風 == .東)
         #expect(snapshot.players[.自分]?.riichi == false)
         #expect(snapshot.players[.下家]?.score == 25000)
     }

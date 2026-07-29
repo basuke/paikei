@@ -5,14 +5,14 @@ import Testing
 @Suite("流し満貫")
 struct 流し満貫の判定 {
     /// 河だけを与えた流局間際の局面。手牌は不明のままでよい。
-    func state(seat: Wind = .南, 自分の河: String, 他家の副露: [String] = [],
+    func state(席風: Wind = .南, 自分の河: String, 他家の副露: [String] = [],
                本場: Int = 0) throws -> GameState {
         GameState(
             場風: .東, 局: 1, 本場: 本場, 供託: 1, wall: 0,
             players: [
-                .自分: PlayerState(seat: seat,
+                .自分: PlayerState(席風: 席風,
                                   river: try river(自分の河), score: 25000),
-                .上家: PlayerState(seat: .東,
+                .上家: PlayerState(席風: .東,
                                   melds: try 他家の副露.map { try Meld.parse($0) },
                                   river: try river("2m 3m 4m")),
             ])
@@ -33,7 +33,7 @@ struct 流し満貫の判定 {
     }
 
     @Test func 親なら親の満貫ツモ払い() throws {
-        let 結果 = try state(seat: .東, 自分の河: "1m 9m 1z 7z").流し満貫()
+        let 結果 = try state(席風: .東, 自分の河: "1m 9m 1z 7z").流し満貫()
         #expect(結果.first?.payment == .ツモ(親: nil, 子: 4000))
     }
 
@@ -83,7 +83,7 @@ struct 流し満貫の判定 {
     @Test("席風が不明なら支払いは出さない（親子で額が変わるため推測しない）")
     func 席風が不明なら支払いを出さない() throws {
         var s = try state(自分の河: "1m 9m 1z 7z")
-        s.players[.自分]?.seat = nil
+        s.players[.自分]?.席風 = nil
         let 結果 = s.流し満貫()
         #expect(結果.count == 1)
         #expect(結果.first?.payment == nil)

@@ -66,9 +66,9 @@ public struct MjaiSession: Sendable {
     public mutating func receive(_ line: String) throws -> MjaiMessage {
         let message = try decode(line)
         switch message {
-        case let .対局開始(names, seat):
+        case let .対局開始(names, 席風):
             self.names = names
-            selfActor = seat
+            selfActor = 席風
             timeline = nil
             state = nil
         case let .局開始(snapshot):

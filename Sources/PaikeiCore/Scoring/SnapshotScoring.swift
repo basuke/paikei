@@ -154,9 +154,9 @@ extension GameState {
         // 自分がまだ1枚も打っていないことが条件。
         //
         // 河が観測できていないだけの局面を役満と誤らないよう、山の残りが巡目と
-        // 整合するかまで確かめる。`wall` や `seat` が不明なら導出しない。
+        // 整合するかまで確かめる。`wall` や `席風` が不明なら導出しない。
         if ps.river.isEmpty, players.values.allSatisfy(\.melds.isEmpty),
-           let seat = ps.seat, let wall {
+           let seat = ps.席風, let wall {
             // 自分の第一ツモの時点での山（親なら 70−1、南家なら 70−2 …）。
             let atMyDraw = GameState.wallAfterDeal - seat.order
             switch winType {
@@ -185,9 +185,9 @@ extension GameState {
         let honbaCount = assume(本場, 0, .本場不明)
         let kyotakuCount = assume(供託, 0, .供託不明)
 
-        func context(round: Wind, seat: Wind) -> WinContext {
+        func context(round: Wind, 席風: Wind) -> WinContext {
             WinContext(
-                seatWind: seat, roundWind: round, winType: winType,
+                seatWind: 席風, roundWind: round, winType: winType,
                 winningTile: winningTile,
                 riichi: riichi || options.doubleRiichi,
                 doubleRiichi: options.doubleRiichi,
@@ -202,7 +202,7 @@ extension GameState {
 
         // 文脈フラグの矛盾は風の選び方によらないので、代表の風で先に検査する。
         // 以降の評価呼び出しが WinContextError を投げることはない。
-        try context(round: .東, seat: .東).validate()
+        try context(round: .東, 席風: .東).validate()
 
         // ロンはフリテンなら成立しない。和了牌が実際に待ちで、かつ待ちのいずれかが
         // 自分の論理捨て牌（仕様§5: 河 + 鳴かれた牌）にあるときだけ判定する
@@ -231,11 +231,11 @@ extension GameState {
 
         let roundWind = 場風 ?? .東
         // 役・符は風によらないと確かめた上での仮定。残るのは親子（＝支払い）だけ。
-        let seatWind = ps.seat ?? .南
-        if ps.seat == nil { assumptions.insert(.席風不明(仮定: .南), at: 0) }
+        let seatWind = ps.席風 ?? .南
+        if ps.席風 == nil { assumptions.insert(.席風不明(仮定: .南), at: 0) }
 
         guard let best = try HandEvaluator(rules: rules)
-            .best(concealed: concealed, melds: ps.melds, context: context(round: roundWind, seat: seatWind)) else {
+            .best(concealed: concealed, melds: ps.melds, context: context(round: roundWind, 席風: seatWind)) else {
             return .和了できない(.和了形なし)
         }
         // 包（責任払い）。放銃者が責任者本人なら折半する相手が居ないので、
@@ -294,24 +294,24 @@ extension GameState {
             let yaku: Set<Yaku>
             let fu: Int
         }
-        func outcome(round: Wind, seat: Wind) throws -> Outcome? {
+        func outcome(round: Wind, 席風: Wind) throws -> Outcome? {
             try HandEvaluator(rules: rules)
-                .best(concealed: concealed, melds: melds, context: context(round, seat))
+                .best(concealed: concealed, melds: melds, context: context(round, 席風))
                 .map { Outcome(yaku: Set($0.yaku), fu: $0.fu) }
         }
 
         let rounds = 場風.map { [$0] } ?? Wind.allCases
-        let seats = players[player]?.seat.map { [$0] } ?? Wind.allCases
+        let seats = players[player]?.席風.map { [$0] } ?? Wind.allCases
 
         // 片方を固定したときに、もう片方を動かして結果が変わるか。
         var missing: [Requirement] = []
-        if rounds.count > 1, try seats.contains(where: { seat in
-            try Set(rounds.map { try outcome(round: $0, seat: seat) }).count > 1
+        if rounds.count > 1, try seats.contains(where: { 席風 in
+            try Set(rounds.map { try outcome(round: $0, 席風: 席風) }).count > 1
         }) {
             missing.append(.場風)
         }
         if seats.count > 1, try rounds.contains(where: { round in
-            try Set(seats.map { try outcome(round: round, seat: $0) }).count > 1
+            try Set(seats.map { try outcome(round: round, 席風: $0) }).count > 1
         }) {
             missing.append(.席風(player))
         }

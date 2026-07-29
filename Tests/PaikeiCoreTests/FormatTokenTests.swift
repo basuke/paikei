@@ -54,7 +54,7 @@ struct フォーマットの表記トークン {
     func プレイヤーのキー() throws {
         let state = try SnapshotParser.parse(全キーの局面)
         let me = try #require(state.players[.自分])
-        #expect(me.seat == .西)
+        #expect(me.席風 == .西)
         #expect(me.hand?.count == 13)
         #expect(me.draw?.mpsz == "0s")
         #expect(me.river.count == 4)
@@ -63,7 +63,7 @@ struct フォーマットの表記トークン {
         #expect(me.discardOrigin == .ツモ)
 
         let shimo = try #require(state.players[.下家])
-        #expect(shimo.seat == .北)
+        #expect(shimo.席風 == .北)
         #expect(shimo.melds.map(\.kind) == [.ポン, .チー, .暗槓])
     }
 

@@ -13,12 +13,12 @@ struct 包の判定 {
             場風: .東, 局: 1, 本場: 0, 供託: 0,
             doraMarkers: [try Tile.parse("3p")], wall: 40,
             players: [
-                .自分: PlayerState(seat: .南, hand: try Tile.parseHand(hand),
+                .自分: PlayerState(席風: .南, hand: try Tile.parseHand(hand),
                                   draw: try draw.map { try Tile.parse($0) },
                                   melds: try melds.map { try Meld.parse($0) },
                                   riichi: false, score: 25000),
-                .下家: PlayerState(seat: .西),
-                .対面: PlayerState(seat: .北),
+                .下家: PlayerState(席風: .西),
+                .対面: PlayerState(席風: .北),
             ],
             claim: claim)
         return (state, rules)
@@ -78,11 +78,11 @@ struct 包の判定 {
             場風: .東, 局: 1, 本場: 0, 供託: 0, wall: 40,
             players: [
                 .自分: PlayerState(
-                    seat: .南, hand: try Tile.parseHand("5p"), draw: try Tile.parse("5p"),
+                    席風: .南, hand: try Tile.parseHand("5p"), draw: try Tile.parse("5p"),
                     melds: try ["pon(1'11z,L)", "pon(2'22z,C)",
                                 "pon(3'33z,R)", "pon(4'44z,C)"].map { try Meld.parse($0) },
                     riichi: false, score: 25000),
-                .対面: PlayerState(seat: .北),
+                .対面: PlayerState(席風: .北),
             ])
         let analysis = try state.score(winningTile: try Tile.parse("5p"), winType: .ツモ)
         guard case let .点数(score, yaku, _) = analysis else {
@@ -131,11 +131,11 @@ struct 包の判定 {
             場風: .東, 局: 1, 本場: 0, 供託: 0, wall: 40,
             players: [
                 .自分: PlayerState(
-                    seat: .南, hand: try Tile.parseHand("234p567p234s8s"),
+                    席風: .南, hand: try Tile.parseHand("234p567p234s8s"),
                     draw: try Tile.parse("8s"),
                     melds: [try Meld.parse("daiminkan(1'111m,C)")],
                     riichi: false, score: 25000),
-                .対面: PlayerState(seat: .北),
+                .対面: PlayerState(席風: .北),
             ])
     }
 

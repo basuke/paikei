@@ -75,7 +75,7 @@ struct ScoreCommand: ParsableCommand {
             guard let wind = Wind(rawValue: seat) else {
                 throw ValidationError("席風は E/S/W/N で指定してください: \(seat)")
             }
-            timeline.snapshot.players[target, default: PlayerState()].seat = wind
+            timeline.snapshot.players[target, default: PlayerState()].席風 = wind
         }
         let type: WinType
         switch winType {

@@ -26,14 +26,14 @@ enum MjaiKyoku {
         let hands = fields["tehais"] as? [[String]] ?? []
 
         var players: [Player: PlayerState] = [:]
-        for seat in 0...3 {
-            players[try format.player(fromSeat: seat)] = PlayerState(
+        for 席風 in 0...3 {
+            players[try format.player(fromSeat: 席風)] = PlayerState(
                 // 親を東として席風が決まる。MJAIの座順は反時計回り（仕様§8.2）。
-                seat: Wind.allCases[(seat - oya + 4) % 4],
-                hand: hands.indices.contains(seat) ? try hand(hands[seat]) : nil,
+                席風: Wind.allCases[(席風 - oya + 4) % 4],
+                hand: hands.indices.contains(席風) ? try hand(hands[席風]) : nil,
                 // 配牌直後なので、誰も立直していないと言い切れる。
                 riichi: false,
-                score: scores.indices.contains(seat) ? scores[seat] : nil)
+                score: scores.indices.contains(席風) ? scores[席風] : nil)
         }
 
         var markers: [Tile] = []

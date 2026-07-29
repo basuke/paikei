@@ -89,10 +89,10 @@ struct MJAIプロトコルの対話 {
         #expect(state.wall == 70)  // 136 - 王牌14 - 配牌52
 
         // 親が絶対座席0（＝対面）なので、自分は西家。
-        #expect(state.players[.対面]?.seat == .東)
-        #expect(state.players[.上家]?.seat == .南)
-        #expect(state.players[.自分]?.seat == .西)
-        #expect(state.players[.下家]?.seat == .北)
+        #expect(state.players[.対面]?.席風 == .東)
+        #expect(state.players[.上家]?.席風 == .南)
+        #expect(state.players[.自分]?.席風 == .西)
+        #expect(state.players[.下家]?.席風 == .北)
 
         #expect(state.players[.自分]?.hand == (try Tile.parseHand("123456789m11p55s")))
         #expect(state.players[.上家]?.score == 24000)
@@ -238,11 +238,11 @@ struct 最小の打ち手 {
             場風: .東, 局: 1, 本場: 0, 供託: 0,
             doraMarkers: [try Tile.parse("3p")], wall: 40,
             players: [
-                .自分: PlayerState(seat: .西, hand: try Tile.parseHand(hand),
+                .自分: PlayerState(席風: .西, hand: try Tile.parseHand(hand),
                                      draw: try draw.map { try Tile.parse($0) },
                                      riichi: riichi, score: 25000),
-                .上家: PlayerState(seat: .南),
-                .下家: PlayerState(seat: .北),
+                .上家: PlayerState(席風: .南),
+                .下家: PlayerState(席風: .北),
             ],
             claim: claim))
     }

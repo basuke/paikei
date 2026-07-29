@@ -34,7 +34,7 @@ struct スナップショットパース {
         #expect(state.players.count == 4)
 
         let me = try #require(state.players[.自分])
-        #expect(me.seat == .西)
+        #expect(me.席風 == .西)
         #expect(me.draw == Tile(suit: .索子, rank: 5, 赤か: true))  // 0s
 
         let shimo = try #require(state.players[.下家])
@@ -53,7 +53,7 @@ struct スナップショットパース {
         #expect(state.供託 == 0)          // 0 は「不明」ではなく既知の0
         #expect(state.wall == nil)
         let me = try #require(state.players[.自分])
-        #expect(me.seat == nil)
+        #expect(me.席風 == nil)
         #expect(me.score == nil)
         #expect(me.hand?.count == 13)
     }

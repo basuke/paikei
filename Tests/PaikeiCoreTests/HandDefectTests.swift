@@ -75,7 +75,7 @@ struct 多牌少牌 {
         let state = GameState(
             場風: .東, 本場: 0, 供託: 0,
             players: [.自分: PlayerState(
-                seat: .西,
+                席風: .西,
                 hand: try Tile.parseHand("234567m234p456s99p1z"),
                 riichi: false)])
         #expect(try state.score(winningTile: try Tile.parse("6s"), winType: .ロン)

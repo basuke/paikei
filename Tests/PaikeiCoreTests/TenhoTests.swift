@@ -7,7 +7,7 @@ import Testing
 struct 天和と地和 {
     /// 七対子の形で配牌された、という設定。和了牌は 5s。
     /// `wall` の既定は親の第一ツモ（70 − 1）。
-    func state(seat: Wind, wall: Int? = GameState.wallAfterDeal - 1,
+    func state(席風: Wind, wall: Int? = GameState.wallAfterDeal - 1,
                river: [String] = [], melds: [String] = [],
                他家の副露: [String] = []) throws -> GameState {
         GameState(
@@ -15,12 +15,12 @@ struct 天和と地和 {
             doraMarkers: [try Tile.parse("9m")], wall: wall,
             players: [
                 .自分: PlayerState(
-                    seat: seat, hand: try Tile.parseHand("1133m5577p2299s5s"),
+                    席風: 席風, hand: try Tile.parseHand("1133m5577p2299s5s"),
                     draw: try Tile.parse("5s"),
                     melds: try melds.map { try Meld.parse($0) },
                     river: try river.map { RiverTile(tile: try Tile.parse($0)) },
                     riichi: false, score: 25000),
-                .下家: PlayerState(seat: .北,
+                .下家: PlayerState(席風: .北,
                                   melds: try 他家の副露.map { try Meld.parse($0) }),
             ])
     }
@@ -38,7 +38,7 @@ struct 天和と地和 {
     // MARK: - 成立する
 
     @Test func 親の第一ツモは天和() throws {
-        let yaku = try 役(state(seat: .東))
+        let yaku = try 役(state(席風: .東))
         #expect(yaku.contains(.天和))
         #expect(!yaku.contains(.地和))
         // 役満なので役満役だけが残る。
@@ -47,13 +47,13 @@ struct 天和と地和 {
 
     @Test func 子の第一ツモは地和() throws {
         // 南家の第一ツモは2巡目なので山は 70 − 2。
-        let yaku = try 役(state(seat: .南, wall: GameState.wallAfterDeal - 2))
+        let yaku = try 役(state(席風: .南, wall: GameState.wallAfterDeal - 2))
         #expect(yaku.contains(.地和))
         #expect(!yaku.contains(.天和))
     }
 
     @Test func 北家でも席順どおりなら地和() throws {
-        let yaku = try 役(state(seat: .北, wall: GameState.wallAfterDeal - 4))
+        let yaku = try 役(state(席風: .北, wall: GameState.wallAfterDeal - 4))
         #expect(yaku.contains(.地和))
     }
 
@@ -61,14 +61,14 @@ struct 天和と地和 {
 
     @Test("既に打っていれば第一ツモではない")
     func 既に打っていれば成立しない() throws {
-        let yaku = try 役(state(seat: .東, river: ["1z"]))
+        let yaku = try 役(state(席風: .東, river: ["1z"]))
         #expect(!yaku.contains(.天和))
         #expect(yaku.contains(.七対子))
     }
 
     @Test("誰かが鳴いていれば地和にならない")
     func 鳴きが入れば成立しない() throws {
-        let yaku = try 役(state(seat: .南, wall: GameState.wallAfterDeal - 2,
+        let yaku = try 役(state(席風: .南, wall: GameState.wallAfterDeal - 2,
                                他家の副露: ["pon(1'11z,L)"]))
         #expect(!yaku.contains(.地和))
     }
@@ -76,19 +76,19 @@ struct 天和と地和 {
     @Test("山の枚数が席順と合わなければ導出しない")
     func 山が合わなければ成立しない() throws {
         // 南家なのに山が親の第一ツモの数。巡目が進んだ局面と区別できない。
-        let yaku = try 役(state(seat: .南, wall: GameState.wallAfterDeal - 1))
+        let yaku = try 役(state(席風: .南, wall: GameState.wallAfterDeal - 1))
         #expect(!yaku.contains(.地和))
     }
 
     @Test("山が不明なら導出しない（河が写っていないだけの局面を役満にしない）")
     func 山が不明なら導出しない() throws {
-        let yaku = try 役(state(seat: .東, wall: nil))
+        let yaku = try 役(state(席風: .東, wall: nil))
         #expect(!yaku.contains(.天和))
     }
 
     @Test func 席風が不明なら導出しない() throws {
-        var s = try state(seat: .東)
-        s.players[.自分]?.seat = nil
+        var s = try state(席風: .東)
+        s.players[.自分]?.席風 = nil
         // 七対子は風によらないので、席風不明でも点数自体は出る。
         let yaku = try 役(s)
         #expect(!yaku.contains(.天和))
@@ -98,7 +98,7 @@ struct 天和と地和 {
     // MARK: - 指定と矛盾
 
     @Test func 呼び出し側が指定すれば導出できなくても成立する() throws {
-        let yaku = try 役(state(seat: .東, wall: nil), options: WinOptions(firstTurn: true))
+        let yaku = try 役(state(席風: .東, wall: nil), options: WinOptions(firstTurn: true))
         #expect(yaku.contains(.天和))
     }
 
@@ -109,7 +109,7 @@ struct 天和と地和 {
 @Suite("人和")
 struct 人和 {
     /// 七対子テンパイの南家。親が第一打を出した直後（山は 70 − 1）。
-    func state(seat: Wind = .南, wall: Int? = GameState.wallAfterDeal - 1,
+    func state(席風: Wind = .南, wall: Int? = GameState.wallAfterDeal - 1,
                river: [String] = []) throws -> GameState {
         GameState(
             場風: .東, 局: 1, 本場: 0, 供託: 0,
@@ -117,10 +117,10 @@ struct 人和 {
             doraMarkers: [try Tile.parse("3s")], wall: wall,
             players: [
                 .自分: PlayerState(
-                    seat: seat, hand: try Tile.parseHand("1133m5577p2299s5s"),
+                    席風: 席風, hand: try Tile.parseHand("1133m5577p2299s5s"),
                     river: try river.map { RiverTile(tile: try Tile.parse($0)) },
                     riichi: false, score: 25000),
-                .上家: PlayerState(seat: .東),
+                .上家: PlayerState(席風: .東),
             ],
             claim: ClaimTile(tile: try Tile.parse("5s"), from: .上家))
     }
@@ -182,7 +182,7 @@ struct 人和 {
 
     @Test("親には成立しない（第一巡に打牌が存在しない）")
     func 親には成立しない() throws {
-        let yaku = try 役(state(seat: .東), rules: RuleSet(renhou: .役満))
+        let yaku = try 役(state(席風: .東), rules: RuleSet(renhou: .役満))
         #expect(!yaku.contains(.人和(.役満)))
     }
 }

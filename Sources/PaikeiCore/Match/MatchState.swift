@@ -1,7 +1,7 @@
 /// 局と局の**あいだ**の状況。1局の中身（手牌・河）は持たない。
 ///
 /// `Player` はカメラ相対の物理位置なので局をまたいでも変わらない。回るのは席風
-/// （`seat(of:)`）と親だけ、というのがこの型の要。
+/// （`席風(of:)`）と親だけ、というのがこの型の要。
 public struct MatchState: Sendable, Equatable {
     public var 場風: Wind
     /// 局数（1〜4）。
@@ -36,7 +36,7 @@ public enum MatchProgress: Sendable, Equatable {
 
 extension MatchState {
     /// `player` の席風。親が東で、手番順に南・西・北。
-    public func seat(of player: Player) -> Wind {
+    public func 席風(of player: Player) -> Wind {
         Wind.allCases[(player.order - dealer.order + 4) % 4]
     }
 
@@ -48,7 +48,7 @@ extension MatchState {
             場風: 場風, 局: 局, 本場: 本場, 供託: 供託,
             wall: GameState.wallAfterDeal,
             players: Dictionary(uniqueKeysWithValues: Player.allCases.map { player in
-                (player, PlayerState(seat: seat(of: player), riichi: false,
+                (player, PlayerState(席風: 席風(of: player), riichi: false,
                                      score: scores[player]))
             }))
     }

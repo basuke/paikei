@@ -4,10 +4,10 @@ import Testing
 @Suite("高点法 (HandEvaluator)")
 struct 高点法 {
     func context(
-        seat: Wind = .東, round: Wind = .東,
+        席風: Wind = .東, round: Wind = .東,
         winType: WinType = .ツモ, winTile: String
     ) throws -> WinContext {
-        WinContext(seatWind: seat, roundWind: round, winType: winType,
+        WinContext(seatWind: 席風, roundWind: round, winType: winType,
                    winningTile: try Tile.parse(winTile))
     }
 

@@ -59,7 +59,7 @@ public enum SnapshotParser {
 
     // MARK: - セクションヘッダ
 
-    /// `[shimocha] seat=N` 形式を解釈し、対象プレイヤーを返す。
+    /// `[shimocha] 席風=N` 形式を解釈し、対象プレイヤーを返す。
     private static func applyHeader(_ line: Substring, into state: inout GameState) throws -> Player {
         guard let close = line.firstIndex(of: "]"), line.first == "[" else {
             throw SnapshotParseError.不正なヘッダ(String(line))
@@ -77,7 +77,7 @@ public enum SnapshotParser {
             }
             switch String(pair[0]) {
             case "seat":
-                ps.seat = try parseWind(key: "seat", value: pair[1])
+                ps.席風 = try parseWind(key: "seat", value: pair[1])
             default:
                 throw SnapshotParseError.未知のフィールド(キー: String(pair[0]), セクション: name)
             }

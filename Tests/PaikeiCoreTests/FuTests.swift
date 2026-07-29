@@ -6,14 +6,14 @@ import Testing
     func evaluate(
         _ concealed: String,
         melds: [Meld] = [],
-        seat: Wind = .東,
+        席風: Wind = .東,
         round: Wind = .東,
         winType: WinType = .ツモ,
         winTile: String
     ) throws -> (fu: Int, yaku: Set<Yaku>) {
         let tiles = try Tile.parseHand(concealed)
         let ctx = WinContext(
-            seatWind: seat, roundWind: round, winType: winType,
+            seatWind: 席風, roundWind: round, winType: winType,
             winningTile: try Tile.parse(winTile))
         // 高点法（翻→符）は HandEvaluator の責務。
         let best = try #require(try HandEvaluator().best(concealed: tiles, melds: melds, context: ctx))

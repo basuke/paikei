@@ -11,8 +11,8 @@ public enum DiscardOrigin: String, Sendable {
 
 /// 1プレイヤーの状態（仕様§3.3）。「不明」は Optional / 空で表す。
 public struct PlayerState: Sendable, Equatable {
-    /// 席風（セクションヘッダ `seat=` から）。nil は不明。
-    public var seat: Wind?
+    /// 席風（セクションヘッダ `席風=` から）。nil は不明。
+    public var 席風: Wind?
     /// 純手牌（副露を含まない）。nil は不明（`?` または未記述）。正規化して昇順で保持。
     public var hand: [Tile]?
     /// ツモ牌（14枚目）。ツモ直後でなければ nil。
@@ -29,7 +29,7 @@ public struct PlayerState: Sendable, Equatable {
     public var discardOrigin: DiscardOrigin?
 
     public init(
-        seat: Wind? = nil,
+        席風: Wind? = nil,
         hand: [Tile]? = nil,
         draw: Tile? = nil,
         melds: [Meld] = [],
@@ -38,7 +38,7 @@ public struct PlayerState: Sendable, Equatable {
         score: Int? = nil,
         discardOrigin: DiscardOrigin? = nil
     ) {
-        self.seat = seat
+        self.席風 = 席風
         self.hand = hand
         self.draw = draw
         self.melds = melds

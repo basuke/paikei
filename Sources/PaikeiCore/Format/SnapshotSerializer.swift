@@ -21,7 +21,7 @@ extension GameState {
         for player in Player.allCases {
             guard let ps = players[player] else { continue }
             if !lines.isEmpty { lines.append("") }
-            lines.append(header(for: player, seat: ps.seat))
+            lines.append(header(for: player, 席風: ps.席風))
             appendPlayerFields(ps, into: &lines)
         }
 
@@ -36,8 +36,8 @@ extension GameState {
         return lines.joined(separator: "\n") + "\n"
     }
 
-    private func header(for player: Player, seat: Wind?) -> String {
-        if let seat { return "[\(player.rawValue)] seat=\(seat.rawValue)" }
+    private func header(for player: Player, 席風: Wind?) -> String {
+        if let seat = 席風 { return "[\(player.rawValue)] seat=\(seat.rawValue)" }
         return "[\(player.rawValue)]"
     }
 

@@ -11,10 +11,10 @@ struct 和了の文脈フラグの導出 {
             場風: .東, 局: 1, 本場: 0, 供託: 0,
             doraMarkers: [try Tile.parse("9s")], wall: wall,
             players: [
-                .自分: PlayerState(seat: .南, hand: try Tile.parseHand("123456789m11p55s"),
+                .自分: PlayerState(席風: .南, hand: try Tile.parseHand("123456789m11p55s"),
                                   draw: try draw.map { try Tile.parse($0) },
                                   riichi: false, score: 25000),
-                .下家: PlayerState(seat: .西),
+                .下家: PlayerState(席風: .西),
             ],
             claim: claim)
     }
@@ -96,10 +96,10 @@ struct 嶺上開花の導出 {
                 場風: .東, 局: 1, 本場: 0, 供託: 0,
                 doraMarkers: [try Tile.parse("9s")], wall: 40,
                 players: [
-                    .自分: PlayerState(seat: .南,
+                    .自分: PlayerState(席風: .南,
                                       hand: try Tile.parseHand("1111m234m567m99p5s"),
                                       riichi: false, score: 25000),
-                    .下家: PlayerState(seat: .西),
+                    .下家: PlayerState(席風: .西),
                 ]),
             events: [
                 .ツモ(of: .自分, 牌: try Tile.parse("5s")),

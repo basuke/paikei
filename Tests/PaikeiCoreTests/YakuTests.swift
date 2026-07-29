@@ -6,7 +6,7 @@ import Testing
     func best(
         _ concealed: String,
         melds: [Meld] = [],
-        seat: Wind = .東,
+        席風: Wind = .東,
         round: Wind = .東,
         winType: WinType = .ツモ,
         winTile: String? = nil,
@@ -19,7 +19,7 @@ import Testing
         let tiles = try Tile.parseHand(concealed)
         let wt = try Tile.parse(winTile ?? tiles[0].mpsz)
         let ctx = WinContext(
-            seatWind: seat, roundWind: round, winType: winType, winningTile: wt,
+            seatWind: 席風, roundWind: round, winType: winType, winningTile: wt,
             riichi: riichi, doubleRiichi: doubleRiichi, ippatsu: ippatsu,
             afterKan: afterKan, robbingKan: robbingKan)
         let evaluator = HandEvaluator(rules: .standard)
@@ -63,7 +63,7 @@ import Testing
 
     @Test("役牌: 場風と自風")
     func 役牌場風と自風() throws {
-        #expect(try best("111222z234m567p99s", seat: .南, round: .東).isSuperset(of: [.場風, .自風]))
+        #expect(try best("111222z234m567p99s", 席風: .南, round: .東).isSuperset(of: [.場風, .自風]))
     }
 
     @Test func 三色同順() throws {
@@ -94,7 +94,7 @@ import Testing
     }
 
     @Test func 混一色() throws {
-        #expect(try best("123456789m111z22z", seat: .西, round: .南).contains(.混一色))
+        #expect(try best("123456789m111z22z", 席風: .西, round: .南).contains(.混一色))
     }
 
     @Test func 清一色() throws {
