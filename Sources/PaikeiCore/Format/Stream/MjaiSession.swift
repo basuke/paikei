@@ -14,7 +14,9 @@ public enum MjaiMessage: Sendable, Equatable {
     case 局開始(GameState)
     /// 局の進行。
     case 進行(Event)
-    case 局終了
+    /// 局の終わり。**終わった局の記録を運ぶ**ので、そのまま `結末()` に掛けて
+    /// `Match` へ積める。`start_kyoku` を見ていなければ nil。
+    case 局終了(GameTimeline?)
     case 対局終了
     /// サーバ側のエラー通知。
     case エラー(String)
@@ -81,7 +83,14 @@ public struct MjaiSession: Sendable {
             state = try current.applying(event)
             timeline.events.append(event)
             self.timeline = timeline
-        case .局終了, .対局終了:
+        case .局終了:
+            // 終わった局の記録を呼び出し側へ渡す。捨ててしまうと Match に積めない。
+            defer {
+                timeline = nil
+                state = nil
+            }
+            return .局終了(timeline)
+        case .対局終了:
             timeline = nil
             state = nil
         case .挨拶, .エラー:
@@ -124,7 +133,8 @@ public struct MjaiSession: Sendable {
             guard let selfActor else { throw MjaiSessionError.自席未確定 }
             return .局開始(try MjaiKyoku.snapshot(from: fields, selfActor: selfActor))
         case "end_kyoku":
-            return .局終了
+            // 記録は decode では持てない。`receive` が終わった局を詰め直す。
+            return .局終了(nil)
         case "end_game":
             return .対局終了
         case "error":

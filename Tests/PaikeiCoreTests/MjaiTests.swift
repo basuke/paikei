@@ -66,12 +66,24 @@ struct MJAIプロトコルの対話 {
                 == #"{"type":"join","name":"Paikei","room":"default"}"#)
     }
 
-    @Test func 局終了でイベント列を捨てる() throws {
+    @Test("局終了は終わった局を渡してから進行中の記録を捨てる")
+    func 局終了で記録を渡す() throws {
         var session = try 対局開始まで()
-        #expect(session.timeline != nil)
-        #expect(try session.receive(#"{"type":"end_kyoku"}"#) == .局終了)
+        let 進行中 = try #require(session.timeline)
+
+        guard case let .局終了(終わった局) = try session.receive(#"{"type":"end_kyoku"}"#) else {
+            Issue.record("局終了になるはず"); return
+        }
+        // 捨てずに渡す。これが無いと Match に積めない。
+        #expect(終わった局 == 進行中)
         #expect(session.timeline == nil)
         #expect(session.state == nil)
+    }
+
+    @Test("start_kyoku を見ていなければ局終了は空を渡す")
+    func 局外の局終了() throws {
+        var session = MjaiSession(selfActor: 0)
+        #expect(try session.receive(#"{"type":"end_kyoku"}"#) == .局終了(nil))
     }
 
     // MARK: - 配牌 → 初期局面
