@@ -91,10 +91,10 @@ public struct Match: Sendable, Equatable {
         func matches<T: Equatable>(_ given: T?, _ expected: T) -> Bool {
             given.map { $0 == expected } ?? true
         }
-        guard matches(snapshot.bakaze, state.bakaze),
+        guard matches(snapshot.場風, state.場風),
               matches(snapshot.kyoku, state.kyoku),
               matches(snapshot.honba, state.honba) else {
-            throw MatchError.局の不一致(場風: snapshot.bakaze, 局: snapshot.kyoku,
+            throw MatchError.局の不一致(場風: snapshot.場風, 局: snapshot.kyoku,
                                     本場: snapshot.honba)
         }
     }

@@ -35,7 +35,7 @@ public struct ClaimTile: Sendable, Equatable {
 /// 卓全体の状態（仕様§3）。スナップショット1枚に対応する。
 public struct GameState: Sendable, Equatable {
     /// 場風。nil は不明。
-    public var bakaze: Wind?
+    public var 場風: Wind?
     /// 局数（1〜4）。nil は不明。
     public var kyoku: Int?
     /// 本場。nil は不明。
@@ -54,7 +54,7 @@ public struct GameState: Sendable, Equatable {
     public var claim: ClaimTile?
 
     public init(
-        bakaze: Wind? = nil,
+        場風: Wind? = nil,
         kyoku: Int? = nil,
         honba: Int? = nil,
         kyotaku: Int? = nil,
@@ -64,7 +64,7 @@ public struct GameState: Sendable, Equatable {
         players: [Player: PlayerState] = [:],
         claim: ClaimTile? = nil
     ) {
-        self.bakaze = bakaze
+        self.場風 = 場風
         self.kyoku = kyoku
         self.honba = honba
         self.kyotaku = kyotaku

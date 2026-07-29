@@ -45,7 +45,7 @@ enum MjaiKyoku {
         }
 
         return GameState(
-            bakaze: bakaze, kyoku: try int("kyoku"), honba: try int("honba"),
+            場風: bakaze, kyoku: try int("kyoku"), honba: try int("honba"),
             kyotaku: try int("kyotaku"), doraMarkers: markers, wall: GameState.wallAfterDeal,
             players: players)
     }

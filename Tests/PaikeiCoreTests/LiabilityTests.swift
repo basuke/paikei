@@ -10,7 +10,7 @@ struct 包の判定 {
               draw: String? = nil, claim: ClaimTile? = nil,
               rules: RuleSet = .standard) throws -> (GameState, RuleSet) {
         let state = GameState(
-            bakaze: .東, kyoku: 1, honba: 0, kyotaku: 0,
+            場風: .東, kyoku: 1, honba: 0, kyotaku: 0,
             doraMarkers: [try Tile.parse("3p")], wall: 40,
             players: [
                 .自分: PlayerState(seat: .南, hand: try Tile.parseHand(hand),
@@ -75,7 +75,7 @@ struct 包の判定 {
 
     @Test func 大四喜でも付く() throws {
         let state = GameState(
-            bakaze: .東, kyoku: 1, honba: 0, kyotaku: 0, wall: 40,
+            場風: .東, kyoku: 1, honba: 0, kyotaku: 0, wall: 40,
             players: [
                 .自分: PlayerState(
                     seat: .南, hand: try Tile.parseHand("5p"), draw: try Tile.parse("5p"),
@@ -128,7 +128,7 @@ struct 包の判定 {
     /// 1m を鳴かせて大明槓し、嶺上牌 8s で和了る。
     func 大明槓の局面() throws -> GameState {
         GameState(
-            bakaze: .東, kyoku: 1, honba: 0, kyotaku: 0, wall: 40,
+            場風: .東, kyoku: 1, honba: 0, kyotaku: 0, wall: 40,
             players: [
                 .自分: PlayerState(
                     seat: .南, hand: try Tile.parseHand("234p567p234s8s"),

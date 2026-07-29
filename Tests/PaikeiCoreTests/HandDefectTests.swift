@@ -73,7 +73,7 @@ struct 多牌少牌 {
     func 多牌少牌は和了放棄() throws {
         // 14枚の和了形に1枚足した15枚。形としては和了しているが多牌。
         let state = GameState(
-            bakaze: .東, honba: 0, kyotaku: 0,
+            場風: .東, honba: 0, kyotaku: 0,
             players: [.自分: PlayerState(
                 seat: .西,
                 hand: try Tile.parseHand("234567m234p456s99p1z"),

@@ -7,7 +7,7 @@ extension GameState {
         var lines: [String] = []
 
         // 卓全体フィールド（§3.1）
-        if let bakaze { lines.append("bakaze: \(bakaze.rawValue)") }
+        if let bakaze = 場風 { lines.append("bakaze: \(bakaze.rawValue)") }
         if let kyoku { lines.append("kyoku: \(kyoku)") }
         if let honba { lines.append("honba: \(honba)") }
         if let kyotaku { lines.append("kyotaku: \(kyotaku)") }

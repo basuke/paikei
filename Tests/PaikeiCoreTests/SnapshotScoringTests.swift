@@ -4,13 +4,13 @@ import Testing
 @Suite struct スナップショットからの点数解析 {
     /// 平和形（234567m 234p 45s + 99p雀頭）で 6s の両面待ちテンパイの局面を組み立てる。
     func state(
-        bakaze: Wind? = .東, honba: Int? = 1, kyotaku: Int? = 1,
+        場風: Wind? = .東, honba: Int? = 1, kyotaku: Int? = 1,
         dora: [Tile] = [], seat: Wind? = .西, riichi: Bool? = false,
         hand: String = "234567m234p45s99p", melds: [Meld] = [],
         draw: Tile? = nil, claim: ClaimTile? = nil
     ) throws -> GameState {
         GameState(
-            bakaze: bakaze, kyoku: 1, honba: honba, kyotaku: kyotaku,
+            場風: 場風, kyoku: 1, honba: honba, kyotaku: kyotaku,
             doraMarkers: dora,
             players: [.自分: PlayerState(
                 seat: seat, hand: try Tile.parseHand(hand), draw: draw,
@@ -77,7 +77,7 @@ import Testing
 
     @Test("立直・ドラ・本場・供託の不明は仮定して答える（答えが低めに出るだけ）")
     func 立直ドラ本場供託の不明は仮定して答える() throws {
-        let s = try state(bakaze: nil, honba: nil, kyotaku: nil, seat: nil, riichi: nil)
+        let s = try state(場風: nil, honba: nil, kyotaku: nil, seat: nil, riichi: nil)
         let (score, _, assumptions) = try scored(
             try s.score(winningTile: try Tile.parse("6s"), winType: .ロン))
 
@@ -164,8 +164,8 @@ import Testing
     // MARK: - 風が答えを変えるときは断る
 
     /// 1z（東）の刻子で和了する手。場風・自風の役牌が付くかどうかが風で決まる。
-    func windTripletState(bakaze: Wind? = nil, seat: Wind? = nil) throws -> GameState {
-        try state(bakaze: bakaze, honba: 0, kyotaku: 0, seat: seat,
+    func windTripletState(場風: Wind? = nil, seat: Wind? = nil) throws -> GameState {
+        try state(場風: 場風, honba: 0, kyotaku: 0, seat: seat,
                   hand: "234m567p234s99p11z")
     }
 
@@ -182,7 +182,7 @@ import Testing
         #expect(try noBakaze.score(winningTile: try Tile.parse("1z"), winType: .ロン)
                 == .情報不足([.場風]))
 
-        let noSeat = try windTripletState(bakaze: .南)
+        let noSeat = try windTripletState(場風: .南)
         #expect(try noSeat.score(winningTile: try Tile.parse("1z"), winType: .ロン)
                 == .情報不足([.席風(.自分)]))
     }
@@ -190,11 +190,11 @@ import Testing
     @Test("風を与えれば答えが出る。与える値で結果が変わることも確認")
     func 風を与えれば答えが出る() throws {
         // 東場・東家以外 → 1z は役牌でないので役なし。
-        #expect(try windTripletState(bakaze: .南, seat: .西)
+        #expect(try windTripletState(場風: .南, seat: .西)
             .score(winningTile: try Tile.parse("1z"), winType: .ロン) == .和了できない(.役なし))
 
         // 東場 → 1z が場風になる。
-        let (score, yaku, _) = try scored(try windTripletState(bakaze: .東, seat: .南)
+        let (score, yaku, _) = try scored(try windTripletState(場風: .東, seat: .南)
             .score(winningTile: try Tile.parse("1z"), winType: .ロン))
         #expect(yaku == [.場風])
         #expect(score.payment == .ロン(1300))  // 子の1翻40符
@@ -203,7 +203,7 @@ import Testing
     @Test("風牌だらけでも答えが変わらないなら答える（国士無双）")
     func 風牌だらけでも答えが変わらないなら答える() throws {
         let s = GameState(
-            bakaze: nil, kyoku: nil, honba: 0, kyotaku: 0,
+            場風: nil, kyoku: nil, honba: 0, kyotaku: 0,
             players: [.自分: PlayerState(
                 seat: nil, hand: try Tile.parseHand("19m19p19s1234567z"), riichi: false)],
             claim: ClaimTile(tile: try Tile.parse("1z"), from: .対面))
@@ -271,7 +271,7 @@ import Testing
     @Test func 形は和了でも役がなければ和了できない() throws {
         // 喰いタンなしルールでの鳴き断么九。ドラがあっても役にはならない。
         let s = GameState(
-            bakaze: .東, honba: 0, kyotaku: 0,
+            場風: .東, honba: 0, kyotaku: 0,
             doraMarkers: [try Tile.parse("4p")],
             players: [.自分: PlayerState(
                 seat: .西, hand: try Tile.parseHand("345m678p456s55p"),

@@ -6,7 +6,7 @@ struct 応答の選択肢 {
     /// 東場・自分は南家。他家の手牌は不明。
     func state(hand: String, riichi: Bool? = false) throws -> GameState {
         GameState(
-            bakaze: .東, kyoku: 1, honba: 0, kyotaku: 0, wall: 40,
+            場風: .東, kyoku: 1, honba: 0, kyotaku: 0, wall: 40,
             players: [
                 .自分: PlayerState(seat: .南, hand: try Tile.parseHand(hand), riichi: riichi),
                 .上家: PlayerState(),
@@ -120,7 +120,7 @@ struct 応答の選択肢 {
 
     @Test func 風が不明で役が決まらなければロンは候補に入らない() throws {
         var s = try state(hand: 待ち用)
-        s.bakaze = nil
+        s.場風 = nil
         s.players[.自分]?.seat = nil
         s.claim = ClaimTile(tile: try Tile.parse("1z"), from: .対面)
         // 東場か東家なら役牌だが、そうでなければ役なし。証明できないので入れない。

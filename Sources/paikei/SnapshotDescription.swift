@@ -16,7 +16,7 @@ enum SnapshotDescription {
     }
 
     private static func header(_ state: GameState) -> String {
-        let ba = state.bakaze.map(bakazeName) ?? "?"
+        let ba = state.場風.map(bakazeName) ?? "?"
         let kyoku = state.kyoku.map(String.init) ?? "?"
         var parts = ["\(ba)\(kyoku)局"]
         if let honba = state.honba, honba > 0 { parts.append("\(honba)本場") }

@@ -41,7 +41,7 @@ struct フォーマットの表記トークン {
     @Test("卓全体のキーが仕様の綴りで読める")
     func 卓全体のキー() throws {
         let state = try SnapshotParser.parse(全キーの局面)
-        #expect(state.bakaze == .南)
+        #expect(state.場風 == .南)
         #expect(state.kyoku == 3)
         #expect(state.honba == 2)
         #expect(state.kyotaku == 1)

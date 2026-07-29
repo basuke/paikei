@@ -5,10 +5,10 @@ import Testing
 @Suite("局の連鎖 (MatchState)")
 struct 局の連鎖 {
     /// 東1局、自分が親。持ち点は全員25000。
-    func state(bakaze: Wind = .東, kyoku: Int = 1, honba: Int = 0, kyotaku: Int = 0,
+    func state(場風: Wind = .東, kyoku: Int = 1, honba: Int = 0, kyotaku: Int = 0,
                dealer: Player = .自分) -> MatchState {
         MatchState(
-            bakaze: bakaze, kyoku: kyoku, honba: honba, kyotaku: kyotaku,
+            場風: 場風, kyoku: kyoku, honba: honba, kyotaku: kyotaku,
             scores: Dictionary(uniqueKeysWithValues: Player.allCases.map { ($0, 25000) }),
             dealer: dealer)
     }
@@ -51,7 +51,7 @@ struct 局の連鎖 {
     @Test("初期局面の骨格は仮定を必要としない")
     func 初期局面の骨格() {
         let snapshot = state(honba: 2, kyotaku: 1).snapshot()
-        #expect(snapshot.bakaze == .東)
+        #expect(snapshot.場風 == .東)
         #expect(snapshot.honba == 2)
         #expect(snapshot.kyotaku == 1)
         #expect(snapshot.wall == 70)
@@ -102,7 +102,7 @@ struct 局の連鎖 {
         let s = state(kyoku: 4, dealer: .上家)
         let next = try 続行(s.applying(
             .和了(of: .自分, from: .上家, 子のロン満貫()), at: end(s)))
-        #expect(next.bakaze == .南)
+        #expect(next.場風 == .南)
         #expect(next.kyoku == 1)
         #expect(next.dealer == .自分)
     }
@@ -238,7 +238,7 @@ struct 対局 {
                      放銃: match.state.dealer.seated(.対面))
             #expect(!match.終局済みか)
         }
-        #expect(match.state.bakaze == .東)
+        #expect(match.state.場風 == .東)
         #expect(match.state.kyoku == 4)
 
         try 進める(&match, 和了: match.state.dealer.seated(.下家),
@@ -254,7 +254,7 @@ struct 対局 {
                      放銃: match.state.dealer.seated(.対面))
             #expect(!match.終局済みか)
         }
-        #expect(match.state.bakaze == .南)
+        #expect(match.state.場風 == .南)
         #expect(match.state.kyoku == 4)
 
         try 進める(&match, 和了: match.state.dealer.seated(.下家),
@@ -295,7 +295,7 @@ struct 対局 {
         try match.finish(timeline, result: .和了(of: .下家, from: .対面, 役満))
         #expect(match.state.scores[.対面] == -7000)
         #expect(match.終局済みか)
-        #expect(match.state.bakaze == .東)  // 場風は最後の局のまま
+        #expect(match.state.場風 == .東)  // 場風は最後の局のまま
     }
 
     @Test func トビを無効にすれば続行する() throws {
@@ -417,7 +417,7 @@ struct 点数の保存則 {
             回数 += 1
         }
         #expect(match.終局済みか)
-        #expect(match.state.bakaze == .南)
+        #expect(match.state.場風 == .南)
         // 局数ぶんの記録が残っている。
         #expect(match.records.count == 回数)
     }

@@ -229,7 +229,7 @@ extension GameState {
             for: player, concealed: concealed, melds: ps.melds, rules: rules, context: context)
         guard missingWinds.isEmpty else { return .情報不足(missingWinds) }
 
-        let roundWind = bakaze ?? .東
+        let roundWind = 場風 ?? .東
         // 役・符は風によらないと確かめた上での仮定。残るのは親子（＝支払い）だけ。
         let seatWind = ps.seat ?? .南
         if ps.seat == nil { assumptions.insert(.席風不明(仮定: .南), at: 0) }
@@ -300,7 +300,7 @@ extension GameState {
                 .map { Outcome(yaku: Set($0.yaku), fu: $0.fu) }
         }
 
-        let rounds = bakaze.map { [$0] } ?? Wind.allCases
+        let rounds = 場風.map { [$0] } ?? Wind.allCases
         let seats = players[player]?.seat.map { [$0] } ?? Wind.allCases
 
         // 片方を固定したときに、もう片方を動かして結果が変わるか。

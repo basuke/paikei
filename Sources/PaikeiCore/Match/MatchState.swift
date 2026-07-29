@@ -3,7 +3,7 @@
 /// `Player` はカメラ相対の物理位置なので局をまたいでも変わらない。回るのは席風
 /// （`seat(of:)`）と親だけ、というのがこの型の要。
 public struct MatchState: Sendable, Equatable {
-    public var bakaze: Wind
+    public var 場風: Wind
     /// 局数（1〜4）。
     public var kyoku: Int
     public var honba: Int
@@ -15,10 +15,10 @@ public struct MatchState: Sendable, Equatable {
     public var dealer: Player
 
     public init(
-        bakaze: Wind = .東, kyoku: Int = 1, honba: Int = 0, kyotaku: Int = 0,
+        場風: Wind = .東, kyoku: Int = 1, honba: Int = 0, kyotaku: Int = 0,
         scores: [Player: Int], dealer: Player
     ) {
-        self.bakaze = bakaze
+        self.場風 = 場風
         self.kyoku = kyoku
         self.honba = honba
         self.kyotaku = kyotaku
@@ -45,7 +45,7 @@ extension MatchState {
     /// 配牌直後なので山は満杯、立直も全員していないと言い切れる。
     public func snapshot() -> GameState {
         GameState(
-            bakaze: bakaze, kyoku: kyoku, honba: honba, kyotaku: kyotaku,
+            場風: 場風, kyoku: kyoku, honba: honba, kyotaku: kyotaku,
             wall: GameState.wallAfterDeal,
             players: Dictionary(uniqueKeysWithValues: Player.allCases.map { player in
                 (player, PlayerState(seat: seat(of: player), riichi: false,
@@ -55,7 +55,7 @@ extension MatchState {
 
     /// この局が規定の最終局（オーラス）か。
     public func オーラスか(rules: RuleSet) -> Bool {
-        bakaze == rules.length.lastBakaze && kyoku == 4
+        場風 == rules.length.lastBakaze && kyoku == 4
     }
 
     /// 局の結末を適用して次の状況を返す。
@@ -122,7 +122,7 @@ extension MatchState {
         kyoku += 1
         if kyoku > 4 {
             kyoku = 1
-            bakaze = Wind.allCases[(bakaze.order % Wind.allCases.count)]
+            場風 = Wind.allCases[(場風.order % Wind.allCases.count)]
         }
     }
 }

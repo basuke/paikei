@@ -8,7 +8,7 @@ struct 流し満貫の判定 {
     func state(seat: Wind = .南, 自分の河: String, 他家の副露: [String] = [],
                honba: Int = 0) throws -> GameState {
         GameState(
-            bakaze: .東, kyoku: 1, honba: honba, kyotaku: 1, wall: 0,
+            場風: .東, kyoku: 1, honba: honba, kyotaku: 1, wall: 0,
             players: [
                 .自分: PlayerState(seat: seat,
                                   river: try river(自分の河), score: 25000),

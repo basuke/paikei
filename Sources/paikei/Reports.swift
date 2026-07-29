@@ -176,7 +176,7 @@ enum ScoreReport {
         bakaze: Wind? = nil, seat: Wind? = nil
     ) throws -> String {
         var timeline = timeline
-        if let bakaze { timeline.snapshot.bakaze = bakaze }
+        if let bakaze { timeline.snapshot.場風 = bakaze }
         if let seat { timeline.snapshot.players[player, default: PlayerState()].seat = seat }
         if options.doubleRiichi {
             timeline.snapshot.players[player, default: PlayerState()].riichi = true
@@ -193,7 +193,7 @@ enum ScoreReport {
         bakaze: Wind? = nil, seat: Wind? = nil
     ) throws -> String {
         var state = state
-        if let bakaze { state.bakaze = bakaze }
+        if let bakaze { state.場風 = bakaze }
         if let seat { state.players[player, default: PlayerState()].seat = seat }
         if options.doubleRiichi { state.players[player, default: PlayerState()].riichi = true }
 

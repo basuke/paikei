@@ -19,13 +19,13 @@ struct スナップショットパース {
         let me = try #require(state.players[.自分])
         #expect(me.hand?.count == 13)
         #expect(me.draw == Tile(suit: .索子, rank: 5))
-        #expect(state.bakaze == nil)  // 未記述 = 不明
+        #expect(state.場風 == nil)  // 未記述 = 不明
     }
 
     @Test("全景: 卓フィールドと4プレイヤー")
     func 全景卓フィールドと4プレイヤー() throws {
         let state = try SnapshotParser.parse(loadFixture("east2-1"))
-        #expect(state.bakaze == .東)
+        #expect(state.場風 == .東)
         #expect(state.kyoku == 2)
         #expect(state.honba == 1)
         #expect(state.kyotaku == 1)
@@ -117,7 +117,7 @@ struct スナップショットパースのエラー {
 
         kyoku: 1
         """)
-        #expect(state.bakaze == .東)
+        #expect(state.場風 == .東)
         #expect(state.kyoku == 1)
     }
 }
