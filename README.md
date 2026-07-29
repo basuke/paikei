@@ -160,7 +160,7 @@ Sources/PaikeiCore/
   Agari/     面子分解・役・平和・和了形の読み
   Scoring/   符・点数・ドラ・応答の選択肢
   Safety/    論理捨て牌履歴・フリテン・安牌・見えている牌
-  Format/    .paikei の入出力（Format/Stream/ はイベント列と MJAI 方言）
+  Format/    .paikei の入出力（Notation/ は副露と河の表記、Stream/ はイベント列と MJAI 方言）
   Bot/       局面から手を決める打ち手
   Match/     局の連鎖（半荘・東風戦）
 Sources/paikei/   CLI（1発実行・REPL・MJAI bot）
