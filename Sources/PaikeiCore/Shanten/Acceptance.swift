@@ -9,7 +9,7 @@ public struct UkeireTile: Sendable, Equatable {
 /// ある手牌の受け入れ（シャンテンを進める牌の集合）。
 public struct Ukeire: Sendable, Equatable {
     /// 現在のシャンテン数。
-    public let shanten: Int
+    public let シャンテン: Int
     /// 進む牌の種類（インデックス昇順）。
     public let tiles: [UkeireTile]
 
@@ -22,16 +22,16 @@ public struct DiscardOption: Sendable, Equatable {
     /// 捨てる牌（代表牌）。
     public let discard: Tile
     /// 捨てた後の手牌の受け入れ。
-    public let ukeire: Ukeire
+    public let 受け入れ: Ukeire
 }
 
 /// 受け入れ・待ち・何切るの計算（仕様フェーズ3、図解§6）。
 public enum Acceptance {
     /// 13枚形（`13 − 3×副露`）の受け入れを求める。
     ///
-    /// テンパイ（shanten == 0）の場合は待ち牌（和了牌）になる。
+    /// テンパイ（シャンテン == 0）の場合は待ち牌（和了牌）になる。
     /// `visible` は自分の手牌以外で既に見えている牌（河・ドラ表示・副露など）。残り枚数から差し引く。
-    public static func ukeire(hand: [Tile], melds: Int = 0, visible: [Tile] = []) -> Ukeire {
+    public static func 受け入れ(hand: [Tile], melds: Int = 0, visible: [Tile] = []) -> Ukeire {
         let base = Shanten.value(hand, melds: melds)
         let seen = HandCounts(hand + visible).counts
 
@@ -43,7 +43,7 @@ public enum Acceptance {
                 advancing.append(UkeireTile(tile: tile, remaining: remaining))
             }
         }
-        return Ukeire(shanten: base, tiles: advancing)
+        return Ukeire(シャンテン: base, tiles: advancing)
     }
 
     /// 14枚形（`13 − 3×副露 + 1`）の全打牌候補を、良い順に返す。
@@ -56,15 +56,15 @@ public enum Acceptance {
         for index in presentIndices {
             let discard = HandCounts.tile(at: index)
             let reduced = removeOne(discard, from: hand)
-            let uke = ukeire(hand: reduced, melds: melds, visible: visible + [discard])
-            options.append(DiscardOption(discard: discard, ukeire: uke))
+            let uke = 受け入れ(hand: reduced, melds: melds, visible: visible + [discard])
+            options.append(DiscardOption(discard: discard, 受け入れ: uke))
         }
 
         return options.sorted { lhs, rhs in
-            if lhs.ukeire.shanten != rhs.ukeire.shanten {
-                return lhs.ukeire.shanten < rhs.ukeire.shanten
+            if lhs.受け入れ.シャンテン != rhs.受け入れ.シャンテン {
+                return lhs.受け入れ.シャンテン < rhs.受け入れ.シャンテン
             }
-            return lhs.ukeire.total > rhs.ukeire.total
+            return lhs.受け入れ.total > rhs.受け入れ.total
         }
     }
 

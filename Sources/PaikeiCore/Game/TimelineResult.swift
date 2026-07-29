@@ -129,6 +129,6 @@ extension GameTimeline {
             return Shanten.value(hand, melds: melds) == 0
         }
         return Acceptance.discards(hand: hand, melds: melds)
-            .contains { $0.ukeire.shanten == 0 }
+            .contains { $0.受け入れ.シャンテン == 0 }
     }
 }

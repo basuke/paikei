@@ -1,19 +1,19 @@
 import Testing
 @testable import PaikeiCore
 
-@Suite("受け入れ (ukeire)")
+@Suite("受け入れ (受け入れ)")
 struct 受け入れ {
     // 123456789m + 1123p: 3順子 + 11p雀頭 + 23p搭子 → 1p/4p待ち
     @Test func テンパイの待ち牌と枚数() throws {
-        let uke = Acceptance.ukeire(hand: try Tile.parseHand("123456789m1123p"))
-        #expect(uke.shanten == 0)
+        let uke = Acceptance.受け入れ(hand: try Tile.parseHand("123456789m1123p"))
+        #expect(uke.シャンテン == 0)
         #expect(uke.tiles.map(\.tile) == [Tile(suit: .筒子, rank: 1)!, Tile(suit: .筒子, rank: 4)!])
         // 1p は手に2枚 → 残り2、4p は0枚 → 残り4
         #expect(uke.total == 6)
     }
 
     @Test func 可視牌は残り枚数から差し引かれる() throws {
-        let uke = Acceptance.ukeire(
+        let uke = Acceptance.受け入れ(
             hand: try Tile.parseHand("123456789m1123p"),
             visible: try Tile.parseHand("44p")  // 4p が2枚見えている
         )
@@ -24,12 +24,12 @@ struct 受け入れ {
     @Test("暗槓ありの待ち（槓の4枚は可視牌として引かれる）")
     func 暗槓ありの待ち() throws {
         // 暗槓1111m + 234567p 77z 99s → 7z/9s のシャンポン待ち。
-        let uke = Acceptance.ukeire(
+        let uke = Acceptance.受け入れ(
             hand: try Tile.parseHand("234567p77z99s"),
             melds: 1,
             visible: try Tile.parseHand("1111m")  // 暗槓の4枚
         )
-        #expect(uke.shanten == 0)
+        #expect(uke.シャンテン == 0)
         #expect(uke.tiles.map(\.tile) == [Tile(suit: .索子, rank: 9)!, Tile(suit: .字牌, rank: 7)!])
         #expect(uke.total == 4)  // 7z:2 + 9s:2
     }
@@ -37,8 +37,8 @@ struct 受け入れ {
     @Test("1シャンテンの受け入れ")
     func _1シャンテンの受け入れ() throws {
         // 123456789m + 2358p は 1シャンテン
-        let uke = Acceptance.ukeire(hand: try Tile.parseHand("123456789m2358p"))
-        #expect(uke.shanten == 1)
+        let uke = Acceptance.受け入れ(hand: try Tile.parseHand("123456789m2358p"))
+        #expect(uke.シャンテン == 1)
         #expect(uke.total > 0)
     }
 }
@@ -50,8 +50,8 @@ struct 何切る {
         let options = Acceptance.discards(hand: try Tile.parseHand("123456789m1123p4s"))
         let best = try #require(options.first)
         #expect(best.discard == Tile(suit: .索子, rank: 4))
-        #expect(best.ukeire.shanten == 0)
-        #expect(best.ukeire.total == 6)
+        #expect(best.受け入れ.シャンテン == 0)
+        #expect(best.受け入れ.total == 6)
     }
 
     @Test func 全打牌候補が列挙される() throws {

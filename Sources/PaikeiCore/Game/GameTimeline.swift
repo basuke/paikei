@@ -85,8 +85,8 @@ extension GameTimeline {
     func 同巡内で見逃した待ち(of player: Player, at count: Int, in current: GameState) -> [Tile] {
         guard let ps = current.players[player], let hand = ps.hand,
               hand.count == 13 - 3 * ps.melds.count else { return [] }
-        let ukeire = Acceptance.ukeire(hand: hand, melds: ps.melds.count)
-        guard ukeire.shanten == 0 else { return [] }
+        let ukeire = Acceptance.受け入れ(hand: hand, melds: ps.melds.count)
+        guard ukeire.シャンテン == 0 else { return [] }
 
         let waits = Set(ukeire.tiles.map(\.tile))
         let window = events[..<count].indices.last {

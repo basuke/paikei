@@ -27,7 +27,7 @@ enum ShantenReport {
 
         let target = 13 - 3 * melds
         if tiles.count == target {
-            return ukeireText(Acceptance.ukeire(hand: tiles, melds: melds, visible: visible))
+            return ukeireText(Acceptance.受け入れ(hand: tiles, melds: melds, visible: visible))
         }
         if Shanten.value(tiles, melds: melds) <= -1 { return "和了（ツモ和了可能）" }
         let options = Acceptance.discards(hand: tiles, melds: melds, visible: visible)
@@ -35,16 +35,16 @@ enum ShantenReport {
     }
 
     private static func ukeireText(_ uke: Ukeire) -> String {
-        if uke.shanten <= -1 { return "和了" }
-        let noun = uke.shanten == 0 ? "待ち" : "受け入れ"
-        return "\(label(uke.shanten))\n\(noun): \(tiles(uke))"
+        if uke.シャンテン <= -1 { return "和了" }
+        let noun = uke.シャンテン == 0 ? "待ち" : "受け入れ"
+        return "\(label(uke.シャンテン))\n\(noun): \(tiles(uke))"
     }
 
     private static func discardsText(_ options: [DiscardOption], limit: Int) -> String {
         var lines = ["何切る:"]
         for option in options.prefix(limit) {
             lines.append("  打 \(TileFormatter.tile(option.discard)) → "
-                + "\(label(option.ukeire.shanten)) 受け入れ \(tiles(option.ukeire))")
+                + "\(label(option.受け入れ.シャンテン)) 受け入れ \(tiles(option.受け入れ))")
         }
         return lines.joined(separator: "\n")
     }

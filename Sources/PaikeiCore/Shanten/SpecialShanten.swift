@@ -1,6 +1,6 @@
 /// 七対子のシャンテン数（門前限定）。
 ///
-/// `shanten = 6 − 対子数 + max(0, 7 − 牌種類数)`。
+/// `シャンテン = 6 − 対子数 + max(0, 7 − 牌種類数)`。
 /// 種類が7未満だと残りを対子にできない分のペナルティが乗る。
 enum SevenPairsShanten {
     static func calculate(_ counts: [Int]) -> Int {
@@ -16,7 +16,7 @@ enum SevenPairsShanten {
 
 /// 国士無双のシャンテン数（門前限定）。
 ///
-/// `shanten = 13 − 么九牌の種類数 − (么九に対子が1つでもあれば 1)`。
+/// `シャンテン = 13 − 么九牌の種類数 − (么九に対子が1つでもあれば 1)`。
 enum ThirteenOrphansShanten {
     static func calculate(_ counts: [Int]) -> Int {
         var kinds = 0

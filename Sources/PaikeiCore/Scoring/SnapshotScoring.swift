@@ -212,8 +212,8 @@ extension GameState {
             if let index = thirteen.firstIndex(where: { $0.normalized == winningTile.normalized }) {
                 thirteen.remove(at: index)
             }
-            let ukeire = Acceptance.ukeire(hand: thirteen, melds: ps.melds.count)
-            if ukeire.shanten == 0 {
+            let ukeire = Acceptance.受け入れ(hand: thirteen, melds: ps.melds.count)
+            if ukeire.シャンテン == 0 {
                 let waits = ukeire.tiles.map(\.tile)
                 if waits.contains(winningTile.normalized) {
                     let discarded = Set(logicalDiscards(of: player).map(\.normalized))

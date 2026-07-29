@@ -26,8 +26,8 @@ extension GameState {
         if let defect = ps.handDefect { return .枚数異常(defect) }
         guard hand.count == 13 - 3 * ps.melds.count else { return nil }
 
-        let ukeire = Acceptance.ukeire(hand: hand, melds: ps.melds.count)
-        guard ukeire.shanten == 0 else { return .テンパイなし(シャンテン: ukeire.shanten) }
+        let ukeire = Acceptance.受け入れ(hand: hand, melds: ps.melds.count)
+        guard ukeire.シャンテン == 0 else { return .テンパイなし(シャンテン: ukeire.シャンテン) }
 
         let waits = ukeire.tiles.map(\.tile)
         let discarded = Set(logicalDiscards(of: player).map(\.normalized))
