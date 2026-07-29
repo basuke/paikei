@@ -42,9 +42,9 @@ public enum Payment: Sendable, Equatable {
 /// 和了の点数（仕様フェーズ4）。
 public struct Score: Sendable, Equatable {
     /// 翻数（役の翻 + ドラ）。役満では役満役の合計翻（13×複合数）。
-    public let han: Int
+    public let 翻: Int
     /// 符。満貫以上や役満では点数に影響しない。
-    public let fu: Int
+    public let 符: Int
     /// 満貫以上の区分。満貫未満なら nil。
     public let limit: LimitRank?
     /// ドラの内訳。
@@ -91,7 +91,7 @@ public struct ScoreCalculator: Sendable {
         let isDealer = evaluation.hand.context.seatWind == .東
 
         return Score(
-            han: han, fu: fu,
+            翻: han, 符: fu,
             limit: limitRank(han: han, fu: fu, yakumanCount: yakumanCount),
             ドラ: dora,
             payment: payment(base: base, isDealer: isDealer,

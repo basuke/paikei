@@ -162,7 +162,7 @@ struct 人和 {
         #expect(yaku.contains(.人和(.満貫)))
         // 人和5翻 + 七対子2翻 = 7翻で跳満。
         #expect(yaku.contains(.七対子))
-        #expect(score.han == 7)
+        #expect(score.翻 == 7)
         #expect(score.limit == .跳満)
     }
 

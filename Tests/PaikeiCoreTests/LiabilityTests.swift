@@ -32,7 +32,7 @@ struct 包の判定 {
                                        winType: winType, rules: rules)
         guard case let .点数(score, yaku, _) = analysis else {
             Issue.record("点数が出るはず: \(analysis)")
-            return Score(han: 0, fu: 0, limit: nil, ドラ: DoraCount(),
+            return Score(翻: 0, 符: 0, limit: nil, ドラ: DoraCount(),
                          payment: .ロン(0), liable: nil, 本場: 0, 供託: 0)
         }
         #expect(yaku.contains(.大三元))

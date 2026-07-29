@@ -127,8 +127,8 @@ struct 本場供託と切り上げ満貫 {
     @Test("子の平和ドラ3ロンは 7700、切り上げ満貫ありなら 8000")
     func 平和ドラ3ロンと切り上げ満貫() throws {
         let off = try pinfuDora3(RuleSet(roundUpMangan: false))
-        #expect(off.han == 4)          // 平和1 + ドラ3
-        #expect(off.fu == 30)          // 平和ロンは30符
+        #expect(off.翻 == 4)          // 平和1 + ドラ3
+        #expect(off.符 == 30)          // 平和ロンは30符
         #expect(off.ドラ.表 == 3)
         #expect(off.payment == .ロン(7700))
         #expect(off.limit == nil)
@@ -141,8 +141,8 @@ struct 本場供託と切り上げ満貫 {
     @Test func 平和ツモは20符なので切り上げ満貫の対象外() throws {
         // 平和ツモは 平和1 + 門前ツモ1 + ドラ3 = 5翻で、そもそも満貫。
         let tsumo = try pinfuDora3(RuleSet(roundUpMangan: true), winType: .ツモ)
-        #expect(tsumo.han == 5)
-        #expect(tsumo.fu == 20)
+        #expect(tsumo.翻 == 5)
+        #expect(tsumo.符 == 20)
         #expect(tsumo.limit == .満貫)
         // 20符4翻（門前ツモが付かない形）は切り上げの対象にならない。
         let calc = ScoreCalculator(rules: RuleSet(roundUpMangan: true))
@@ -230,8 +230,8 @@ struct 本場供託と切り上げ満貫 {
                              winningTile: try Tile.parse("6s"), 立直: true)
         let score = try #require(try ScoreCalculator().score(
             concealed: try Tile.parseHand("234567m234p456s99p"), melds: [], context: ctx))
-        #expect(score.han == 3)  // 立直 + 平和 + 門前ツモ
-        #expect(score.fu == 20)
+        #expect(score.翻 == 3)  // 立直 + 平和 + 門前ツモ
+        #expect(score.符 == 20)
         #expect(score.payment == .ツモ(親: 1300, 子: 700))
         #expect(score.total == 2700)
         #expect(score.limit == nil)
@@ -247,7 +247,7 @@ struct 本場供託と切り上げ満貫 {
             concealed: try Tile.parseHand("234567m234p456s99p"), melds: [], context: base))
         let dora = try #require(try ScoreCalculator().score(
             concealed: try Tile.parseHand("234567m234p456s99p"), melds: [], context: withDora))
-        #expect(dora.han == plain.han + 1)
+        #expect(dora.翻 == plain.翻 + 1)
         #expect(dora.ドラ.表 == 1)
     }
 
@@ -276,7 +276,7 @@ struct 本場供託と切り上げ満貫 {
         ctx.ドラ表示牌 = [try Tile.parse("9m")]  // 1m がドラ（手牌に3枚）
         let score = try #require(try ScoreCalculator().score(
             concealed: try Tile.parseHand("111222m333p555s77z"), melds: [], context: ctx))
-        #expect(score.han == 13)
+        #expect(score.翻 == 13)
         #expect(score.limit == .役満(複合数: 1))
         #expect(score.payment == .ツモ(親: 16000, 子: 8000))
         #expect(score.total == 32000)
@@ -289,8 +289,8 @@ struct 本場供託と切り上げ満貫 {
         let score = try #require(try ScoreCalculator().score(
             concealed: try Tile.parseHand("111m234p567p234s99m"), melds: [], context: ctx,
             本場: 1, 供託: 2))
-        #expect(score.han == 1)
-        #expect(score.fu == 40)
+        #expect(score.翻 == 1)
+        #expect(score.符 == 40)
         #expect(score.payment == .ロン(1300 + 300))       // 1本場
         #expect(score.total == 1600 + 2000)              // 供託2本
     }

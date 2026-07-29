@@ -67,8 +67,8 @@ struct 局の結末 {
         }
         #expect(winner == .自分)
         #expect(from == .自分)
-        #expect(score.han == 3)
-        #expect(score.fu == 30)
+        #expect(score.翻 == 3)
+        #expect(score.符 == 30)
         #expect(score.payment == .ツモ(親: nil, 子: 2000))
     }
 
@@ -86,8 +86,8 @@ struct 局の結末 {
         }
         #expect(winner == .自分)
         #expect(from == .下家)
-        #expect(score.han == 2)
-        #expect(score.fu == 40)
+        #expect(score.翻 == 2)
+        #expect(score.符 == 40)
         #expect(score.payment == .ロン(3900))
     }
 
@@ -106,7 +106,7 @@ struct 局の結末 {
             Issue.record("和了になるはず"); return
         }
         // 立直1 + 一発1 + 一気通貫2 = 4翻40符 → 基本点が2000を超えるので満貫。
-        #expect(score.han == 4)
+        #expect(score.翻 == 4)
         #expect(score.limit == .満貫)
         #expect(score.payment == .ロン(12000))
     }

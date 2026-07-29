@@ -39,8 +39,8 @@ import Testing
 
         #expect(assumptions.isEmpty)
         #expect(yaku == [.平和])
-        #expect(score.han == 2)               // 平和1 + ドラ1
-        #expect(score.fu == 30)               // 平和ロン
+        #expect(score.翻 == 2)               // 平和1 + ドラ1
+        #expect(score.符 == 30)               // 平和ロン
         #expect(score.ドラ.表 == 1)
         #expect(score.payment == .ロン(2000 + 300))   // 1本場
         #expect(score.total == 2300 + 1000)          // 供託1本
@@ -61,7 +61,7 @@ import Testing
 
         #expect(yaku.isSuperset(of: [.立直, .一発, .平和]))
         #expect(score.ドラ.裏 == 1)          // 裏ドラ表示3p → 4p が1枚
-        #expect(score.han == 4)               // 立直 + 一発 + 平和 + 裏1
+        #expect(score.翻 == 4)               // 立直 + 一発 + 平和 + 裏1
         #expect(!assumptions.contains(.裏ドラ表示牌不明))
     }
 
@@ -86,7 +86,7 @@ import Testing
             .仮定した和了(try Tile.parse("6s"), .ロン),  // 静止状態での試算
             .席風不明(仮定: .南), .立直不明, .ドラ表示牌不明, .本場不明, .供託不明,
         ])
-        #expect(score.han == 1)               // 平和のみ（ドラ0）
+        #expect(score.翻 == 1)               // 平和のみ（ドラ0）
         #expect(score.payment == .ロン(1000))  // 子の1翻30符、本場も供託もなし
     }
 
@@ -252,7 +252,7 @@ import Testing
         let (score, yaku, _) = try scored(
             try ok.score(winningTile: try Tile.parse("6s"), winType: .ロン))
         #expect(yaku == [.平和])
-        #expect(score.fu == 30)
+        #expect(score.符 == 30)
 
         // 14枚形なのに和了牌が入っていない場合は断る。
         let ng = try state(hand: "234567m234p45s99p1z")
@@ -308,7 +308,7 @@ import Testing
 
         #expect(assumptions.isEmpty)
         #expect(yaku.isSuperset(of: [.中, .門前清自摸和]))  // 暗槓は面前を保つ
-        #expect(score.fu == 70)
+        #expect(score.符 == 70)
         #expect(score.ドラ.表 == 4)   // ドラ表示9m → 1m、暗槓の4枚
     }
 }

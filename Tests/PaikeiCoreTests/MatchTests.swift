@@ -25,7 +25,7 @@ struct 局の連鎖 {
     }
 
     func 子のロン満貫() -> Score {
-        Score(han: 5, fu: 30, limit: .満貫, ドラ: DoraCount(),
+        Score(翻: 5, 符: 30, limit: .満貫, ドラ: DoraCount(),
               payment: .ロン(8000), liable: nil, 本場: 0, 供託: 0)
     }
 
@@ -120,7 +120,7 @@ struct 局の連鎖 {
     }
 
     @Test func ツモは親と子で額が違う() throws {
-        let score = Score(han: 5, fu: 30, limit: .満貫, ドラ: DoraCount(),
+        let score = Score(翻: 5, 符: 30, limit: .満貫, ドラ: DoraCount(),
                           payment: .ツモ(親: 4000, 子: 2000), liable: nil, 本場: 0, 供託: 0)
         let s = state()  // 親は自分
         let next = try 続行(s.applying(.和了(of: .下家, from: .下家, score), at: end(s)))
@@ -132,7 +132,7 @@ struct 局の連鎖 {
 
     @Test("親のツモは全員が同額を払う")
     func 親のツモ() throws {
-        let score = Score(han: 5, fu: 30, limit: .満貫, ドラ: DoraCount(),
+        let score = Score(翻: 5, 符: 30, limit: .満貫, ドラ: DoraCount(),
                           payment: .ツモ(親: nil, 子: 4000), liable: nil, 本場: 0, 供託: 0)
         let s = state()
         let next = try 続行(s.applying(.和了(of: .自分, from: .自分, score), at: end(s)))
@@ -141,7 +141,7 @@ struct 局の連鎖 {
     }
 
     @Test func 包の責任払いは責任者が全額を負う() throws {
-        let score = Score(han: 13, fu: 0, limit: .役満(複合数: 1), ドラ: DoraCount(),
+        let score = Score(翻: 13, 符: 0, limit: .役満(複合数: 1), ドラ: DoraCount(),
                           payment: .責任払い(32000), liable: .上家, 本場: 0, 供託: 0)
         let s = state()
         // 上家が飛ぶ額なので、トビ終了を切って点数移動だけを見る。
@@ -220,7 +220,7 @@ struct 局の連鎖 {
 @Suite("対局 (Match)")
 struct 対局 {
     func 満貫ロン() -> Score {
-        Score(han: 5, fu: 30, limit: .満貫, ドラ: DoraCount(),
+        Score(翻: 5, 符: 30, limit: .満貫, ドラ: DoraCount(),
               payment: .ロン(8000), liable: nil, 本場: 0, 供託: 0)
     }
 
@@ -289,7 +289,7 @@ struct 対局 {
 
     @Test func トビで即終局() throws {
         var match = Match(rules: RuleSet(length: .半荘戦))
-        let 役満 = Score(han: 13, fu: 0, limit: .役満(複合数: 1), ドラ: DoraCount(),
+        let 役満 = Score(翻: 13, 符: 0, limit: .役満(複合数: 1), ドラ: DoraCount(),
                         payment: .ロン(32000), liable: nil, 本場: 0, 供託: 0)
         let timeline = GameTimeline(snapshot: match.state.snapshot())
         try match.finish(timeline, result: .和了(of: .下家, from: .対面, 役満))
@@ -300,7 +300,7 @@ struct 対局 {
 
     @Test func トビを無効にすれば続行する() throws {
         var match = Match(rules: RuleSet(length: .半荘戦, bankruptcyEnds: false))
-        let 役満 = Score(han: 13, fu: 0, limit: .役満(複合数: 1), ドラ: DoraCount(),
+        let 役満 = Score(翻: 13, 符: 0, limit: .役満(複合数: 1), ドラ: DoraCount(),
                         payment: .ロン(32000), liable: nil, 本場: 0, 供託: 0)
         let timeline = GameTimeline(snapshot: match.state.snapshot())
         try match.finish(timeline, result: .和了(of: .下家, from: .対面, 役満))
@@ -348,15 +348,15 @@ struct 点数の保存則 {
     /// 一通りの結末を、立直棒ありなしの両方で流す。
     @Test("あらゆる結末を通しても総額が変わらない")
     func 総額が変わらない() throws {
-        let 満貫ロン = Score(han: 5, fu: 30, limit: .満貫, ドラ: DoraCount(),
+        let 満貫ロン = Score(翻: 5, 符: 30, limit: .満貫, ドラ: DoraCount(),
                           payment: .ロン(8300), liable: nil, 本場: 1, 供託: 0)
-        let 子のツモ = Score(han: 4, fu: 30, limit: nil, ドラ: DoraCount(),
+        let 子のツモ = Score(翻: 4, 符: 30, limit: nil, ドラ: DoraCount(),
                           payment: .ツモ(親: 4000, 子: 2000), liable: nil, 本場: 0, 供託: 0)
-        let 親のツモ = Score(han: 3, fu: 40, limit: nil, ドラ: DoraCount(),
+        let 親のツモ = Score(翻: 3, 符: 40, limit: nil, ドラ: DoraCount(),
                           payment: .ツモ(親: nil, 子: 2600), liable: nil, 本場: 0, 供託: 0)
-        let 包のツモ = Score(han: 13, fu: 0, limit: .役満(複合数: 1), ドラ: DoraCount(),
+        let 包のツモ = Score(翻: 13, 符: 0, limit: .役満(複合数: 1), ドラ: DoraCount(),
                           payment: .責任払い(32000), liable: .上家, 本場: 0, 供託: 0)
-        let 包のロン = Score(han: 13, fu: 0, limit: .役満(複合数: 1), ドラ: DoraCount(),
+        let 包のロン = Score(翻: 13, 符: 0, limit: .役満(複合数: 1), ドラ: DoraCount(),
                           payment: .折半(責任者: 16000, 放銃者: 16000), liable: .上家,
                           本場: 0, 供託: 0)
         let 流し = NagashiMangan(player: .対面, payment: .ツモ(親: 4000, 子: 2000))
@@ -400,7 +400,7 @@ struct 点数の保存則 {
     @Test("半荘を通しても総額が変わらない")
     func 半荘を通しても変わらない() throws {
         var match = Match(rules: RuleSet(bankruptcyEnds: false))
-        let 満貫 = Score(han: 5, fu: 30, limit: .満貫, ドラ: DoraCount(),
+        let 満貫 = Score(翻: 5, 符: 30, limit: .満貫, ドラ: DoraCount(),
                        payment: .ロン(8000), liable: nil, 本場: 0, 供託: 0)
         let 初期 = 総額(match.state)
 
@@ -427,7 +427,7 @@ struct 点数の保存則 {
 @Suite("対局の入力検証")
 struct 対局の入力検証 {
     func 満貫() -> Score {
-        Score(han: 5, fu: 30, limit: .満貫, ドラ: DoraCount(),
+        Score(翻: 5, 符: 30, limit: .満貫, ドラ: DoraCount(),
               payment: .ロン(8000), liable: nil, 本場: 0, 供託: 0)
     }
 
@@ -455,7 +455,7 @@ struct 対局の入力検証 {
     @Test("終局後の記録は断る")
     func 終局後は断る() throws {
         var match = Match(rules: RuleSet(length: .東風戦))
-        let 役満 = Score(han: 13, fu: 0, limit: .役満(複合数: 1), ドラ: DoraCount(),
+        let 役満 = Score(翻: 13, 符: 0, limit: .役満(複合数: 1), ドラ: DoraCount(),
                         payment: .ロン(32000), liable: nil, 本場: 0, 供託: 0)
         try match.finish(GameTimeline(snapshot: match.state.snapshot()),
                          result: .和了(of: .下家, from: .対面, 役満))

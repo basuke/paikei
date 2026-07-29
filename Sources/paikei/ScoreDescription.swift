@@ -65,7 +65,7 @@ enum ScoreDescription {
 
     private static func hanFu(_ score: Score) -> String {
         // 満貫以上と役満では符は点数に影響しないため翻だけ示す。
-        score.limit == nil ? "\(score.fu)符\(score.han)翻" : "\(score.han)翻"
+        score.limit == nil ? "\(score.符)符\(score.翻)翻" : "\(score.翻)翻"
     }
 
     private static func 役満か(_ limit: LimitRank?) -> Bool {
