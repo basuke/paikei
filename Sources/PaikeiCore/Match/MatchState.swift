@@ -5,7 +5,7 @@
 public struct MatchState: Sendable, Equatable {
     public var 場風: Wind
     /// 局数（1〜4）。
-    public var kyoku: Int
+    public var 局: Int
     public var honba: Int
     /// 供託リーチ棒の本数。
     public var kyotaku: Int
@@ -15,11 +15,11 @@ public struct MatchState: Sendable, Equatable {
     public var dealer: Player
 
     public init(
-        場風: Wind = .東, kyoku: Int = 1, honba: Int = 0, kyotaku: Int = 0,
+        場風: Wind = .東, 局: Int = 1, honba: Int = 0, kyotaku: Int = 0,
         scores: [Player: Int], dealer: Player
     ) {
         self.場風 = 場風
-        self.kyoku = kyoku
+        self.局 = 局
         self.honba = honba
         self.kyotaku = kyotaku
         self.scores = scores
@@ -45,7 +45,7 @@ extension MatchState {
     /// 配牌直後なので山は満杯、立直も全員していないと言い切れる。
     public func snapshot() -> GameState {
         GameState(
-            場風: 場風, kyoku: kyoku, honba: honba, kyotaku: kyotaku,
+            場風: 場風, 局: 局, honba: honba, kyotaku: kyotaku,
             wall: GameState.wallAfterDeal,
             players: Dictionary(uniqueKeysWithValues: Player.allCases.map { player in
                 (player, PlayerState(seat: seat(of: player), riichi: false,
@@ -55,7 +55,7 @@ extension MatchState {
 
     /// この局が規定の最終局（オーラス）か。
     public func オーラスか(rules: RuleSet) -> Bool {
-        場風 == rules.length.lastBakaze && kyoku == 4
+        場風 == rules.length.lastBakaze && 局 == 4
     }
 
     /// 局の結末を適用して次の状況を返す。
@@ -119,9 +119,9 @@ extension MatchState {
     /// 親を下家へ移し、局を進める。4局を越えたら場風が変わる。
     private mutating func 親流れ() {
         dealer = dealer.seated(.下家)
-        kyoku += 1
-        if kyoku > 4 {
-            kyoku = 1
+        局 += 1
+        if 局 > 4 {
+            局 = 1
             場風 = Wind.allCases[(場風.order % Wind.allCases.count)]
         }
     }

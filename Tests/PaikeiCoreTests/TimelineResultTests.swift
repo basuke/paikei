@@ -10,7 +10,7 @@ struct 局の結末 {
     func timeline(events: [Event] = [], wall: Int = 40) throws -> GameTimeline {
         GameTimeline(
             snapshot: GameState(
-                場風: .東, kyoku: 1, honba: 0, kyotaku: 0,
+                場風: .東, 局: 1, honba: 0, kyotaku: 0,
                 doraMarkers: [try Tile.parse("3z")],
                 wall: wall,
                 players: [

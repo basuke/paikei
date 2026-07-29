@@ -42,7 +42,7 @@ struct フォーマットの表記トークン {
     func 卓全体のキー() throws {
         let state = try SnapshotParser.parse(全キーの局面)
         #expect(state.場風 == .南)
-        #expect(state.kyoku == 3)
+        #expect(state.局 == 3)
         #expect(state.honba == 2)
         #expect(state.kyotaku == 1)
         #expect(state.doraMarkers.map(\.mpsz) == ["3p", "7s"])

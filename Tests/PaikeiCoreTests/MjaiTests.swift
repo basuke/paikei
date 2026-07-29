@@ -82,7 +82,7 @@ struct MJAIプロトコルの対話 {
         let state = try #require(session.state)
 
         #expect(state.場風 == .東)
-        #expect(state.kyoku == 1)
+        #expect(state.局 == 1)
         #expect(state.honba == 0)
         #expect(state.kyotaku == 1)
         #expect(state.doraMarkers == [try Tile.parse("3p")])
@@ -235,7 +235,7 @@ struct 最小の打ち手 {
     func timeline(hand: String, draw: String? = nil, riichi: Bool = false,
                   claim: ClaimTile? = nil) throws -> GameTimeline {
         GameTimeline(snapshot: GameState(
-            場風: .東, kyoku: 1, honba: 0, kyotaku: 0,
+            場風: .東, 局: 1, honba: 0, kyotaku: 0,
             doraMarkers: [try Tile.parse("3p")], wall: 40,
             players: [
                 .自分: PlayerState(seat: .西, hand: try Tile.parseHand(hand),

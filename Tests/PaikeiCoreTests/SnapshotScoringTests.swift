@@ -10,7 +10,7 @@ import Testing
         draw: Tile? = nil, claim: ClaimTile? = nil
     ) throws -> GameState {
         GameState(
-            場風: 場風, kyoku: 1, honba: honba, kyotaku: kyotaku,
+            場風: 場風, 局: 1, honba: honba, kyotaku: kyotaku,
             doraMarkers: dora,
             players: [.自分: PlayerState(
                 seat: seat, hand: try Tile.parseHand(hand), draw: draw,
@@ -203,7 +203,7 @@ import Testing
     @Test("風牌だらけでも答えが変わらないなら答える（国士無双）")
     func 風牌だらけでも答えが変わらないなら答える() throws {
         let s = GameState(
-            場風: nil, kyoku: nil, honba: 0, kyotaku: 0,
+            場風: nil, 局: nil, honba: 0, kyotaku: 0,
             players: [.自分: PlayerState(
                 seat: nil, hand: try Tile.parseHand("19m19p19s1234567z"), riichi: false)],
             claim: ClaimTile(tile: try Tile.parse("1z"), from: .対面))

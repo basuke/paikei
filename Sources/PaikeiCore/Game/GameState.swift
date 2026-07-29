@@ -37,7 +37,7 @@ public struct GameState: Sendable, Equatable {
     /// 場風。nil は不明。
     public var 場風: Wind?
     /// 局数（1〜4）。nil は不明。
-    public var kyoku: Int?
+    public var 局: Int?
     /// 本場。nil は不明。
     public var honba: Int?
     /// 供託リーチ棒。nil は不明。
@@ -55,7 +55,7 @@ public struct GameState: Sendable, Equatable {
 
     public init(
         場風: Wind? = nil,
-        kyoku: Int? = nil,
+        局: Int? = nil,
         honba: Int? = nil,
         kyotaku: Int? = nil,
         doraMarkers: [Tile] = [],
@@ -65,7 +65,7 @@ public struct GameState: Sendable, Equatable {
         claim: ClaimTile? = nil
     ) {
         self.場風 = 場風
-        self.kyoku = kyoku
+        self.局 = 局
         self.honba = honba
         self.kyotaku = kyotaku
         self.doraMarkers = doraMarkers

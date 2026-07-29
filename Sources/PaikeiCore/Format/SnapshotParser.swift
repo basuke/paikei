@@ -91,7 +91,7 @@ public enum SnapshotParser {
     private static func applyTableField(key: String, value: Substring, into state: inout GameState) throws {
         switch key {
         case "bakaze": state.場風 = try parseWind(key: key, value: value)
-        case "kyoku": state.kyoku = try parseInt(key: key, value: value)
+        case "kyoku": state.局 = try parseInt(key: key, value: value)
         case "honba": state.honba = try parseInt(key: key, value: value)
         case "kyotaku": state.kyotaku = try parseInt(key: key, value: value)
         case "wall": state.wall = try parseInt(key: key, value: value)

@@ -5,10 +5,10 @@ import Testing
 @Suite("局の連鎖 (MatchState)")
 struct 局の連鎖 {
     /// 東1局、自分が親。持ち点は全員25000。
-    func state(場風: Wind = .東, kyoku: Int = 1, honba: Int = 0, kyotaku: Int = 0,
+    func state(場風: Wind = .東, 局: Int = 1, honba: Int = 0, kyotaku: Int = 0,
                dealer: Player = .自分) -> MatchState {
         MatchState(
-            場風: 場風, kyoku: kyoku, honba: honba, kyotaku: kyotaku,
+            場風: 場風, 局: 局, honba: honba, kyotaku: kyotaku,
             scores: Dictionary(uniqueKeysWithValues: Player.allCases.map { ($0, 25000) }),
             dealer: dealer)
     }
@@ -67,7 +67,7 @@ struct 局の連鎖 {
         let next = try 続行(s.applying(
             .和了(of: .自分, from: .下家, 子のロン満貫()), at: end(s)))
         #expect(next.dealer == .自分)
-        #expect(next.kyoku == 1)
+        #expect(next.局 == 1)
         #expect(next.honba == 1)
     }
 
@@ -76,7 +76,7 @@ struct 局の連鎖 {
         let next = try 続行(s.applying(
             .和了(of: .下家, from: .自分, 子のロン満貫()), at: end(s)))
         #expect(next.dealer == .下家)
-        #expect(next.kyoku == 2)
+        #expect(next.局 == 2)
         #expect(next.honba == 0)
     }
 
@@ -93,17 +93,17 @@ struct 局の連鎖 {
         let next = try 続行(s.applying(
             .流局(理由: .荒牌平局, テンパイ: [.対面], 流し満貫: []), at: end(s)))
         #expect(next.dealer == .下家)
-        #expect(next.kyoku == 2)
+        #expect(next.局 == 2)
         // 流局では連荘・親流れによらず本場が増える。
         #expect(next.honba == 1)
     }
 
     @Test func 東4を終えると場風が変わる() throws {
-        let s = state(kyoku: 4, dealer: .上家)
+        let s = state(局: 4, dealer: .上家)
         let next = try 続行(s.applying(
             .和了(of: .自分, from: .上家, 子のロン満貫()), at: end(s)))
         #expect(next.場風 == .南)
-        #expect(next.kyoku == 1)
+        #expect(next.局 == 1)
         #expect(next.dealer == .自分)
     }
 
@@ -239,7 +239,7 @@ struct 対局 {
             #expect(!match.終局済みか)
         }
         #expect(match.state.場風 == .東)
-        #expect(match.state.kyoku == 4)
+        #expect(match.state.局 == 4)
 
         try 進める(&match, 和了: match.state.dealer.seated(.下家),
                  放銃: match.state.dealer.seated(.対面))
@@ -255,7 +255,7 @@ struct 対局 {
             #expect(!match.終局済みか)
         }
         #expect(match.state.場風 == .南)
-        #expect(match.state.kyoku == 4)
+        #expect(match.state.局 == 4)
 
         try 進める(&match, 和了: match.state.dealer.seated(.下家),
                  放銃: match.state.dealer.seated(.対面))
@@ -272,7 +272,7 @@ struct 対局 {
         // 東4で親が和了。
         try 進める(&match, 和了: match.state.dealer, 放銃: match.state.dealer.seated(.対面))
         #expect(!match.終局済みか)
-        #expect(match.state.kyoku == 4)
+        #expect(match.state.局 == 4)
         #expect(match.state.honba == 1)
     }
 
@@ -320,7 +320,7 @@ struct 対局 {
         var match = Match(rules: RuleSet(length: .東風戦))
         try 進める(&match, 和了: .下家, 放銃: .対面)
         let record = try #require(match.records.first)
-        #expect(record.start.kyoku == 1)
+        #expect(record.start.局 == 1)
         #expect(record.start.scores[.下家] == 25000)
         #expect(record.result == .和了(of: .下家, from: .対面, 満貫ロン()))
     }
@@ -436,7 +436,7 @@ struct 対局の入力検証 {
         var match = Match()
         // 東1局のはずなのに東2局の初期局面を渡す。
         var snapshot = match.state.snapshot()
-        snapshot.kyoku = 2
+        snapshot.局 = 2
         #expect(throws: MatchError.局の不一致(場風: .東, 局: 2, 本場: 0)) {
             try match.finish(GameTimeline(snapshot: snapshot),
                              result: .和了(of: .自分, from: .下家, 満貫()))
