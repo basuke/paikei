@@ -32,7 +32,7 @@ extension GameState {
 
             let payment = ps.席風.map { 席風 in
                 ScoreCalculator(rules: rules).payment(
-                    han: 5, fu: 0, isDealer: 席風 == .東, winType: .ツモ,
+                    翻: 5, 符: 0, isDealer: 席風 == .東, winType: .ツモ,
                     本場: handling == .和了 ? (本場 ?? 0) : 0)
             }
             return NagashiMangan(player: player, payment: payment)

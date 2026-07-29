@@ -1,6 +1,6 @@
 /// 1つの読み方（分解）の評価結果。
 ///
-/// `han` は**役の翻合計のみ**でドラ・赤・裏を含まない。ドラは分解によらず
+/// `翻` は**役の翻合計のみ**でドラ・赤・裏を含まない。ドラは分解によらず
 /// 牌集合だけで決まるため、高点法の比較に影響しない（点数計算層で加算する）。
 public struct HandEvaluation: Sendable {
     /// 評価対象の読み方。
@@ -33,7 +33,7 @@ public struct HandEvaluator: Sendable {
     /// 1つの読み方を評価する。文脈が矛盾していれば `WinContextError` を投げる。
     public func evaluate(_ hand: WinningHand) throws -> HandEvaluation {
         let yaku = try detector.detect(hand)
-        let han = yaku.reduce(0) { $0 + $1.han(menzen: hand.門前か) }
+        let han = yaku.reduce(0) { $0 + $1.翻(menzen: hand.門前か) }
         return HandEvaluation(hand: hand, 役: yaku, 翻: han, 符: fuCalculator.calculate(hand))
     }
 

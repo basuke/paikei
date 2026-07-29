@@ -33,8 +33,8 @@ public enum Yaku: Sendable, Hashable {
     }
 
     /// 翻数。面前か否かで食い下がりを反映する。役満は13。
-    public func han(menzen: Bool) -> Int {
-        if case let .人和(rank) = self { return rank.han }
+    public func 翻(menzen: Bool) -> Int {
+        if case let .人和(rank) = self { return rank.翻 }
         if 役満か { return 13 }
         switch self {
         case .三色同順, .一気通貫, .混全帯幺九:

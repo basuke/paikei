@@ -86,7 +86,7 @@ import Testing
 
     @Test("二盃口は3翻、七対子形より優先される")
     func 二盃口は七対子形より優先される() throws {
-        #expect(Yaku.二盃口.han(menzen: true) == 3)
+        #expect(Yaku.二盃口.翻(menzen: true) == 3)
         // 112233m445566p77s は七対子形でもあるが、二盃口(3翻)が選ばれる
         let yaku = try best("112233m445566p77s")
         #expect(yaku.contains(.二盃口))
@@ -124,9 +124,9 @@ import Testing
 
     @Test("食い下がり: 三色は面前2翻・鳴き1翻")
     func 食い下がりの三色と清一色() {
-        #expect(Yaku.三色同順.han(menzen: true) == 2)
-        #expect(Yaku.三色同順.han(menzen: false) == 1)
-        #expect(Yaku.清一色.han(menzen: false) == 5)
+        #expect(Yaku.三色同順.翻(menzen: true) == 2)
+        #expect(Yaku.三色同順.翻(menzen: false) == 1)
+        #expect(Yaku.清一色.翻(menzen: false) == 5)
     }
 }
 

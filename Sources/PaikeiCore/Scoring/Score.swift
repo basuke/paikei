@@ -120,7 +120,7 @@ public struct ScoreCalculator: Sendable {
     /// ルールは引数ではなくこの評価器の `rules` が効く。翻と符に落ちた後の
     /// 変換なので、影響するのは切り上げ満貫（`roundUpMangan`）だけ。
     public func payment(
-        han: Int, fu: Int, isDealer: Bool, winType: WinType,
+        翻 han: Int, 符 fu: Int, isDealer: Bool, winType: WinType,
         yakumanCount: Int = 0, 本場 honba: Int = 0
     ) -> Payment {
         payment(base: basePoints(han: han, fu: fu, yakumanCount: yakumanCount),

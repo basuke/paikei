@@ -6,11 +6,11 @@ struct 子の点数表 {
     let calc = ScoreCalculator()
 
     func ron(_ han: Int, _ fu: Int) -> Int {
-        calc.payment(han: han, fu: fu, isDealer: false, winType: .ロン).total
+        calc.payment(翻: han, 符: fu, isDealer: false, winType: .ロン).total
     }
 
     func tsumo(_ han: Int, _ fu: Int) -> Payment {
-        calc.payment(han: han, fu: fu, isDealer: false, winType: .ツモ)
+        calc.payment(翻: han, 符: fu, isDealer: false, winType: .ツモ)
     }
 
     @Test func 子ロンの古典的な組み合わせ() {
@@ -54,9 +54,9 @@ struct 子の点数表 {
         #expect(ron(11, 30) == 24000)  // 三倍満
         #expect(ron(13, 30) == 32000)  // 数え役満
         #expect(tsumo(5, 30) == .ツモ(親: 4000, 子: 2000))
-        #expect(calc.payment(han: 13, fu: 20, isDealer: false, winType: .ロン,
+        #expect(calc.payment(翻: 13, 符: 20, isDealer: false, winType: .ロン,
                              yakumanCount: 1).total == 32000)
-        #expect(calc.payment(han: 26, fu: 20, isDealer: false, winType: .ロン,
+        #expect(calc.payment(翻: 26, 符: 20, isDealer: false, winType: .ロン,
                              yakumanCount: 2).total == 64000)  // ダブル役満
     }
 }
@@ -66,7 +66,7 @@ struct 親の点数表 {
     let calc = ScoreCalculator()
 
     func ron(_ han: Int, _ fu: Int) -> Int {
-        calc.payment(han: han, fu: fu, isDealer: true, winType: .ロン).total
+        calc.payment(翻: han, 符: fu, isDealer: true, winType: .ロン).total
     }
 
     @Test func 親ロンの古典的な組み合わせ() {
@@ -83,10 +83,10 @@ struct 親の点数表 {
     }
 
     @Test func 親ツモは全員が同額を払う() {
-        let p = calc.payment(han: 4, fu: 30, isDealer: true, winType: .ツモ)
+        let p = calc.payment(翻: 4, 符: 30, isDealer: true, winType: .ツモ)
         #expect(p == .ツモ(親: nil, 子: 3900))
         #expect(p.total == 11700)
-        #expect(calc.payment(han: 5, fu: 30, isDealer: true, winType: .ツモ).total == 12000)
+        #expect(calc.payment(翻: 5, 符: 30, isDealer: true, winType: .ツモ).total == 12000)
     }
 }
 
@@ -95,9 +95,9 @@ struct 本場供託と切り上げ満貫 {
     @Test("本場はロンで300点、ツモで各100点")
     func 本場はロンで300点ツモで各100点() {
         let calc = ScoreCalculator()
-        #expect(calc.payment(han: 1, fu: 30, isDealer: false, winType: .ロン, 本場: 2).total
+        #expect(calc.payment(翻: 1, 符: 30, isDealer: false, winType: .ロン, 本場: 2).total
                 == 1000 + 600)
-        let t = calc.payment(han: 1, fu: 30, isDealer: false, winType: .ツモ, 本場: 2)
+        let t = calc.payment(翻: 1, 符: 30, isDealer: false, winType: .ツモ, 本場: 2)
         #expect(t == .ツモ(親: 700, 子: 500))  // 各自 +200
         #expect(t.total == 1700)
     }
@@ -105,12 +105,12 @@ struct 本場供託と切り上げ満貫 {
     @Test func 切り上げ満貫はルールで切り替わる() {
         let off = ScoreCalculator(rules: RuleSet(roundUpMangan: false))
         let on = ScoreCalculator(rules: RuleSet(roundUpMangan: true))
-        #expect(off.payment(han: 4, fu: 30, isDealer: false, winType: .ロン).total == 7700)
-        #expect(on.payment(han: 4, fu: 30, isDealer: false, winType: .ロン).total == 8000)
-        #expect(off.payment(han: 3, fu: 60, isDealer: false, winType: .ロン).total == 7700)
-        #expect(on.payment(han: 3, fu: 60, isDealer: false, winType: .ロン).total == 8000)
+        #expect(off.payment(翻: 4, 符: 30, isDealer: false, winType: .ロン).total == 7700)
+        #expect(on.payment(翻: 4, 符: 30, isDealer: false, winType: .ロン).total == 8000)
+        #expect(off.payment(翻: 3, 符: 60, isDealer: false, winType: .ロン).total == 7700)
+        #expect(on.payment(翻: 3, 符: 60, isDealer: false, winType: .ロン).total == 8000)
         // 対象外の組み合わせは変わらない
-        #expect(on.payment(han: 3, fu: 30, isDealer: false, winType: .ロン).total == 3900)
+        #expect(on.payment(翻: 3, 符: 30, isDealer: false, winType: .ロン).total == 3900)
     }
 
     /// 子の平和ドラ3（平和1翻 + ドラ3 = 4翻、平和ロンで30符）。
@@ -146,7 +146,7 @@ struct 本場供託と切り上げ満貫 {
         #expect(tsumo.limit == .満貫)
         // 20符4翻（門前ツモが付かない形）は切り上げの対象にならない。
         let calc = ScoreCalculator(rules: RuleSet(roundUpMangan: true))
-        #expect(calc.payment(han: 4, fu: 20, isDealer: false, winType: .ツモ)
+        #expect(calc.payment(翻: 4, 符: 20, isDealer: false, winType: .ツモ)
                 == .ツモ(親: 2600, 子: 1300))
     }
 }

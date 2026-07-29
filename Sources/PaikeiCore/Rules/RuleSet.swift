@@ -5,7 +5,7 @@ public enum 人和の扱い: Sendable, Hashable {
     case 満貫, 倍満, 役満
 
     /// 翻数。役満は13。
-    var han: Int {
+    var 翻: Int {
         switch self {
         case .満貫: 5
         case .倍満: 8
