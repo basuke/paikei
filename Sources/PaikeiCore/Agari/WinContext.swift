@@ -56,7 +56,7 @@ public struct WinContext: Sendable, Equatable {
     /// ダブル立直。
     public var doubleRiichi: Bool
     /// 一発。
-    public var ippatsu: Bool
+    public var 一発: Bool
     /// 海底摸月 / 河底撈魚。
     public var lastTile: Bool
     /// 嶺上開花。
@@ -79,7 +79,7 @@ public struct WinContext: Sendable, Equatable {
         winningTile: Tile,
         立直: Bool = false,
         doubleRiichi: Bool = false,
-        ippatsu: Bool = false,
+        一発: Bool = false,
         lastTile: Bool = false,
         afterKan: Bool = false,
         robbingKan: Bool = false,
@@ -93,7 +93,7 @@ public struct WinContext: Sendable, Equatable {
         self.winningTile = winningTile
         self.立直 = 立直
         self.doubleRiichi = doubleRiichi
-        self.ippatsu = ippatsu
+        self.一発 = 一発
         self.lastTile = lastTile
         self.afterKan = afterKan
         self.robbingKan = robbingKan
@@ -107,7 +107,7 @@ extension WinContext {
     /// 文脈フラグの矛盾を列挙する。空なら整合している。
     public var contradictions: [WinContextContradiction] {
         var result: [WinContextContradiction] = []
-        if ippatsu && !(立直 || doubleRiichi) { result.append(.立直なしの一発) }
+        if 一発 && !(立直 || doubleRiichi) { result.append(.立直なしの一発) }
         if afterKan && winType != .ツモ { result.append(.ロンの嶺上開花) }
         if robbingKan && winType != .ロン { result.append(.ツモの槍槓) }
         return result

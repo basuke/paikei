@@ -105,7 +105,7 @@ public struct YakuDetector: Sendable {
         // detect 冒頭の validate() で拒否済み。ここではフラグを信頼してよい。
         if ctx.doubleRiichi { result.append(.ダブル立直) }
         else if ctx.立直 { result.append(.立直) }
-        if ctx.ippatsu && rules.ippatsu { result.append(.一発) }
+        if ctx.一発 && rules.一発 { result.append(.一発) }
         if hand.門前か && ctx.winType == .ツモ { result.append(.門前清自摸和) }
         if ctx.lastTile { result.append(ctx.winType == .ツモ ? .海底摸月 : .河底撈魚) }
         if ctx.afterKan { result.append(.嶺上開花) }

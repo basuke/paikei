@@ -5,7 +5,7 @@
 public struct WinOptions: Sendable, Equatable {
     public var doubleRiichi: Bool
     /// 一発。`GameTimeline` が履歴から導出する。
-    public var ippatsu: Bool
+    public var 一発: Bool
     /// 海底摸月 / 河底撈魚。`wall == 0` から導出する。
     public var lastTile: Bool
     /// 嶺上開花。`GameTimeline` が「直前に自分が槓した」ことから導出する。
@@ -21,7 +21,7 @@ public struct WinOptions: Sendable, Equatable {
 
     public init(
         doubleRiichi: Bool = false,
-        ippatsu: Bool = false,
+        一発: Bool = false,
         lastTile: Bool = false,
         afterKan: Bool = false,
         robbingKan: Bool = false,
@@ -29,7 +29,7 @@ public struct WinOptions: Sendable, Equatable {
         uraMarkers: [Tile] = []
     ) {
         self.doubleRiichi = doubleRiichi
-        self.ippatsu = ippatsu
+        self.一発 = 一発
         self.lastTile = lastTile
         self.afterKan = afterKan
         self.robbingKan = robbingKan
@@ -191,7 +191,7 @@ extension GameState {
                 winningTile: winningTile,
                 立直: riichi || options.doubleRiichi,
                 doubleRiichi: options.doubleRiichi,
-                ippatsu: options.ippatsu,
+                一発: options.一発,
                 lastTile: options.lastTile,
                 afterKan: options.afterKan,
                 robbingKan: options.robbingKan,

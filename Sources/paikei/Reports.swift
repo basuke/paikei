@@ -223,7 +223,7 @@ enum ScoreReport {
         for word in args.dropFirst(2) {
             let pair = word.split(separator: "=", maxSplits: 1).map(String.init)
             switch pair[0] {
-            case "ippatsu": options.ippatsu = true
+            case "ippatsu": options.一発 = true
             case "haitei", "houtei": options.lastTile = true
             case "rinshan": options.afterKan = true
             case "chankan": options.robbingKan = true

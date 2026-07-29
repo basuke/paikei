@@ -55,7 +55,7 @@ import Testing
     @Test("履歴依存の情報はオプションで与える（一発・裏ドラ）")
     func 履歴依存の情報はオプションで与える() throws {
         let s = try state(立直: true)
-        let options = WinOptions(ippatsu: true, uraMarkers: [try Tile.parse("3p")])
+        let options = WinOptions(一発: true, uraMarkers: [try Tile.parse("3p")])
         let (score, yaku, assumptions) = try scored(
             try s.score(winningTile: try Tile.parse("6s"), winType: .ロン, options: options))
 
@@ -97,12 +97,12 @@ import Testing
         let s = try state()
         #expect(throws: WinContextError(contradictions: [.立直なしの一発])) {
             _ = try s.score(winningTile: try Tile.parse("6s"), winType: .ロン,
-                            options: WinOptions(ippatsu: true))
+                            options: WinOptions(一発: true))
         }
         // 立直済みの局面なら同じオプションでも矛盾しない。
         let riichied = try state(立直: true)
         _ = try scored(try riichied.score(winningTile: try Tile.parse("6s"), winType: .ロン,
-                                          options: WinOptions(ippatsu: true)))
+                                          options: WinOptions(一発: true)))
     }
 
     @Test func 複数の矛盾は全て列挙される() throws {
@@ -110,7 +110,7 @@ import Testing
         #expect(throws: WinContextError(
             contradictions: [.立直なしの一発, .ロンの嶺上開花])) {
             _ = try s.score(winningTile: try Tile.parse("6s"), winType: .ロン,
-                            options: WinOptions(ippatsu: true, afterKan: true))
+                            options: WinOptions(一発: true, afterKan: true))
         }
     }
 

@@ -28,8 +28,8 @@ extension GameTimeline {
         }
 
         var options = options
-        if !options.ippatsu, 一発が生きているか(of: player) {
-            options.ippatsu = true
+        if !options.一発, 一発が生きているか(of: player) {
+            options.一発 = true
         }
         if winType == .ツモ, !options.afterKan, 嶺上ツモか(of: player, at: count) {
             options.afterKan = true

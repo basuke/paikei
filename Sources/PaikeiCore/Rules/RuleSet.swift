@@ -61,7 +61,7 @@ public struct RuleSet: Sendable, Equatable {
     /// 切り上げ満貫（30符4翻・60符3翻を満貫扱い）を認めるか。
     public var roundUpMangan: Bool
     /// 一発を認めるか。
-    public var ippatsu: Bool
+    public var 一発: Bool
     /// 裏ドラを認めるか。
     public var uraDora: Bool
     /// 連風牌（場風かつ自風）の雀頭の符。伝統的に4、天鳳系は2。
@@ -91,7 +91,7 @@ public struct RuleSet: Sendable, Equatable {
         kuitan: Bool = true,
         redFives: Bool = true,
         roundUpMangan: Bool = false,
-        ippatsu: Bool = true,
+        一発: Bool = true,
         uraDora: Bool = true,
         doubleWindPairFu: Int = 4,
         liability: Bool = true,
@@ -106,7 +106,7 @@ public struct RuleSet: Sendable, Equatable {
         self.kuitan = kuitan
         self.redFives = redFives
         self.roundUpMangan = roundUpMangan
-        self.ippatsu = ippatsu
+        self.一発 = 一発
         self.uraDora = uraDora
         self.doubleWindPairFu = doubleWindPairFu
         self.liability = liability
