@@ -23,9 +23,9 @@ extension Tile {
     init?(digit: Character, suit: Suit) {
         guard let value = digit.wholeNumberValue else { return nil }
         if value == 0 {
-            self.init(suit: suit, rank: 5, isRed: true)
+            self.init(suit: suit, rank: 5, 赤か: true)
         } else {
-            self.init(suit: suit, rank: value, isRed: false)
+            self.init(suit: suit, rank: value, 赤か: false)
         }
     }
 
@@ -73,7 +73,7 @@ extension Tile {
 extension Tile {
     /// この牌1枚の MPSZ 表記（例: `0m` `3p` `1z`）。赤5は `0`。
     public var mpsz: String {
-        "\(isRed ? "0" : String(rank))\(suit.letter)"
+        "\(赤か ? "0" : String(rank))\(suit.letter)"
     }
 }
 
@@ -92,7 +92,7 @@ extension Sequence where Element == Tile {
                 if let currentSuit { result.append(currentSuit.letter) }
                 currentSuit = tile.suit
             }
-            result.append(tile.isRed ? "0" : Character(String(tile.rank)))
+            result.append(tile.赤か ? "0" : Character(String(tile.rank)))
         }
         if let currentSuit { result.append(currentSuit.letter) }
         return result

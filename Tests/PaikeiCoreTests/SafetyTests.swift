@@ -58,7 +58,7 @@ struct 論理捨て牌履歴 {
         state.players[.対面] = PlayerState(
             melds: [try Meld.parse("pon(0'55s,C)")])  // 対面が対面（=自分）から赤5をポン
         let mine = state.logicalDiscards(of: .自分)
-        #expect(mine == [Tile(suit: .索子, rank: 5, isRed: true)])
+        #expect(mine == [Tile(suit: .索子, rank: 5, 赤か: true)])
     }
 }
 

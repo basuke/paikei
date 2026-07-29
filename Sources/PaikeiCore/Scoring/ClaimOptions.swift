@@ -76,7 +76,7 @@ extension GameState {
 
     /// `tile` をチーする構成を列挙する。手牌にある牌をそのまま返す（赤ドラを保つ）。
     private func チーの構成(_ tile: Tile, in hand: [Tile]) -> [[Tile]] {
-        guard tile.suit.isNumbered else { return [] }
+        guard tile.suit.数牌か else { return [] }
         return [[-2, -1], [-1, 1], [1, 2]].compactMap { offsets in
             let ranks = offsets.map { tile.rank + $0 }
             guard ranks.allSatisfy({ (1...9).contains($0) }) else { return nil }

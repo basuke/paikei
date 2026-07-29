@@ -13,7 +13,7 @@ public struct HandEvaluation: Sendable {
     public let fu: Int
 
     /// 役満か。
-    public var isYakuman: Bool { yaku.contains(where: \.isYakuman) }
+    public var 役満か: Bool { yaku.contains(where: \.役満か) }
 }
 
 /// 和了手の評価と高点法（仕様フェーズ4）。役判定器と符計算器を束ねる。
@@ -33,7 +33,7 @@ public struct HandEvaluator: Sendable {
     /// 1つの読み方を評価する。文脈が矛盾していれば `WinContextError` を投げる。
     public func evaluate(_ hand: WinningHand) throws -> HandEvaluation {
         let yaku = try detector.detect(hand)
-        let han = yaku.reduce(0) { $0 + $1.han(menzen: hand.isMenzen) }
+        let han = yaku.reduce(0) { $0 + $1.han(menzen: hand.門前か) }
         return HandEvaluation(hand: hand, yaku: yaku, han: han, fu: fuCalculator.calculate(hand))
     }
 

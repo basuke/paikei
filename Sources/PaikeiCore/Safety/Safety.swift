@@ -97,7 +97,7 @@ public struct SafetyAnalyzer: Sendable {
 
         if genbutsu.contains(t) { reasons.append(.現物) }
 
-        if t.isHonor {
+        if t.字牌か {
             if remaining[HandCounts.index(of: t)] <= 1 { reasons.append(.字牌シャンポン不能) }
         } else {
             if let suji = sujiReason(t) { reasons.append(suji) }

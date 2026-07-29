@@ -147,7 +147,7 @@ import Testing
     func 大三元() throws {
         let yaku = try best("555z666z777z234m99p")
         #expect(yaku.contains(.大三元))
-        let onlyYakuman = yaku.allSatisfy(\.isYakuman)
+        let onlyYakuman = yaku.allSatisfy(\.役満か)
         #expect(onlyYakuman)
     }
 
@@ -181,7 +181,7 @@ import Testing
         let hands = WinningHand.readings(concealed: concealed, melds: melds, context: ctx)
         let yaku = try Set(hands.flatMap { try YakuDetector().detect($0) })
         #expect(yaku.isSuperset(of: [.四槓子, .四暗刻]))
-        let onlyYakuman = yaku.allSatisfy(\.isYakuman)
+        let onlyYakuman = yaku.allSatisfy(\.役満か)
         #expect(onlyYakuman)  // 役満成立時は役満のみ返る
     }
 

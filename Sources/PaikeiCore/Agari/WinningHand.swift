@@ -14,7 +14,7 @@ public struct WinningHand: Sendable {
     /// 読み方（分解）に依らないため、どの `WinningHand` でも同じ内容になる。
     public let sourceTiles: [Tile]
     /// 面前か（副露なし。暗槓は面前を保つ）。
-    public let isMenzen: Bool
+    public let 門前か: Bool
     public let context: WinContext
 }
 
@@ -26,7 +26,7 @@ extension WinningHand {
     public static func readings(
         concealed: [Tile], melds: [Meld], context: WinContext
     ) -> [WinningHand] {
-        let isMenzen = melds.allSatisfy { $0.kind == .暗槓 }
+        let menzen = melds.allSatisfy { $0.kind == .暗槓 }
         let source = concealed + melds.flatMap(\.tiles)
         var hands: [WinningHand] = []
 
@@ -34,19 +34,19 @@ extension WinningHand {
             hands.append(WinningHand(
                 form: .国士無双, decomposition: nil, melds: melds,
                 allTiles: concealed.map(\.normalized), sourceTiles: source,
-                isMenzen: isMenzen, context: context))
+                門前か: menzen, context: context))
         }
         if Decomposition.isSevenPairs(concealed: concealed, melds: melds) {
             hands.append(WinningHand(
                 form: .七対子, decomposition: nil, melds: melds,
                 allTiles: concealed.map(\.normalized), sourceTiles: source,
-                isMenzen: isMenzen, context: context))
+                門前か: menzen, context: context))
         }
         for decomposition in Decomposition.standard(concealed: concealed, melds: melds) {
             let all = decomposition.sets.flatMap(\.tiles) + decomposition.pair.tiles
             hands.append(WinningHand(
                 form: .一般形, decomposition: decomposition, melds: melds,
-                allTiles: all, sourceTiles: source, isMenzen: isMenzen, context: context))
+                allTiles: all, sourceTiles: source, 門前か: menzen, context: context))
         }
         return hands
     }

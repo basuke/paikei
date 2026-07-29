@@ -80,7 +80,7 @@ struct 高点法 {
         let single = try #require(
             try HandEvaluator().best(concealed: suuankou, melds: [],
                                  context: try context(winTile: "7z")))
-        #expect(single.isYakuman)
+        #expect(single.役満か)
         #expect(single.han == 13)
 
         // 暗槓4つ = 四槓子 + 四暗刻 のダブル役満

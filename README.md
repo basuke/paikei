@@ -174,6 +174,8 @@ Model 以下はフォーマットの型を一切知らない。全て値型で�
 Swift の Unicode 識別子を積極的に使い、麻雀の概念はそのまま日本語で書く。
 変数名は英数字のままにして、case・関数名・テスト名を日本語にする。
 ラベルは牌や属性が日本語、プレイヤーの役割は英語の前置詞（`of:` / `from:`）。
+Bool を返す述語は「〜か」— プロパティと引数なし関数を分けるのは Swift の
+都合でしかないので、そこで言語を変えない。
 
 ```swift
 case ポン(of: Player, from: Player, 牌: Tile, 手牌から: [Tile])
@@ -181,6 +183,9 @@ case ポン(of: Player, from: Player, 牌: Tile, 手牌から: [Tile])
 if try timeline.可能な応答(for: player).contains(.ロン) {
     return .和了(of: player, from: discarder, 牌: tile)
 }
+
+// 流し満貫: 河が1枚以上あり、すべて幺九牌で、1枚も鳴かれていない
+ps.river.allSatisfy { !$0.wasCalledAway && $0.tile.么九牌か }
 ```
 
 ## 現在地

@@ -12,12 +12,12 @@ extension Tile {
 
         // 数牌: 「数字 + スート + 任意の r（赤）」。
         var text = mjai
-        let isRed = text.hasSuffix("r")
-        if isRed { text.removeLast() }
+        let red = text.hasSuffix("r")
+        if red { text.removeLast() }
         guard text.count == 2,
               let digit = text.first, let value = digit.wholeNumberValue,
-              let suit = Suit(letter: text.last!), suit.isNumbered else { return nil }
-        self.init(suit: suit, rank: value, isRed: isRed)
+              let suit = Suit(letter: text.last!), suit.数牌か else { return nil }
+        self.init(suit: suit, rank: value, 赤か: red)
     }
 
     /// この牌のMJAI表記。
@@ -25,6 +25,6 @@ extension Tile {
         if suit == .字牌 {
             return ["E", "S", "W", "N", "P", "F", "C"][rank - 1]
         }
-        return "\(rank)\(suit.letter)\(isRed ? "r" : "")"
+        return "\(rank)\(suit.letter)\(赤か ? "r" : "")"
     }
 }

@@ -54,7 +54,7 @@ public struct SimpleBot: Bot {
         // `discards` が返すのは赤フラグを落とした代表牌なので、実際に持っている牌へ
         // 戻す。同じ数字なら赤でない方を切って赤ドラを手元に残す。
         let candidates = full.filter { $0.normalized == best.discard.normalized }
-        guard let tile = candidates.first(where: { !$0.isRed }) ?? candidates.first else {
+        guard let tile = candidates.first(where: { !$0.赤か }) ?? candidates.first else {
             return nil
         }
         return .打牌(of: player, 牌: tile, ツモ切り: tile == ps.draw)

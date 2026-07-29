@@ -9,7 +9,7 @@ extension Tile {
         case .萬子, .筒子, .索子:
             next = rank == 9 ? 1 : rank + 1
         case .字牌:
-            next = isWind ? (rank == 4 ? 1 : rank + 1)   // 東南西北の循環
+            next = 風牌か ? (rank == 4 ? 1 : rank + 1)   // 東南西北の循環
                           : (rank == 7 ? 5 : rank + 1)   // 白發中の循環
         }
         return Tile(suit: suit, rank: next)!
@@ -51,7 +51,7 @@ public struct DoraCounter: Sendable {
         let tiles = hand.sourceTiles
         let ctx = hand.context
 
-        let red = rules.redFives ? tiles.count(where: \.isRed) : 0
+        let red = rules.redFives ? tiles.count(where: \.赤か) : 0
 
         let riichi = ctx.riichi || ctx.doubleRiichi
         let ura = (rules.uraDora && riichi) ? count(markers: ctx.uraMarkers, in: tiles) : 0

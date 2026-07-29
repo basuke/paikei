@@ -122,7 +122,7 @@ extension Meld {
         let suit = tiles.first?.suit
         var spec = ""
         for (index, tile) in tiles.enumerated() {
-            spec.append(tile.isRed ? "0" : Character(String(tile.rank)))
+            spec.append(tile.赤か ? "0" : Character(String(tile.rank)))
             if index == calledIndex { spec.append("'") }
         }
         if let suit { spec.append(suit.letter) }

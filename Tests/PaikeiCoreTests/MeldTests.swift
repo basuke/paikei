@@ -15,13 +15,13 @@ struct 副露の表記 {
     @Test("赤5の帰属: 上家が赤を捨てた pon(0'55p) と 自分の手に赤 pon(05'5p) を区別")
     func 赤5の帰属を区別する() throws {
         let calledRed = try Meld.parse("pon(0'55p,L)")
-        #expect(calledRed.tiles[0].isRed)
+        #expect(calledRed.tiles[0].赤か)
         #expect(calledRed.calledIndex == 0)          // 鳴いた牌が赤
 
         let ownRed = try Meld.parse("pon(05'5p,L)")
-        #expect(ownRed.tiles[0].isRed)               // 手にあった赤
+        #expect(ownRed.tiles[0].赤か)               // 手にあった赤
         #expect(ownRed.calledIndex == 1)             // 鳴いた牌は通常5
-        #expect(!ownRed.tiles[1].isRed)
+        #expect(!ownRed.tiles[1].赤か)
     }
 
     @Test("チー: 方向は常に上家、表記には方向を書かない")
@@ -73,7 +73,7 @@ struct 副露の表記 {
 
     @Test func 大明槓で赤を鳴いたケース() throws {
         let meld = try Meld.parse("daiminkan(0'555s,R)")
-        #expect(meld.tiles[0].isRed)
+        #expect(meld.tiles[0].赤か)
         #expect(meld.calledIndex == 0)
         #expect(meld.from == .下家)
     }
@@ -119,7 +119,7 @@ struct 河の表記 {
 
     @Test func 赤5の河() throws {
         let red = try RiverTile.parse("0s-")
-        #expect(red.tile.isRed)
+        #expect(red.tile.赤か)
         #expect(red.manner == .ツモ切り)
     }
 

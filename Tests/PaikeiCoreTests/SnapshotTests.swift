@@ -35,7 +35,7 @@ struct スナップショットパース {
 
         let me = try #require(state.players[.自分])
         #expect(me.seat == .西)
-        #expect(me.draw == Tile(suit: .索子, rank: 5, isRed: true))  // 0s
+        #expect(me.draw == Tile(suit: .索子, rank: 5, 赤か: true))  // 0s
 
         let shimo = try #require(state.players[.下家])
         #expect(shimo.riichi == true)

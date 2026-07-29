@@ -43,13 +43,13 @@ public struct Match: Sendable, Equatable {
     public private(set) var records: [FinishedGame]
     /// いまの状況（終局後は最終状態）。
     public private(set) var state: MatchState
-    public private(set) var isFinished: Bool
+    public private(set) var 終局済みか: Bool
 
     public init(rules: RuleSet = .standard, firstDealer: Player = .自分) {
         self.rules = rules
         self.firstDealer = firstDealer
         self.records = []
-        self.isFinished = false
+        self.終局済みか = false
         self.state = MatchState(
             scores: Dictionary(uniqueKeysWithValues:
                 Player.allCases.map { ($0, rules.startingScore) }),
@@ -61,7 +61,7 @@ public struct Match: Sendable, Equatable {
     /// `timeline` は局の全記録。初期局面がいまの状況と合っているかを検査し、
     /// 末尾の状態から持ち点と供託を読む。
     public mutating func finish(_ timeline: GameTimeline, result: GameResult) throws {
-        guard !isFinished else { throw MatchError.終局済み }
+        guard !終局済みか else { throw MatchError.終局済み }
         try 突き合わせ(timeline.snapshot)
         let end = try timeline.state()
         records.append(FinishedGame(start: state, timeline: timeline, result: result))
@@ -71,7 +71,7 @@ public struct Match: Sendable, Equatable {
             state = next
         case let .終局(next):
             state = next
-            isFinished = true
+            終局済みか = true
         }
     }
 

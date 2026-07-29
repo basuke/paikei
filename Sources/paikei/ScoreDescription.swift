@@ -56,7 +56,7 @@ enum ScoreDescription {
             parts.append(hanFu(score))
         }
         // 役満はドラを加算しないため、数えた枚数を並べると誤解を招く。
-        if score.dora.total > 0, !isYakuman(score.limit) {
+        if score.dora.total > 0, !役満か(score.limit) {
             parts.append("[" + doraBreakdown(score.dora) + "]")
         }
         parts.append("\(score.total)点")
@@ -68,7 +68,7 @@ enum ScoreDescription {
         score.limit == nil ? "\(score.fu)符\(score.han)翻" : "\(score.han)翻"
     }
 
-    private static func isYakuman(_ limit: LimitRank?) -> Bool {
+    private static func 役満か(_ limit: LimitRank?) -> Bool {
         if case .役満 = limit { return true }
         return false
     }

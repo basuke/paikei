@@ -85,7 +85,7 @@ struct Unicode麻雀牌 {
     func 赤5は区別できない() throws {
         let 赤 = try Tile.parse("0p")
         #expect(赤.unicodeTile == (try Tile.parse("5p").unicodeTile))
-        #expect(Tile(unicodeTile: 赤.unicodeTile)?.isRed == false)
+        #expect(Tile(unicodeTile: 赤.unicodeTile)?.赤か == false)
     }
 
     @Test("対象外の文字は受け付けない")

@@ -20,7 +20,7 @@ public enum Yaku: Sendable, Hashable {
     case 人和(人和の扱い)
 
     /// 役満か。
-    public var isYakuman: Bool {
+    public var 役満か: Bool {
         switch self {
         case .国士無双, .大三元, .四暗刻, .字一色, .清老頭, .緑一色, .大四喜, .小四喜, .四槓子,
              .九蓮宝燈, .天和, .地和:
@@ -35,7 +35,7 @@ public enum Yaku: Sendable, Hashable {
     /// 翻数。面前か否かで食い下がりを反映する。役満は13。
     public func han(menzen: Bool) -> Int {
         if case let .人和(rank) = self { return rank.han }
-        if isYakuman { return 13 }
+        if 役満か { return 13 }
         switch self {
         case .三色同順, .一気通貫, .混全帯幺九:
             return menzen ? 2 : 1
@@ -92,7 +92,7 @@ public struct YakuDetector: Sendable {
             yaku += situationalYaku(hand)
         }
 
-        let yakuman = yaku.filter(\.isYakuman)
+        let yakuman = yaku.filter(\.役満か)
         return dedup(yakuman.isEmpty ? yaku : yakuman)
     }
 
@@ -106,7 +106,7 @@ public struct YakuDetector: Sendable {
         if ctx.doubleRiichi { result.append(.ダブル立直) }
         else if ctx.riichi { result.append(.立直) }
         if ctx.ippatsu && rules.ippatsu { result.append(.一発) }
-        if hand.isMenzen && ctx.winType == .ツモ { result.append(.門前清自摸和) }
+        if hand.門前か && ctx.winType == .ツモ { result.append(.門前清自摸和) }
         if ctx.lastTile { result.append(ctx.winType == .ツモ ? .海底摸月 : .河底撈魚) }
         if ctx.afterKan { result.append(.嶺上開花) }
         if ctx.robbingKan { result.append(.槍槓) }
@@ -132,22 +132,22 @@ public struct YakuDetector: Sendable {
         var result: [Yaku] = []
         let tiles = hand.allTiles
 
-        if tiles.allSatisfy(\.isSimple) {
-            if hand.isMenzen || rules.kuitan { result.append(.断么九) }
+        if tiles.allSatisfy(\.中張牌か) {
+            if hand.門前か || rules.kuitan { result.append(.断么九) }
         }
 
-        if tiles.allSatisfy(\.isHonor) { result.append(.字一色) }
-        if tiles.allSatisfy(\.isTerminal) { result.append(.清老頭) }
+        if tiles.allSatisfy(\.字牌か) { result.append(.字一色) }
+        if tiles.allSatisfy(\.老頭牌か) { result.append(.清老頭) }
         if tiles.allSatisfy(isGreen) { result.append(.緑一色) }
 
-        if tiles.allSatisfy(\.isTerminalOrHonor)
-            && !tiles.allSatisfy(\.isHonor) && !tiles.allSatisfy(\.isTerminal) {
+        if tiles.allSatisfy(\.么九牌か)
+            && !tiles.allSatisfy(\.字牌か) && !tiles.allSatisfy(\.老頭牌か) {
             result.append(.混老頭)
         }
 
-        let numberSuits = Set(tiles.filter { !$0.isHonor }.map(\.suit))
+        let numberSuits = Set(tiles.filter { !$0.字牌か }.map(\.suit))
         if numberSuits.count == 1 {
-            result.append(tiles.contains(where: \.isHonor) ? .混一色 : .清一色)
+            result.append(tiles.contains(where: \.字牌か) ? .混一色 : .清一色)
         }
 
         if isChuuren(hand) { result.append(.九蓮宝燈) }
@@ -157,10 +157,10 @@ public struct YakuDetector: Sendable {
 
     /// 九蓮宝燈: 完全門前（副露・暗槓なし）の清一色14枚で 1112345678999 + 任意の1枚。
     private func isChuuren(_ hand: WinningHand) -> Bool {
-        guard hand.isMenzen, hand.melds.isEmpty else { return false }
+        guard hand.門前か, hand.melds.isEmpty else { return false }
         let tiles = hand.allTiles
         guard tiles.count == 14,
-              let suit = tiles.first?.suit, suit.isNumbered,
+              let suit = tiles.first?.suit, suit.数牌か,
               tiles.allSatisfy({ $0.suit == suit }) else { return false }
 
         var counts = Array(repeating: 0, count: 10)
@@ -183,29 +183,29 @@ public struct YakuDetector: Sendable {
         // 役牌（三元牌・自風・場風）
         for triplet in triplets {
             let tile = triplet.leadTile
-            if tile.isDragon { result.append(dragonYaku(tile)) }
+            if tile.三元牌か { result.append(dragonYaku(tile)) }
             if tile == hand.context.seatWind.tile { result.append(.自風) }
             if tile == hand.context.roundWind.tile { result.append(.場風) }
         }
 
         // 小三元 / 大三元
-        let dragonTriplets = triplets.filter { $0.leadTile.isDragon }.count
+        let dragonTriplets = triplets.filter { $0.leadTile.三元牌か }.count
         if dragonTriplets == 3 {
             result.append(.大三元)
-        } else if dragonTriplets == 2 && d.pair.leadTile.isDragon {
+        } else if dragonTriplets == 2 && d.pair.leadTile.三元牌か {
             result.append(.小三元)
         }
 
         // 四喜
-        let windTriplets = triplets.filter { $0.leadTile.isWind }.count
+        let windTriplets = triplets.filter { $0.leadTile.風牌か }.count
         if windTriplets == 4 {
             result.append(.大四喜)
-        } else if windTriplets == 3 && d.pair.leadTile.isWind {
+        } else if windTriplets == 3 && d.pair.leadTile.風牌か {
             result.append(.小四喜)
         }
 
         // 一盃口 / 二盃口（面前限定）
-        if hand.isMenzen {
+        if hand.門前か {
             switch countIdenticalSequencePairs(sequences) {
             case 2...: result.append(.二盃口)
             case 1: result.append(.一盃口)
@@ -219,8 +219,8 @@ public struct YakuDetector: Sendable {
 
         // 全帯 / 純全帯（順子ありが条件）
         let allGroups = d.sets + [d.pair]
-        if allGroups.allSatisfy({ $0.tiles.contains(where: \.isTerminalOrHonor) }), !sequences.isEmpty {
-            result.append(hand.allTiles.contains(where: \.isHonor) ? .混全帯幺九 : .純全帯幺九)
+        if allGroups.allSatisfy({ $0.tiles.contains(where: \.么九牌か) }), !sequences.isEmpty {
+            result.append(hand.allTiles.contains(where: \.字牌か) ? .混全帯幺九 : .純全帯幺九)
         }
 
         // 対々和 / 三暗刻 / 四暗刻
@@ -266,14 +266,14 @@ public struct YakuDetector: Sendable {
 
     private func hasSanshokuSequence(_ sequences: [TileGroup]) -> Bool {
         (1...7).contains { rank in
-            Set(sequences.filter { $0.leadTile.rank == rank && !$0.leadTile.isHonor }
+            Set(sequences.filter { $0.leadTile.rank == rank && !$0.leadTile.字牌か }
                 .map(\.leadTile.suit)).count == 3
         }
     }
 
     private func hasSanshokuTriplet(_ triplets: [TileGroup]) -> Bool {
         (1...9).contains { rank in
-            Set(triplets.filter { $0.leadTile.rank == rank && !$0.leadTile.isHonor }
+            Set(triplets.filter { $0.leadTile.rank == rank && !$0.leadTile.字牌か }
                 .map(\.leadTile.suit)).count == 3
         }
     }

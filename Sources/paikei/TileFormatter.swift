@@ -43,10 +43,10 @@ enum TileFormatter {
         switch style {
         case .kanji:
             let body = kanjiTile(t)
-            return t.isRed ? red("赤" + body) : body
+            return t.赤か ? red("赤" + body) : body
         case .unicode:
             let body = t.unicodeTile
-            return t.isRed ? red(body + "~") : body
+            return t.赤か ? red(body + "~") : body
         }
     }
 

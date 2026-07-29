@@ -100,7 +100,7 @@ struct ストリームmjai方言 {
             fromLine: #"{"type":"pon","actor":3,"target":0,"pai":"5pr","consumed":["5p","5p"]}"#,
             format: format)
         #expect(pon == .ポン(of: .下家, from: .対面,
-                            牌: Tile(suit: .筒子, rank: 5, isRed: true)!,
+                            牌: Tile(suit: .筒子, rank: 5, 赤か: true)!,
                             手牌から: try Tile.parseHand("55p")))
     }
 }

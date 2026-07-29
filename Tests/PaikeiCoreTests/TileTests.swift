@@ -4,11 +4,11 @@ import Testing
 @Suite("Tile モデル")
 struct Tileモデル {
     @Test func 赤フラグは数牌の5にのみ付く() {
-        #expect(Tile(suit: .萬子, rank: 5, isRed: true) != nil)
-        #expect(Tile(suit: .筒子, rank: 5, isRed: true) != nil)
-        #expect(Tile(suit: .索子, rank: 5, isRed: true) != nil)
-        #expect(Tile(suit: .萬子, rank: 4, isRed: true) == nil)
-        #expect(Tile(suit: .字牌, rank: 5, isRed: true) == nil)
+        #expect(Tile(suit: .萬子, rank: 5, 赤か: true) != nil)
+        #expect(Tile(suit: .筒子, rank: 5, 赤か: true) != nil)
+        #expect(Tile(suit: .索子, rank: 5, 赤か: true) != nil)
+        #expect(Tile(suit: .萬子, rank: 4, 赤か: true) == nil)
+        #expect(Tile(suit: .字牌, rank: 5, 赤か: true) == nil)
     }
 
     @Test("範囲外の rank は作れない")
@@ -21,13 +21,13 @@ struct Tileモデル {
 
     @Test("normalized は赤フラグを落とす")
     func normalizedは赤フラグを落とす() {
-        let red = Tile(suit: .索子, rank: 5, isRed: true)!
+        let red = Tile(suit: .索子, rank: 5, 赤か: true)!
         #expect(red.normalized == Tile(suit: .索子, rank: 5)!)
         #expect(red != red.normalized)
     }
 
     @Test func 赤5は同種の通常5より前に並ぶ() {
-        let red = Tile(suit: .萬子, rank: 5, isRed: true)!
+        let red = Tile(suit: .萬子, rank: 5, 赤か: true)!
         let five = Tile(suit: .萬子, rank: 5)!
         #expect(red < five)
     }
@@ -41,7 +41,7 @@ struct Tileモデル {
 
     @Test("赤5と通常5は Set 上で別要素、normalized は等しい")
     func 赤5と通常5はSet上で別要素() {
-        let red = Tile(suit: .索子, rank: 5, isRed: true)!
+        let red = Tile(suit: .索子, rank: 5, 赤か: true)!
         let five = Tile(suit: .索子, rank: 5)!
         #expect(Set([red, five]).count == 2)
         #expect(red.normalized == five.normalized)
@@ -49,23 +49,23 @@ struct Tileモデル {
 
     @Test("normalized は冪等")
     func normalizedは冪等() {
-        let red = Tile(suit: .筒子, rank: 5, isRed: true)!
+        let red = Tile(suit: .筒子, rank: 5, 赤か: true)!
         #expect(red.normalized.normalized == red.normalized)
     }
 
     @Test("牌の性質判定（么九・中張・三元・風）")
     func 牌の性質判定() {
         let oneMan = Tile(suit: .萬子, rank: 1)!
-        #expect(oneMan.isTerminal && oneMan.isTerminalOrHonor && !oneMan.isSimple && !oneMan.isHonor)
+        #expect(oneMan.老頭牌か && oneMan.么九牌か && !oneMan.中張牌か && !oneMan.字牌か)
 
         let fiveP = Tile(suit: .筒子, rank: 5)!
-        #expect(fiveP.isSimple && !fiveP.isTerminalOrHonor)
+        #expect(fiveP.中張牌か && !fiveP.么九牌か)
 
         let haku = Tile(suit: .字牌, rank: 5)!
-        #expect(haku.isHonor && haku.isTerminalOrHonor && haku.isDragon && !haku.isWind)
+        #expect(haku.字牌か && haku.么九牌か && haku.三元牌か && !haku.風牌か)
 
         let east = Tile(suit: .字牌, rank: 1)!
-        #expect(east.isWind && !east.isDragon && east.isTerminalOrHonor)
+        #expect(east.風牌か && !east.三元牌か && east.么九牌か)
     }
 }
 
@@ -101,18 +101,18 @@ struct MPSZパースシリアライズ {
     @Test("0 は赤5としてパースされる")
     func _0は赤5としてパースされる() throws {
         let tiles = try Tile.parseHand("0m")
-        #expect(tiles == [Tile(suit: .萬子, rank: 5, isRed: true)!])
+        #expect(tiles == [Tile(suit: .萬子, rank: 5, 赤か: true)!])
     }
 
     @Test func 単独牌のパース() throws {
         #expect(try Tile.parse("3p") == Tile(suit: .筒子, rank: 3))
-        #expect(try Tile.parse("0s") == Tile(suit: .索子, rank: 5, isRed: true))
+        #expect(try Tile.parse("0s") == Tile(suit: .索子, rank: 5, 赤か: true))
     }
 
     @Test("単独牌のシリアライズ（赤は 0）")
     func 単独牌のシリアライズ() {
         #expect(Tile(suit: .筒子, rank: 3)!.mpsz == "3p")
-        #expect(Tile(suit: .索子, rank: 5, isRed: true)!.mpsz == "0s")
+        #expect(Tile(suit: .索子, rank: 5, 赤か: true)!.mpsz == "0s")
         #expect(Tile(suit: .字牌, rank: 1)!.mpsz == "1z")
     }
 

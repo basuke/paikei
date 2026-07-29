@@ -29,7 +29,7 @@ public struct FuCalculator: Sendable {
         }
 
         var fu = 20  // 底
-        if hand.isMenzen && hand.context.winType == .ロン { fu += 10 }  // 門前ロン
+        if hand.門前か && hand.context.winType == .ロン { fu += 10 }  // 門前ロン
         if hand.context.winType == .ツモ { fu += 2 }                  // ツモ符
         fu += waitFu(hand, d)
         fu += pairFu(d.pair, hand)
@@ -57,7 +57,7 @@ public struct FuCalculator: Sendable {
     /// 雀頭符。三元牌2、自風/場風は各2（連風牌はルールで2または4）。
     private func pairFu(_ pair: TileGroup, _ hand: WinningHand) -> Int {
         let tile = pair.leadTile
-        if tile.isDragon { return 2 }
+        if tile.三元牌か { return 2 }
         let isSeat = tile == hand.context.seatWind.tile
         let isRound = tile == hand.context.roundWind.tile
         if isSeat && isRound { return rules.doubleWindPairFu }
@@ -68,7 +68,7 @@ public struct FuCalculator: Sendable {
     /// 面子符。順子0。刻子/槓は 明暗×么九 で決まる。
     private func setFu(_ group: TileGroup, _ hand: WinningHand) -> Int {
         guard group.kind == .刻子 else { return 0 }
-        let terminal = group.leadTile.isTerminalOrHonor
+        let terminal = group.leadTile.么九牌か
         var concealed = group.isConcealed
         // ロンで完成した暗刻は明刻扱い（順子で置ければ暗刻を維持）。
         if concealed, !group.isKan, hand.context.winType == .ロン,

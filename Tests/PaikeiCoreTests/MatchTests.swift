@@ -236,14 +236,14 @@ struct 対局 {
         for _ in 0..<3 {
             try 進める(&match, 和了: match.state.dealer.seated(.下家),
                      放銃: match.state.dealer.seated(.対面))
-            #expect(!match.isFinished)
+            #expect(!match.終局済みか)
         }
         #expect(match.state.bakaze == .東)
         #expect(match.state.kyoku == 4)
 
         try 進める(&match, 和了: match.state.dealer.seated(.下家),
                  放銃: match.state.dealer.seated(.対面))
-        #expect(match.isFinished)
+        #expect(match.終局済みか)
         #expect(match.records.count == 4)
     }
 
@@ -252,14 +252,14 @@ struct 対局 {
         for _ in 0..<7 {
             try 進める(&match, 和了: match.state.dealer.seated(.下家),
                      放銃: match.state.dealer.seated(.対面))
-            #expect(!match.isFinished)
+            #expect(!match.終局済みか)
         }
         #expect(match.state.bakaze == .南)
         #expect(match.state.kyoku == 4)
 
         try 進める(&match, 和了: match.state.dealer.seated(.下家),
                  放銃: match.state.dealer.seated(.対面))
-        #expect(match.isFinished)
+        #expect(match.終局済みか)
     }
 
     @Test("オーラスで親が和了すれば連荘して続く")
@@ -271,7 +271,7 @@ struct 対局 {
         }
         // 東4で親が和了。
         try 進める(&match, 和了: match.state.dealer, 放銃: match.state.dealer.seated(.対面))
-        #expect(!match.isFinished)
+        #expect(!match.終局済みか)
         #expect(match.state.kyoku == 4)
         #expect(match.state.honba == 1)
     }
@@ -284,7 +284,7 @@ struct 対局 {
                      放銃: match.state.dealer.seated(.対面))
         }
         try 進める(&match, 和了: match.state.dealer, 放銃: match.state.dealer.seated(.対面))
-        #expect(match.isFinished)
+        #expect(match.終局済みか)
     }
 
     @Test func トビで即終局() throws {
@@ -294,7 +294,7 @@ struct 対局 {
         let timeline = GameTimeline(snapshot: match.state.snapshot())
         try match.finish(timeline, result: .和了(of: .下家, from: .対面, 役満))
         #expect(match.state.scores[.対面] == -7000)
-        #expect(match.isFinished)
+        #expect(match.終局済みか)
         #expect(match.state.bakaze == .東)  // 場風は最後の局のまま
     }
 
@@ -304,7 +304,7 @@ struct 対局 {
                         payment: .ロン(32000), liable: nil, honba: 0, kyotaku: 0)
         let timeline = GameTimeline(snapshot: match.state.snapshot())
         try match.finish(timeline, result: .和了(of: .下家, from: .対面, 役満))
-        #expect(!match.isFinished)
+        #expect(!match.終局済みか)
     }
 
     @Test("順位は持ち点降順、同点は起家に近い順")
@@ -405,7 +405,7 @@ struct 点数の保存則 {
         let 初期 = 総額(match.state)
 
         var 回数 = 0
-        while !match.isFinished, 回数 < 100 {
+        while !match.終局済みか, 回数 < 100 {
             let timeline = GameTimeline(snapshot: match.state.snapshot())
             // 和了と流局を交互に混ぜる。
             let result: GameResult = 回数 % 3 == 0
@@ -416,7 +416,7 @@ struct 点数の保存則 {
             #expect(総額(match.state) == 初期, "t\(回数): \(総額(match.state)) ≠ \(初期)")
             回数 += 1
         }
-        #expect(match.isFinished)
+        #expect(match.終局済みか)
         #expect(match.state.bakaze == .南)
         // 局数ぶんの記録が残っている。
         #expect(match.records.count == 回数)
@@ -459,7 +459,7 @@ struct 対局の入力検証 {
                         payment: .ロン(32000), liable: nil, honba: 0, kyotaku: 0)
         try match.finish(GameTimeline(snapshot: match.state.snapshot()),
                          result: .和了(of: .下家, from: .対面, 役満))
-        #expect(match.isFinished)  // トビ
+        #expect(match.終局済みか)  // トビ
 
         #expect(throws: MatchError.終局済み) {
             try match.finish(GameTimeline(snapshot: match.state.snapshot()),
