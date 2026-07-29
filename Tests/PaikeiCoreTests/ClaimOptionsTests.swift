@@ -6,7 +6,7 @@ struct 応答の選択肢 {
     /// 東場・自分は南家。他家の手牌は不明。
     func state(hand: String, riichi: Bool? = false) throws -> GameState {
         GameState(
-            場風: .東, 局: 1, 本場: 0, kyotaku: 0, wall: 40,
+            場風: .東, 局: 1, 本場: 0, 供託: 0, wall: 40,
             players: [
                 .自分: PlayerState(seat: .南, hand: try Tile.parseHand(hand), riichi: riichi),
                 .上家: PlayerState(),

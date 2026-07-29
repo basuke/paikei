@@ -59,10 +59,10 @@ public struct Score: Sendable, Equatable {
     /// 本場。
     public let 本場: Int
     /// 供託リーチ棒。
-    public let kyotaku: Int
+    public let 供託: Int
 
     /// 和了者の獲得点（本場・供託込み）。
-    public var total: Int { payment.total + kyotaku * 1000 }
+    public var total: Int { payment.total + 供託 * 1000 }
 }
 
 /// 点数計算（仕様フェーズ4）。ルール（切り上げ満貫など）を注入して使う。
@@ -79,7 +79,7 @@ public struct ScoreCalculator: Sendable {
     /// （誰が責任者かの判定は `LiabilityDetector` の担当）。
     public func score(
         _ evaluation: HandEvaluation, dora: DoraCount,
-        本場: Int = 0, kyotaku: Int = 0, liable: Player? = nil
+        本場: Int = 0, 供託: Int = 0, liable: Player? = nil
     ) -> Score? {
         guard !evaluation.yaku.isEmpty else { return nil }
 
@@ -98,18 +98,18 @@ public struct ScoreCalculator: Sendable {
                              winType: evaluation.hand.context.winType, 本場: 本場,
                              liable: liable != nil),
             liable: liable,
-            本場: 本場, kyotaku: kyotaku)
+            本場: 本場, 供託: 供託)
     }
 
     /// 手牌から高点法・ドラ計算・点数計算をまとめて行う。和了していなければ nil。
     /// 文脈が矛盾していれば `WinContextError` を投げる。
     public func score(
-        concealed: [Tile], melds: [Meld], context: WinContext, 本場: Int = 0, kyotaku: Int = 0
+        concealed: [Tile], melds: [Meld], context: WinContext, 本場: Int = 0, 供託: Int = 0
     ) throws -> Score? {
         guard let best = try HandEvaluator(rules: rules)
             .best(concealed: concealed, melds: melds, context: context) else { return nil }
         return score(best, dora: DoraCounter(rules: rules).count(best.hand),
-                     本場: 本場, kyotaku: kyotaku)
+                     本場: 本場, 供託: 供託)
     }
 
     /// 翻と符だけから支払いを求める（素の点数表）。

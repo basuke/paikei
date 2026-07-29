@@ -27,16 +27,16 @@ extension GameResult {
         }
     }
 
-    /// 持ち点の増減。`kyotaku` は局終了時点の供託本数。
+    /// 持ち点の増減。`供託` は局終了時点の供託本数。
     ///
     /// 和了者は支払いに加えて供託を総取りする。流局では供託は動かない
     /// （次局へ持ち越すので、ここでは誰にも足さない）。
-    func deltas(dealer: Player, kyotaku: Int) -> [Player: Int] {
+    func deltas(dealer: Player, 供託: Int) -> [Player: Int] {
         var result: [Player: Int] = [:]
 
         switch self {
         case let .和了(winner, from, score):
-            result[winner, default: 0] += score.payment.total + kyotaku * 1000
+            result[winner, default: 0] += score.payment.total + 供託 * 1000
             switch score.payment {
             case let .ロン(amount):
                 result[from, default: 0] -= amount

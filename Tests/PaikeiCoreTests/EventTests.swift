@@ -112,7 +112,7 @@ struct イベント適用 {
     @Test("リーチ: 次の打牌が宣言牌になり、成立で供託+1・持ち点-1000")
     func リーチ宣言から成立まで() throws {
         let s = try GameState(
-            kyotaku: 0,
+            供託: 0,
             players: [.自分: PlayerState(
                 hand: try Tile.parseHand("123456789m1123p"), score: 25000)])
             .applying(.ツモ(of: .自分, 牌: try Tile.parse("9s")))
@@ -123,7 +123,7 @@ struct イベント適用 {
         #expect(me.riichi == true)
         #expect(me.river.last?.立直宣言牌か == true)  // 立直成立が宣言牌を河へ流す
         #expect(me.score == 24000)
-        #expect(s.kyotaku == 1)
+        #expect(s.供託 == 1)
 
         // 2枚目の打牌には * が付かない。
         let next = try s
@@ -302,11 +302,11 @@ struct 応答対象の解決 {
 
     @Test("reach_accepted 単独でも riichi が立つ（MJAI由来のログ対策）")
     func reach_accepted単独でもriichiが立つ() throws {
-        var state = GameState(kyotaku: 0)
+        var state = GameState(供託: 0)
         state.players[.対面] = PlayerState(score: 25000)
         let s = try state.applying(.立直成立(of: .対面))
         #expect(s.players[.対面]?.riichi == true)
-        #expect(s.kyotaku == 1)
+        #expect(s.供託 == 1)
     }
 
     @Test func ロンは応答対象を消費して終局() throws {

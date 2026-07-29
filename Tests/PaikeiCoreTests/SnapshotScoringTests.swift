@@ -4,13 +4,13 @@ import Testing
 @Suite struct スナップショットからの点数解析 {
     /// 平和形（234567m 234p 45s + 99p雀頭）で 6s の両面待ちテンパイの局面を組み立てる。
     func state(
-        場風: Wind? = .東, 本場: Int? = 1, kyotaku: Int? = 1,
+        場風: Wind? = .東, 本場: Int? = 1, 供託: Int? = 1,
         dora: [Tile] = [], seat: Wind? = .西, riichi: Bool? = false,
         hand: String = "234567m234p45s99p", melds: [Meld] = [],
         draw: Tile? = nil, claim: ClaimTile? = nil
     ) throws -> GameState {
         GameState(
-            場風: 場風, 局: 1, 本場: 本場, kyotaku: kyotaku,
+            場風: 場風, 局: 1, 本場: 本場, 供託: 供託,
             doraMarkers: dora,
             players: [.自分: PlayerState(
                 seat: seat, hand: try Tile.parseHand(hand), draw: draw,
@@ -77,7 +77,7 @@ import Testing
 
     @Test("立直・ドラ・本場・供託の不明は仮定して答える（答えが低めに出るだけ）")
     func 立直ドラ本場供託の不明は仮定して答える() throws {
-        let s = try state(場風: nil, 本場: nil, kyotaku: nil, seat: nil, riichi: nil)
+        let s = try state(場風: nil, 本場: nil, 供託: nil, seat: nil, riichi: nil)
         let (score, _, assumptions) = try scored(
             try s.score(winningTile: try Tile.parse("6s"), winType: .ロン))
 
@@ -165,7 +165,7 @@ import Testing
 
     /// 1z（東）の刻子で和了する手。場風・自風の役牌が付くかどうかが風で決まる。
     func windTripletState(場風: Wind? = nil, seat: Wind? = nil) throws -> GameState {
-        try state(場風: 場風, 本場: 0, kyotaku: 0, seat: seat,
+        try state(場風: 場風, 本場: 0, 供託: 0, seat: seat,
                   hand: "234m567p234s99p11z")
     }
 
@@ -203,7 +203,7 @@ import Testing
     @Test("風牌だらけでも答えが変わらないなら答える（国士無双）")
     func 風牌だらけでも答えが変わらないなら答える() throws {
         let s = GameState(
-            場風: nil, 局: nil, 本場: 0, kyotaku: 0,
+            場風: nil, 局: nil, 本場: 0, 供託: 0,
             players: [.自分: PlayerState(
                 seat: nil, hand: try Tile.parseHand("19m19p19s1234567z"), riichi: false)],
             claim: ClaimTile(tile: try Tile.parse("1z"), from: .対面))
@@ -271,7 +271,7 @@ import Testing
     @Test func 形は和了でも役がなければ和了できない() throws {
         // 喰いタンなしルールでの鳴き断么九。ドラがあっても役にはならない。
         let s = GameState(
-            場風: .東, 本場: 0, kyotaku: 0,
+            場風: .東, 本場: 0, 供託: 0,
             doraMarkers: [try Tile.parse("4p")],
             players: [.自分: PlayerState(
                 seat: .西, hand: try Tile.parseHand("345m678p456s55p"),

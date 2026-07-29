@@ -46,7 +46,7 @@ enum MjaiKyoku {
 
         return GameState(
             場風: bakaze, 局: try int("kyoku"), 本場: try int("honba"),
-            kyotaku: try int("kyotaku"), doraMarkers: markers, wall: GameState.wallAfterDeal,
+            供託: try int("kyotaku"), doraMarkers: markers, wall: GameState.wallAfterDeal,
             players: players)
     }
 

@@ -66,7 +66,7 @@ extension GameState {
 
         case let .立直成立(actor):
             state.resolveClaim()
-            if let kyotaku = state.kyotaku { state.kyotaku = kyotaku + 1 }
+            if let kyotaku = state.供託 { state.供託 = kyotaku + 1 }
             state.update(actor) {
                 // 立直を伴わない生ログ（宣言が t0 より前）でもリーチ中として扱う。
                 $0.riichi = true

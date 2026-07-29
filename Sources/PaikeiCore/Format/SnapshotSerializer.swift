@@ -10,7 +10,7 @@ extension GameState {
         if let bakaze = 場風 { lines.append("bakaze: \(bakaze.rawValue)") }
         if let kyoku = 局 { lines.append("kyoku: \(kyoku)") }
         if let honba = 本場 { lines.append("honba: \(honba)") }
-        if let kyotaku { lines.append("kyotaku: \(kyotaku)") }
+        if let kyotaku = 供託 { lines.append("kyotaku: \(kyotaku)") }
         if !doraMarkers.isEmpty {
             lines.append("dora_markers: \(doraMarkers.map(\.mpsz).joined(separator: " "))")
         }

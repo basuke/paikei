@@ -10,7 +10,7 @@ struct 包の判定 {
               draw: String? = nil, claim: ClaimTile? = nil,
               rules: RuleSet = .standard) throws -> (GameState, RuleSet) {
         let state = GameState(
-            場風: .東, 局: 1, 本場: 0, kyotaku: 0,
+            場風: .東, 局: 1, 本場: 0, 供託: 0,
             doraMarkers: [try Tile.parse("3p")], wall: 40,
             players: [
                 .自分: PlayerState(seat: .南, hand: try Tile.parseHand(hand),
@@ -33,7 +33,7 @@ struct 包の判定 {
         guard case let .点数(score, yaku, _) = analysis else {
             Issue.record("点数が出るはず: \(analysis)")
             return Score(han: 0, fu: 0, limit: nil, dora: DoraCount(),
-                         payment: .ロン(0), liable: nil, 本場: 0, kyotaku: 0)
+                         payment: .ロン(0), liable: nil, 本場: 0, 供託: 0)
         }
         #expect(yaku.contains(.大三元))
         return score
@@ -75,7 +75,7 @@ struct 包の判定 {
 
     @Test func 大四喜でも付く() throws {
         let state = GameState(
-            場風: .東, 局: 1, 本場: 0, kyotaku: 0, wall: 40,
+            場風: .東, 局: 1, 本場: 0, 供託: 0, wall: 40,
             players: [
                 .自分: PlayerState(
                     seat: .南, hand: try Tile.parseHand("5p"), draw: try Tile.parse("5p"),
@@ -128,7 +128,7 @@ struct 包の判定 {
     /// 1m を鳴かせて大明槓し、嶺上牌 8s で和了る。
     func 大明槓の局面() throws -> GameState {
         GameState(
-            場風: .東, 局: 1, 本場: 0, kyotaku: 0, wall: 40,
+            場風: .東, 局: 1, 本場: 0, 供託: 0, wall: 40,
             players: [
                 .自分: PlayerState(
                     seat: .南, hand: try Tile.parseHand("234p567p234s8s"),

@@ -10,7 +10,7 @@ struct 局の結末 {
     func timeline(events: [Event] = [], wall: Int = 40) throws -> GameTimeline {
         GameTimeline(
             snapshot: GameState(
-                場風: .東, 局: 1, 本場: 0, kyotaku: 0,
+                場風: .東, 局: 1, 本場: 0, 供託: 0,
                 doraMarkers: [try Tile.parse("3z")],
                 wall: wall,
                 players: [
@@ -194,7 +194,7 @@ struct 局の結末 {
         #expect(理由 == .九種九牌)
         // ノーテン罰符が無いので、テンパイは数えない。
         #expect(テンパイ.isEmpty)
-        #expect(result.deltas(dealer: .自分, kyotaku: 0).values.allSatisfy { $0 == 0 })
+        #expect(result.deltas(dealer: .自分, 供託: 0).values.allSatisfy { $0 == 0 })
         #expect(result.dealerContinues(dealer: .自分))
     }
 

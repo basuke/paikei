@@ -288,7 +288,7 @@ struct 本場供託と切り上げ満貫 {
                              winningTile: try Tile.parse("4s"), riichi: true)
         let score = try #require(try ScoreCalculator().score(
             concealed: try Tile.parseHand("111m234p567p234s99m"), melds: [], context: ctx,
-            本場: 1, kyotaku: 2))
+            本場: 1, 供託: 2))
         #expect(score.han == 1)
         #expect(score.fu == 40)
         #expect(score.payment == .ロン(1300 + 300))       // 1本場

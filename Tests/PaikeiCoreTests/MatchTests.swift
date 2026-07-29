@@ -5,10 +5,10 @@ import Testing
 @Suite("局の連鎖 (MatchState)")
 struct 局の連鎖 {
     /// 東1局、自分が親。持ち点は全員25000。
-    func state(場風: Wind = .東, 局: Int = 1, 本場: Int = 0, kyotaku: Int = 0,
+    func state(場風: Wind = .東, 局: Int = 1, 本場: Int = 0, 供託: Int = 0,
                dealer: Player = .自分) -> MatchState {
         MatchState(
-            場風: 場風, 局: 局, 本場: 本場, kyotaku: kyotaku,
+            場風: 場風, 局: 局, 本場: 本場, 供託: 供託,
             scores: Dictionary(uniqueKeysWithValues: Player.allCases.map { ($0, 25000) }),
             dealer: dealer)
     }
@@ -20,13 +20,13 @@ struct 局の連鎖 {
             s.players[player]?.score = (state.scores[player] ?? 0) - 1000
             s.players[player]?.riichi = true
         }
-        s.kyotaku = state.kyotaku + 立直.count
+        s.供託 = state.供託 + 立直.count
         return s
     }
 
     func 子のロン満貫() -> Score {
         Score(han: 5, fu: 30, limit: .満貫, dora: DoraCount(),
-              payment: .ロン(8000), liable: nil, 本場: 0, kyotaku: 0)
+              payment: .ロン(8000), liable: nil, 本場: 0, 供託: 0)
     }
 
     func 続行(_ progress: MatchProgress) throws -> MatchState {
@@ -50,10 +50,10 @@ struct 局の連鎖 {
 
     @Test("初期局面の骨格は仮定を必要としない")
     func 初期局面の骨格() {
-        let snapshot = state(本場: 2, kyotaku: 1).snapshot()
+        let snapshot = state(本場: 2, 供託: 1).snapshot()
         #expect(snapshot.場風 == .東)
         #expect(snapshot.本場 == 2)
-        #expect(snapshot.kyotaku == 1)
+        #expect(snapshot.供託 == 1)
         #expect(snapshot.wall == 70)
         #expect(snapshot.players[.自分]?.seat == .東)
         #expect(snapshot.players[.自分]?.riichi == false)
@@ -121,7 +121,7 @@ struct 局の連鎖 {
 
     @Test func ツモは親と子で額が違う() throws {
         let score = Score(han: 5, fu: 30, limit: .満貫, dora: DoraCount(),
-                          payment: .ツモ(親: 4000, 子: 2000), liable: nil, 本場: 0, kyotaku: 0)
+                          payment: .ツモ(親: 4000, 子: 2000), liable: nil, 本場: 0, 供託: 0)
         let s = state()  // 親は自分
         let next = try 続行(s.applying(.和了(of: .下家, from: .下家, score), at: end(s)))
         #expect(next.scores[.下家] == 33000)
@@ -133,7 +133,7 @@ struct 局の連鎖 {
     @Test("親のツモは全員が同額を払う")
     func 親のツモ() throws {
         let score = Score(han: 5, fu: 30, limit: .満貫, dora: DoraCount(),
-                          payment: .ツモ(親: nil, 子: 4000), liable: nil, 本場: 0, kyotaku: 0)
+                          payment: .ツモ(親: nil, 子: 4000), liable: nil, 本場: 0, 供託: 0)
         let s = state()
         let next = try 続行(s.applying(.和了(of: .自分, from: .自分, score), at: end(s)))
         #expect(next.scores[.自分] == 37000)
@@ -142,7 +142,7 @@ struct 局の連鎖 {
 
     @Test func 包の責任払いは責任者が全額を負う() throws {
         let score = Score(han: 13, fu: 0, limit: .役満(複合数: 1), dora: DoraCount(),
-                          payment: .責任払い(32000), liable: .上家, 本場: 0, kyotaku: 0)
+                          payment: .責任払い(32000), liable: .上家, 本場: 0, 供託: 0)
         let s = state()
         // 上家が飛ぶ額なので、トビ終了を切って点数移動だけを見る。
         let next = try 続行(s.applying(.和了(of: .下家, from: .下家, score), at: end(s),
@@ -156,7 +156,7 @@ struct 局の連鎖 {
 
     @Test("立直棒は局中に減り、和了者が供託を総取りする")
     func 供託は和了者が総取り() throws {
-        let s = state(kyotaku: 1)
+        let s = state(供託: 1)
         // 対面と上家が立直した局。
         let next = try 続行(s.applying(
             .和了(of: .下家, from: .対面, 子のロン満貫()),
@@ -165,15 +165,15 @@ struct 局の連鎖 {
         #expect(next.scores[.下家] == 25000 + 8000 + 3000)
         #expect(next.scores[.対面] == 25000 - 1000 - 8000)
         #expect(next.scores[.上家] == 24000)
-        #expect(next.kyotaku == 0)
+        #expect(next.供託 == 0)
     }
 
     @Test func 流局では供託が次局へ持ち越される() throws {
-        let s = state(kyotaku: 1)
+        let s = state(供託: 1)
         let next = try 続行(s.applying(
             .流局(理由: .荒牌平局, テンパイ: [.自分], 流し満貫: []),
             at: end(s, 立直: [.自分])))
-        #expect(next.kyotaku == 2)
+        #expect(next.供託 == 2)
     }
 
     // MARK: - ノーテン罰符
@@ -221,7 +221,7 @@ struct 局の連鎖 {
 struct 対局 {
     func 満貫ロン() -> Score {
         Score(han: 5, fu: 30, limit: .満貫, dora: DoraCount(),
-              payment: .ロン(8000), liable: nil, 本場: 0, kyotaku: 0)
+              payment: .ロン(8000), liable: nil, 本場: 0, 供託: 0)
     }
 
     /// 局を1つ、指定の和了者で終える。
@@ -290,7 +290,7 @@ struct 対局 {
     @Test func トビで即終局() throws {
         var match = Match(rules: RuleSet(length: .半荘戦))
         let 役満 = Score(han: 13, fu: 0, limit: .役満(複合数: 1), dora: DoraCount(),
-                        payment: .ロン(32000), liable: nil, 本場: 0, kyotaku: 0)
+                        payment: .ロン(32000), liable: nil, 本場: 0, 供託: 0)
         let timeline = GameTimeline(snapshot: match.state.snapshot())
         try match.finish(timeline, result: .和了(of: .下家, from: .対面, 役満))
         #expect(match.state.scores[.対面] == -7000)
@@ -301,7 +301,7 @@ struct 対局 {
     @Test func トビを無効にすれば続行する() throws {
         var match = Match(rules: RuleSet(length: .半荘戦, bankruptcyEnds: false))
         let 役満 = Score(han: 13, fu: 0, limit: .役満(複合数: 1), dora: DoraCount(),
-                        payment: .ロン(32000), liable: nil, 本場: 0, kyotaku: 0)
+                        payment: .ロン(32000), liable: nil, 本場: 0, 供託: 0)
         let timeline = GameTimeline(snapshot: match.state.snapshot())
         try match.finish(timeline, result: .和了(of: .下家, from: .対面, 役満))
         #expect(!match.終局済みか)
@@ -331,7 +331,7 @@ struct 対局 {
 @Suite("点数の保存則")
 struct 点数の保存則 {
     func 総額(_ state: MatchState) -> Int {
-        state.scores.values.reduce(0, +) + state.kyotaku * 1000
+        state.scores.values.reduce(0, +) + state.供託 * 1000
     }
 
     /// 立直棒を場に出した局の終了状態。
@@ -341,7 +341,7 @@ struct 点数の保存則 {
             s.players[player]?.score = (state.scores[player] ?? 0) - 1000
             s.players[player]?.riichi = true
         }
-        s.kyotaku = state.kyotaku + 立直.count
+        s.供託 = state.供託 + 立直.count
         return s
     }
 
@@ -349,16 +349,16 @@ struct 点数の保存則 {
     @Test("あらゆる結末を通しても総額が変わらない")
     func 総額が変わらない() throws {
         let 満貫ロン = Score(han: 5, fu: 30, limit: .満貫, dora: DoraCount(),
-                          payment: .ロン(8300), liable: nil, 本場: 1, kyotaku: 0)
+                          payment: .ロン(8300), liable: nil, 本場: 1, 供託: 0)
         let 子のツモ = Score(han: 4, fu: 30, limit: nil, dora: DoraCount(),
-                          payment: .ツモ(親: 4000, 子: 2000), liable: nil, 本場: 0, kyotaku: 0)
+                          payment: .ツモ(親: 4000, 子: 2000), liable: nil, 本場: 0, 供託: 0)
         let 親のツモ = Score(han: 3, fu: 40, limit: nil, dora: DoraCount(),
-                          payment: .ツモ(親: nil, 子: 2600), liable: nil, 本場: 0, kyotaku: 0)
+                          payment: .ツモ(親: nil, 子: 2600), liable: nil, 本場: 0, 供託: 0)
         let 包のツモ = Score(han: 13, fu: 0, limit: .役満(複合数: 1), dora: DoraCount(),
-                          payment: .責任払い(32000), liable: .上家, 本場: 0, kyotaku: 0)
+                          payment: .責任払い(32000), liable: .上家, 本場: 0, 供託: 0)
         let 包のロン = Score(han: 13, fu: 0, limit: .役満(複合数: 1), dora: DoraCount(),
                           payment: .折半(責任者: 16000, 放銃者: 16000), liable: .上家,
-                          本場: 0, kyotaku: 0)
+                          本場: 0, 供託: 0)
         let 流し = NagashiMangan(player: .対面, payment: .ツモ(親: 4000, 子: 2000))
 
         let 結末: [GameResult] = [
@@ -382,7 +382,7 @@ struct 点数の保存則 {
         for result in 結末 {
             for 立直者 in [[], [Player.対面], [.自分, .下家, .対面, .上家]] {
                 let start = MatchState(
-                    kyotaku: 2,
+                    供託: 2,
                     scores: Dictionary(uniqueKeysWithValues:
                         Player.allCases.map { ($0, 25000) }),
                     dealer: .自分)
@@ -401,7 +401,7 @@ struct 点数の保存則 {
     func 半荘を通しても変わらない() throws {
         var match = Match(rules: RuleSet(bankruptcyEnds: false))
         let 満貫 = Score(han: 5, fu: 30, limit: .満貫, dora: DoraCount(),
-                       payment: .ロン(8000), liable: nil, 本場: 0, kyotaku: 0)
+                       payment: .ロン(8000), liable: nil, 本場: 0, 供託: 0)
         let 初期 = 総額(match.state)
 
         var 回数 = 0
@@ -428,7 +428,7 @@ struct 点数の保存則 {
 struct 対局の入力検証 {
     func 満貫() -> Score {
         Score(han: 5, fu: 30, limit: .満貫, dora: DoraCount(),
-              payment: .ロン(8000), liable: nil, 本場: 0, kyotaku: 0)
+              payment: .ロン(8000), liable: nil, 本場: 0, 供託: 0)
     }
 
     @Test("いまの局と食い違う記録は断る")
@@ -456,7 +456,7 @@ struct 対局の入力検証 {
     func 終局後は断る() throws {
         var match = Match(rules: RuleSet(length: .東風戦))
         let 役満 = Score(han: 13, fu: 0, limit: .役満(複合数: 1), dora: DoraCount(),
-                        payment: .ロン(32000), liable: nil, 本場: 0, kyotaku: 0)
+                        payment: .ロン(32000), liable: nil, 本場: 0, 供託: 0)
         try match.finish(GameTimeline(snapshot: match.state.snapshot()),
                          result: .和了(of: .下家, from: .対面, 役満))
         #expect(match.終局済みか)  // トビ

@@ -33,10 +33,10 @@ enum ScoreDescription {
         lines.append(yaku.map(\.displayName).joined(separator: " "))
         lines.append(headline(score))
         lines.append("支払い: " + payment(score.payment, liable: score.liable))
-        if score.本場 > 0 || score.kyotaku > 0 {
+        if score.本場 > 0 || score.供託 > 0 {
             var extras: [String] = []
             if score.本場 > 0 { extras.append("\(score.本場)本場") }
-            if score.kyotaku > 0 { extras.append("供託\(score.kyotaku)本") }
+            if score.供託 > 0 { extras.append("供託\(score.供託)本") }
             lines.append("（\(extras.joined(separator: " ")) 込み）")
         }
         if !assumptions.isEmpty {

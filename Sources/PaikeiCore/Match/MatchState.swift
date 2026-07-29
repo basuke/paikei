@@ -8,20 +8,20 @@ public struct MatchState: Sendable, Equatable {
     public var 局: Int
     public var 本場: Int
     /// 供託リーチ棒の本数。
-    public var kyotaku: Int
+    public var 供託: Int
     /// 持ち点。4人ぶん揃っている前提。
     public var scores: [Player: Int]
     /// この局の親。
     public var dealer: Player
 
     public init(
-        場風: Wind = .東, 局: Int = 1, 本場: Int = 0, kyotaku: Int = 0,
+        場風: Wind = .東, 局: Int = 1, 本場: Int = 0, 供託: Int = 0,
         scores: [Player: Int], dealer: Player
     ) {
         self.場風 = 場風
         self.局 = 局
         self.本場 = 本場
-        self.kyotaku = kyotaku
+        self.供託 = 供託
         self.scores = scores
         self.dealer = dealer
     }
@@ -45,7 +45,7 @@ extension MatchState {
     /// 配牌直後なので山は満杯、立直も全員していないと言い切れる。
     public func snapshot() -> GameState {
         GameState(
-            場風: 場風, 局: 局, 本場: 本場, kyotaku: kyotaku,
+            場風: 場風, 局: 局, 本場: 本場, 供託: 供託,
             wall: GameState.wallAfterDeal,
             players: Dictionary(uniqueKeysWithValues: Player.allCases.map { player in
                 (player, PlayerState(seat: seat(of: player), riichi: false,
@@ -73,19 +73,19 @@ extension MatchState {
         for player in Player.allCases {
             if let score = end.players[player]?.score { next.scores[player] = score }
         }
-        let pot = end.kyotaku ?? kyotaku
+        let pot = end.供託 ?? 供託
 
-        for (player, delta) in result.deltas(dealer: dealer, kyotaku: pot) {
+        for (player, delta) in result.deltas(dealer: dealer, 供託: pot) {
             next.scores[player, default: 0] += delta
         }
 
         let continues = result.dealerContinues(dealer: dealer)
         switch result {
         case .和了:
-            next.kyotaku = 0  // 和了者が総取り（deltas で渡してある）
+            next.供託 = 0  // 和了者が総取り（deltas で渡してある）
             next.本場 = continues ? 本場 + 1 : 0
         case .流局:
-            next.kyotaku = pot  // 次局へ持ち越す
+            next.供託 = pot  // 次局へ持ち越す
             next.本場 = 本場 + 1
         }
 
