@@ -11,7 +11,7 @@ struct 局の結末 {
         GameTimeline(
             snapshot: GameState(
                 場風: .東, 局: 1, 本場: 0, 供託: 0,
-                doraMarkers: [try Tile.parse("3z")],
+                ドラ表示牌: [try Tile.parse("3z")],
                 wall: wall,
                 players: [
                     .自分: PlayerState(席風: .東,

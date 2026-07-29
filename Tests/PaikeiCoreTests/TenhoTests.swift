@@ -12,7 +12,7 @@ struct 天和と地和 {
                他家の副露: [String] = []) throws -> GameState {
         GameState(
             場風: .東, 局: 1, 本場: 0, 供託: 0,
-            doraMarkers: [try Tile.parse("9m")], wall: wall,
+            ドラ表示牌: [try Tile.parse("9m")], wall: wall,
             players: [
                 .自分: PlayerState(
                     席風: 席風, hand: try Tile.parseHand("1133m5577p2299s5s"),
@@ -114,7 +114,7 @@ struct 人和 {
         GameState(
             場風: .東, 局: 1, 本場: 0, 供託: 0,
             // ドラ表示 3s → ドラは 4s。手牌に無いので翻の検証が素になる。
-            doraMarkers: [try Tile.parse("3s")], wall: wall,
+            ドラ表示牌: [try Tile.parse("3s")], wall: wall,
             players: [
                 .自分: PlayerState(
                     席風: 席風, hand: try Tile.parseHand("1133m5577p2299s5s"),

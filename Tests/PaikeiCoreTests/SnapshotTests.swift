@@ -29,7 +29,7 @@ struct スナップショットパース {
         #expect(state.局 == 2)
         #expect(state.本場 == 1)
         #expect(state.供託 == 1)
-        #expect(state.doraMarkers == [Tile(suit: .筒子, rank: 3)!])
+        #expect(state.ドラ表示牌 == [Tile(suit: .筒子, rank: 3)!])
         #expect(state.wall == 42)
         #expect(state.players.count == 4)
 

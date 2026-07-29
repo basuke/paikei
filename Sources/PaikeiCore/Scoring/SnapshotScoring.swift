@@ -17,7 +17,7 @@ public struct WinOptions: Sendable, Equatable {
     /// 自分がまだ1枚も打っていないことから導出する。
     public var firstTurn: Bool
     /// 裏ドラ表示牌（立直時のみ意味を持つ）。
-    public var uraMarkers: [Tile]
+    public var 裏ドラ表示牌: [Tile]
 
     public init(
         ダブル立直: Bool = false,
@@ -26,7 +26,7 @@ public struct WinOptions: Sendable, Equatable {
         afterKan: Bool = false,
         robbingKan: Bool = false,
         firstTurn: Bool = false,
-        uraMarkers: [Tile] = []
+        裏ドラ表示牌: [Tile] = []
     ) {
         self.ダブル立直 = ダブル立直
         self.一発 = 一発
@@ -34,7 +34,7 @@ public struct WinOptions: Sendable, Equatable {
         self.afterKan = afterKan
         self.robbingKan = robbingKan
         self.firstTurn = firstTurn
-        self.uraMarkers = uraMarkers
+        self.裏ドラ表示牌 = 裏ドラ表示牌
     }
 }
 
@@ -178,8 +178,8 @@ extension GameState {
         }
 
         let riichi = assume(ps.立直, false, .立直不明)
-        if doraMarkers.isEmpty { assumptions.append(.ドラ表示牌不明) }
-        if riichi && rules.裏ドラ && options.uraMarkers.isEmpty {
+        if ドラ表示牌.isEmpty { assumptions.append(.ドラ表示牌不明) }
+        if riichi && rules.裏ドラ && options.裏ドラ表示牌.isEmpty {
             assumptions.append(.裏ドラ表示牌不明)
         }
         let honbaCount = assume(本場, 0, .本場不明)
@@ -196,8 +196,8 @@ extension GameState {
                 afterKan: options.afterKan,
                 robbingKan: options.robbingKan,
                 firstTurn: options.firstTurn,
-                doraMarkers: doraMarkers,
-                uraMarkers: options.uraMarkers)
+                ドラ表示牌: ドラ表示牌,
+                裏ドラ表示牌: options.裏ドラ表示牌)
         }
 
         // 文脈フラグの矛盾は風の選び方によらないので、代表の風で先に検査する。

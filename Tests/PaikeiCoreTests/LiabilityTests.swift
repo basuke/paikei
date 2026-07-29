@@ -11,7 +11,7 @@ struct 包の判定 {
               rules: RuleSet = .standard) throws -> (GameState, RuleSet) {
         let state = GameState(
             場風: .東, 局: 1, 本場: 0, 供託: 0,
-            doraMarkers: [try Tile.parse("3p")], wall: 40,
+            ドラ表示牌: [try Tile.parse("3p")], wall: 40,
             players: [
                 .自分: PlayerState(席風: .南, hand: try Tile.parseHand(hand),
                                   draw: try draw.map { try Tile.parse($0) },

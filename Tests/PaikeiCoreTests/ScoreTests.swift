@@ -119,7 +119,7 @@ struct 本場供託と切り上げ満貫 {
         var ctx = WinContext(seatWind: .南, roundWind: .東, winType: winType,
                              winningTile: try Tile.parse("6s"))
         // 2m・2p・4s がドラ（手牌に1枚ずつ）。
-        ctx.doraMarkers = try ["1m", "1p", "3s"].map { try Tile.parse($0) }
+        ctx.ドラ表示牌 = try ["1m", "1p", "3s"].map { try Tile.parse($0) }
         return try #require(try ScoreCalculator(rules: rules).score(
             concealed: try Tile.parseHand("234567m234p456s99p"), melds: [], context: ctx))
     }
@@ -173,7 +173,7 @@ struct 本場供託と切り上げ満貫 {
         let ctx = WinContext(
             seatWind: .南, roundWind: .東, winType: .ツモ,
             winningTile: try Tile.parse(win), 立直: 立直,
-            doraMarkers: try Tile.parseHand(dora), uraMarkers: try Tile.parseHand(ura))
+            ドラ表示牌: try Tile.parseHand(dora), 裏ドラ表示牌: try Tile.parseHand(ura))
         let hands = WinningHand.readings(
             concealed: try Tile.parseHand(concealed),
             melds: try melds.map { try Meld.parse($0) }, context: ctx)
@@ -241,7 +241,7 @@ struct 本場供託と切り上げ満貫 {
         let base = WinContext(seatWind: .南, roundWind: .東, winType: .ツモ,
                               winningTile: try Tile.parse("6s"), 立直: true)
         var withDora = base
-        withDora.doraMarkers = [try Tile.parse("1p")]  // 2p がドラ、手牌に1枚
+        withDora.ドラ表示牌 = [try Tile.parse("1p")]  // 2p がドラ、手牌に1枚
 
         let plain = try #require(try ScoreCalculator().score(
             concealed: try Tile.parseHand("234567m234p456s99p"), melds: [], context: base))
@@ -256,7 +256,7 @@ struct 本場供託と切り上げ満貫 {
         // 喰いタンなしルールでの鳴き断么九。ドラがあっても和了できない。
         var ctx = WinContext(seatWind: .南, roundWind: .東, winType: .ロン,
                              winningTile: try Tile.parse("5p"))
-        ctx.doraMarkers = [try Tile.parse("4p")]
+        ctx.ドラ表示牌 = [try Tile.parse("4p")]
         let calc = ScoreCalculator(rules: RuleSet(喰いタン: false))
         #expect(try calc.score(concealed: try Tile.parseHand("345m678p456s55p"),
                            melds: [try Meld.parse("pon(2'22m,L)")], context: ctx) == nil)
@@ -273,7 +273,7 @@ struct 本場供託と切り上げ満貫 {
     @Test func 役満はドラを加算しない() throws {
         var ctx = WinContext(seatWind: .南, roundWind: .東, winType: .ツモ,
                              winningTile: try Tile.parse("7z"))
-        ctx.doraMarkers = [try Tile.parse("9m")]  // 1m がドラ（手牌に3枚）
+        ctx.ドラ表示牌 = [try Tile.parse("9m")]  // 1m がドラ（手牌に3枚）
         let score = try #require(try ScoreCalculator().score(
             concealed: try Tile.parseHand("111222m333p555s77z"), melds: [], context: ctx))
         #expect(score.han == 13)

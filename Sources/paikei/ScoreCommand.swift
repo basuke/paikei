@@ -93,7 +93,7 @@ struct ScoreCommand: ParsableCommand {
             ダブル立直: doubleRiichi, 一発: ippatsu, lastTile: haitei,
             afterKan: rinshan, robbingKan: chankan,
             firstTurn: tenho,
-            uraMarkers: try ura.map { try Tile.parseHand($0) } ?? [])
+            裏ドラ表示牌: try ura.map { try Tile.parseHand($0) } ?? [])
         let winningTile = try Tile.parse(tile)
 
         // 矛盾の検証はコア（WinContext.validate）の責務。CLI は表示に変換するだけ。

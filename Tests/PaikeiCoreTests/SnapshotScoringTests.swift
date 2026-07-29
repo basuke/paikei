@@ -11,7 +11,7 @@ import Testing
     ) throws -> GameState {
         GameState(
             場風: 場風, 局: 1, 本場: 本場, 供託: 供託,
-            doraMarkers: dora,
+            ドラ表示牌: dora,
             players: [.自分: PlayerState(
                 席風: 席風, hand: try Tile.parseHand(hand), draw: draw,
                 melds: melds, 立直: 立直)],
@@ -55,7 +55,7 @@ import Testing
     @Test("履歴依存の情報はオプションで与える（一発・裏ドラ）")
     func 履歴依存の情報はオプションで与える() throws {
         let s = try state(立直: true)
-        let options = WinOptions(一発: true, uraMarkers: [try Tile.parse("3p")])
+        let options = WinOptions(一発: true, 裏ドラ表示牌: [try Tile.parse("3p")])
         let (score, yaku, assumptions) = try scored(
             try s.score(winningTile: try Tile.parse("6s"), winType: .ロン, options: options))
 
@@ -272,7 +272,7 @@ import Testing
         // 喰いタンなしルールでの鳴き断么九。ドラがあっても役にはならない。
         let s = GameState(
             場風: .東, 本場: 0, 供託: 0,
-            doraMarkers: [try Tile.parse("4p")],
+            ドラ表示牌: [try Tile.parse("4p")],
             players: [.自分: PlayerState(
                 席風: .西, hand: try Tile.parseHand("345m678p456s55p"),
                 melds: [try Meld.parse("pon(2'22m,L)")], 立直: false)])

@@ -43,7 +43,7 @@ public struct GameState: Sendable, Equatable {
     /// 供託リーチ棒。nil は不明。
     public var 供託: Int?
     /// ドラ表示牌。空は不明（`?` または未記述）。順序は保持。
-    public var doraMarkers: [Tile]
+    public var ドラ表示牌: [Tile]
     /// 山の残り枚数（王牌除く）。nil は不明。
     public var wall: Int?
     /// ルールプリセット名。nil は不明。
@@ -58,7 +58,7 @@ public struct GameState: Sendable, Equatable {
         局: Int? = nil,
         本場: Int? = nil,
         供託: Int? = nil,
-        doraMarkers: [Tile] = [],
+        ドラ表示牌: [Tile] = [],
         wall: Int? = nil,
         rule: String? = nil,
         players: [Player: PlayerState] = [:],
@@ -68,7 +68,7 @@ public struct GameState: Sendable, Equatable {
         self.局 = 局
         self.本場 = 本場
         self.供託 = 供託
-        self.doraMarkers = doraMarkers
+        self.ドラ表示牌 = ドラ表示牌
         self.wall = wall
         self.rule = rule
         self.players = players

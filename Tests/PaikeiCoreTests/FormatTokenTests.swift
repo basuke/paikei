@@ -45,7 +45,7 @@ struct フォーマットの表記トークン {
         #expect(state.局 == 3)
         #expect(state.本場 == 2)
         #expect(state.供託 == 1)
-        #expect(state.doraMarkers.map(\.mpsz) == ["3p", "7s"])
+        #expect(state.ドラ表示牌.map(\.mpsz) == ["3p", "7s"])
         #expect(state.wall == 42)
         #expect(state.rule == "default")
     }

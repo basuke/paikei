@@ -74,7 +74,7 @@ extension GameState {
             }
 
         case let .新ドラ(marker):
-            state.doraMarkers.append(marker)
+            state.ドラ表示牌.append(marker)
 
         case let .和了(actor, target, tile):
             // ロンなら応答対象を消費する（河に入っていた場合はそのまま残る）。

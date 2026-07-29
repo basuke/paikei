@@ -7,7 +7,7 @@ extension GameState {
     /// 含まないもの: `viewer` 自身の手牌・ツモ牌（呼び出し側が用途に応じて加える）、
     /// 他家の手牌（牌譜由来で既知でも「場に見えている」とは扱わない）。
     public func visibleTiles(from viewer: Player) -> [Tile] {
-        var tiles = doraMarkers
+        var tiles = ドラ表示牌
         for ps in players.values {
             tiles += ps.river.filter { !$0.鳴かれたか }.map(\.tile)
             for meld in ps.melds { tiles += meld.tiles }

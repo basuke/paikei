@@ -68,9 +68,9 @@ public struct WinContext: Sendable, Equatable {
     public var firstTurn: Bool
 
     /// ドラ表示牌。
-    public var doraMarkers: [Tile]
+    public var ドラ表示牌: [Tile]
     /// 裏ドラ表示牌。
-    public var uraMarkers: [Tile]
+    public var 裏ドラ表示牌: [Tile]
 
     public init(
         seatWind: Wind,
@@ -84,8 +84,8 @@ public struct WinContext: Sendable, Equatable {
         afterKan: Bool = false,
         robbingKan: Bool = false,
         firstTurn: Bool = false,
-        doraMarkers: [Tile] = [],
-        uraMarkers: [Tile] = []
+        ドラ表示牌: [Tile] = [],
+        裏ドラ表示牌: [Tile] = []
     ) {
         self.seatWind = seatWind
         self.roundWind = roundWind
@@ -98,8 +98,8 @@ public struct WinContext: Sendable, Equatable {
         self.afterKan = afterKan
         self.robbingKan = robbingKan
         self.firstTurn = firstTurn
-        self.doraMarkers = doraMarkers
-        self.uraMarkers = uraMarkers
+        self.ドラ表示牌 = ドラ表示牌
+        self.裏ドラ表示牌 = 裏ドラ表示牌
     }
 }
 

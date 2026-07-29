@@ -251,7 +251,7 @@ struct イベント適用 {
 
     @Test func 新ドラ表示() throws {
         let s = try base().applying(.新ドラ(表示牌: try Tile.parse("3p")))
-        #expect(s.doraMarkers == [Tile(suit: .筒子, rank: 3)!])
+        #expect(s.ドラ表示牌 == [Tile(suit: .筒子, rank: 3)!])
     }
 }
 

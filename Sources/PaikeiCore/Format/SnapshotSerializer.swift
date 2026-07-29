@@ -11,8 +11,8 @@ extension GameState {
         if let kyoku = 局 { lines.append("kyoku: \(kyoku)") }
         if let honba = 本場 { lines.append("honba: \(honba)") }
         if let kyotaku = 供託 { lines.append("kyotaku: \(kyotaku)") }
-        if !doraMarkers.isEmpty {
-            lines.append("dora_markers: \(doraMarkers.map(\.mpsz).joined(separator: " "))")
+        if !ドラ表示牌.isEmpty {
+            lines.append("dora_markers: \(ドラ表示牌.map(\.mpsz).joined(separator: " "))")
         }
         if let wall { lines.append("wall: \(wall)") }
         if let rule { lines.append("rule: \(rule)") }

@@ -231,7 +231,7 @@ enum ScoreReport {
             case "double-riichi", "wriichi": options.ダブル立直 = true
             case "ura":
                 guard pair.count == 2 else { throw ReportError("使い方: ura=<牌列>") }
-                options.uraMarkers = try Tile.parseHand(pair[1])
+                options.裏ドラ表示牌 = try Tile.parseHand(pair[1])
             case "bakaze":
                 guard pair.count == 2, let wind = Wind(rawValue: pair[1]) else {
                     throw ReportError("使い方: bakaze=E|S|W|N")

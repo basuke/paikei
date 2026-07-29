@@ -95,7 +95,7 @@ public enum SnapshotParser {
         case "honba": state.本場 = try parseInt(key: key, value: value)
         case "kyotaku": state.供託 = try parseInt(key: key, value: value)
         case "wall": state.wall = try parseInt(key: key, value: value)
-        case "dora_markers": state.doraMarkers = try parseTileList(key: key, value: value)
+        case "dora_markers": state.ドラ表示牌 = try parseTileList(key: key, value: value)
         case "rule": state.rule = isUnknown(value) ? nil : String(value)
         case "claim_tile": state.claim = try parseClaim(value)
         default:

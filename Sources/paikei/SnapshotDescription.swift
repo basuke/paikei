@@ -21,8 +21,8 @@ enum SnapshotDescription {
         var parts = ["\(ba)\(kyoku)局"]
         if let honba = state.本場, honba > 0 { parts.append("\(honba)本場") }
         if let kyotaku = state.供託, kyotaku > 0 { parts.append("供託\(kyotaku)") }
-        if !state.doraMarkers.isEmpty {
-            parts.append("ドラ表示:" + TileFormatter.tiles(state.doraMarkers))
+        if !state.ドラ表示牌.isEmpty {
+            parts.append("ドラ表示:" + TileFormatter.tiles(state.ドラ表示牌))
         }
         if let wall = state.wall { parts.append("残り\(wall)枚") }
         return parts.joined(separator: " ")

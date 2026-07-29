@@ -54,9 +54,9 @@ public struct DoraCounter: Sendable {
         let red = rules.redFives ? tiles.count(where: \.赤か) : 0
 
         let riichi = ctx.立直 || ctx.ダブル立直
-        let ura = (rules.裏ドラ && riichi) ? count(markers: ctx.uraMarkers, in: tiles) : 0
+        let ura = (rules.裏ドラ && riichi) ? count(markers: ctx.裏ドラ表示牌, in: tiles) : 0
 
-        return DoraCount(dora: count(markers: ctx.doraMarkers, in: tiles), red: red, ura: ura)
+        return DoraCount(dora: count(markers: ctx.ドラ表示牌, in: tiles), red: red, ura: ura)
     }
 
     /// 表示牌ごとに、対応するドラ牌が手にある枚数を合計する。
