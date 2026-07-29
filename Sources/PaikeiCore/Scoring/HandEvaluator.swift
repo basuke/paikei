@@ -49,7 +49,8 @@ public struct HandEvaluator: Sendable {
         try hands.map(evaluate).max { lhs, rhs in
             if lhs.han != rhs.han { return lhs.han < rhs.han }
             if lhs.fu != rhs.fu { return lhs.fu < rhs.fu }
-            return canonicalKey(lhs.hand) > canonicalKey(rhs.hand)
+            // キーが小さい方を採る（max なので「大きい＝劣る」と返す）。
+            return precedes(canonicalKey(rhs.hand), canonicalKey(lhs.hand))
         }
     }
 
@@ -58,10 +59,22 @@ public struct HandEvaluator: Sendable {
         try best(WinningHand.readings(concealed: concealed, melds: melds, context: context))
     }
 
-    /// 同点時の決着用キー。面子を正規化表記で並べた文字列。
-    private func canonicalKey(_ hand: WinningHand) -> String {
-        guard let d = hand.decomposition else { return "" }
-        let sets = d.sets.map { $0.tiles.mpszString() }.sorted().joined(separator: "|")
-        return "\(sets)/\(d.pair.tiles.mpszString())"
+    /// 同点時の決着用キー。面子を牌列で並べ、雀頭を最後に置く。
+    ///
+    /// 表記（MPSZ 文字列）には依存させない。フォーマットが変われば高点法の答えが
+    /// 変わる、という結びつきを作らないため。
+    private func canonicalKey(_ hand: WinningHand) -> [[Tile]] {
+        guard let d = hand.decomposition else { return [] }
+        return d.sets.map(\.tiles).sorted(by: precedes) + [d.pair.tiles]
+    }
+
+    /// 牌列の辞書式比較。`Tile` の並び順はスート → 数値 → 赤が先。
+    private func precedes(_ lhs: [Tile], _ rhs: [Tile]) -> Bool {
+        lhs.lexicographicallyPrecedes(rhs)
+    }
+
+    /// 面子列の辞書式比較。
+    private func precedes(_ lhs: [[Tile]], _ rhs: [[Tile]]) -> Bool {
+        lhs.lexicographicallyPrecedes(rhs, by: precedes)
     }
 }
