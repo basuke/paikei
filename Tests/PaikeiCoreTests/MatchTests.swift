@@ -146,7 +146,7 @@ struct 局の連鎖 {
         let s = state()
         // 上家が飛ぶ額なので、トビ終了を切って点数移動だけを見る。
         let next = try 続行(s.applying(.和了(of: .下家, from: .下家, score), at: end(s),
-                                     rules: MatchRules(bankruptcyEnds: false)))
+                                     rules: RuleSet(bankruptcyEnds: false)))
         #expect(next.scores[.下家] == 57000)
         #expect(next.scores[.上家] == -7000)
         #expect(next.scores[.対面] == 25000)
@@ -231,7 +231,7 @@ struct 対局 {
     }
 
     @Test func 東風戦は東4で終わる() throws {
-        var match = Match(rules: MatchRules(length: .東風戦))
+        var match = Match(rules: RuleSet(length: .東風戦))
         // 毎局、親でない下家が和了して親が流れる。
         for _ in 0..<3 {
             try 進める(&match, 和了: match.state.dealer.seated(.下家),
@@ -248,7 +248,7 @@ struct 対局 {
     }
 
     @Test func 半荘戦は南4まで続く() throws {
-        var match = Match(rules: MatchRules(length: .半荘戦))
+        var match = Match(rules: RuleSet(length: .半荘戦))
         for _ in 0..<7 {
             try 進める(&match, 和了: match.state.dealer.seated(.下家),
                      放銃: match.state.dealer.seated(.対面))
@@ -264,7 +264,7 @@ struct 対局 {
 
     @Test("オーラスで親が和了すれば連荘して続く")
     func オーラスの連荘() throws {
-        var match = Match(rules: MatchRules(length: .東風戦))
+        var match = Match(rules: RuleSet(length: .東風戦))
         for _ in 0..<3 {
             try 進める(&match, 和了: match.state.dealer.seated(.下家),
                      放銃: match.state.dealer.seated(.対面))
@@ -278,7 +278,7 @@ struct 対局 {
 
     @Test("アガリやめなら、オーラスで親がトップのまま和了して終局")
     func アガリやめ() throws {
-        var match = Match(rules: MatchRules(length: .東風戦, agariyame: true))
+        var match = Match(rules: RuleSet(length: .東風戦, agariyame: true))
         for _ in 0..<3 {
             try 進める(&match, 和了: match.state.dealer.seated(.下家),
                      放銃: match.state.dealer.seated(.対面))
@@ -288,7 +288,7 @@ struct 対局 {
     }
 
     @Test func トビで即終局() throws {
-        var match = Match(rules: MatchRules(length: .半荘戦))
+        var match = Match(rules: RuleSet(length: .半荘戦))
         let 役満 = Score(han: 13, fu: 0, limit: .役満(複合数: 1), dora: DoraCount(),
                         payment: .ロン(32000), liable: nil, honba: 0, kyotaku: 0)
         let timeline = GameTimeline(snapshot: match.state.snapshot())
@@ -299,7 +299,7 @@ struct 対局 {
     }
 
     @Test func トビを無効にすれば続行する() throws {
-        var match = Match(rules: MatchRules(length: .半荘戦, bankruptcyEnds: false))
+        var match = Match(rules: RuleSet(length: .半荘戦, bankruptcyEnds: false))
         let 役満 = Score(han: 13, fu: 0, limit: .役満(複合数: 1), dora: DoraCount(),
                         payment: .ロン(32000), liable: nil, honba: 0, kyotaku: 0)
         let timeline = GameTimeline(snapshot: match.state.snapshot())
@@ -317,7 +317,7 @@ struct 対局 {
     }
 
     @Test func 各局の記録が残る() throws {
-        var match = Match(rules: MatchRules(length: .東風戦))
+        var match = Match(rules: RuleSet(length: .東風戦))
         try 進める(&match, 和了: .下家, 放銃: .対面)
         let record = try #require(match.records.first)
         #expect(record.start.kyoku == 1)
@@ -377,7 +377,7 @@ struct 点数の保存則 {
             .流局(理由: .九種九牌, テンパイ: [], 流し満貫: []),
         ]
         // トビは無効にして、結末そのものの点数移動だけを見る。
-        let rules = MatchRules(bankruptcyEnds: false)
+        let rules = RuleSet(bankruptcyEnds: false)
 
         for result in 結末 {
             for 立直者 in [[], [Player.対面], [.自分, .下家, .対面, .上家]] {
@@ -399,7 +399,7 @@ struct 点数の保存則 {
 
     @Test("半荘を通しても総額が変わらない")
     func 半荘を通しても変わらない() throws {
-        var match = Match(rules: MatchRules(bankruptcyEnds: false))
+        var match = Match(rules: RuleSet(bankruptcyEnds: false))
         let 満貫 = Score(han: 5, fu: 30, limit: .満貫, dora: DoraCount(),
                        payment: .ロン(8000), liable: nil, honba: 0, kyotaku: 0)
         let 初期 = 総額(match.state)
@@ -454,7 +454,7 @@ struct 対局の入力検証 {
 
     @Test("終局後の記録は断る")
     func 終局後は断る() throws {
-        var match = Match(rules: MatchRules(length: .東風戦))
+        var match = Match(rules: RuleSet(length: .東風戦))
         let 役満 = Score(han: 13, fu: 0, limit: .役満(複合数: 1), dora: DoraCount(),
                         payment: .ロン(32000), liable: nil, honba: 0, kyotaku: 0)
         try match.finish(GameTimeline(snapshot: match.state.snapshot()),

@@ -36,7 +36,7 @@ public struct FinishedGame: Sendable, Equatable {
 /// - 途中流局（四風連打など）で本場が増えるか。連荘だけは理由から判定するが、
 ///   本場は通常の流局と同じに増やす
 public struct Match: Sendable, Equatable {
-    public let rules: MatchRules
+    public let rules: RuleSet
     /// 起家（東1局の親）。同点時の順位付けの基準にもなる。
     public let firstDealer: Player
     /// 終わった局。
@@ -45,7 +45,7 @@ public struct Match: Sendable, Equatable {
     public private(set) var state: MatchState
     public private(set) var isFinished: Bool
 
-    public init(rules: MatchRules = .standard, firstDealer: Player = .自分) {
+    public init(rules: RuleSet = .standard, firstDealer: Player = .自分) {
         self.rules = rules
         self.firstDealer = firstDealer
         self.records = []

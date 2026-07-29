@@ -37,17 +37,18 @@
     `GameResult`）。配牌から和了・流局まで
   - `Shanten/` … シャンテン数・受け入れ・何切る
   - `Agari/` … 面子分解・役・平和・和了形の読み
-  - `Scoring/` … 符・点数・ドラ・`RuleSet`・応答の選択肢
+  - `Scoring/` … 符・点数・ドラ・応答の選択肢
   - `Safety/` … 論理捨て牌履歴・フリテン・安牌・見えている牌
   - `Format/` … `.paikei` の入出力。`Format/Stream/` は仕様§8とMJAI方言
   - `Bot/` … 局面から手を決める打ち手
-  - `Match/` … 局の連鎖（`Match` / `MatchState` / `MatchRules`）。半荘・東風戦
+  - `Match/` … 局の連鎖（`Match` / `MatchState`）。半荘・東風戦
+  - `Rules/` … `RuleSet`。層をまたぐ卓の取り決めなのでどの層にも属さない
 - `Sources/paikei/` … CLI実行ファイル（PaikeiCoreに依存）
 - `Tests/PaikeiCoreTests/Fixtures/` … 仕様§9のサンプルとシャンテン正解データ
 
 設計原則:
 
-- **ライブラリ内の依存は一方向**: Model/Game/Shanten/Agari/Scoring/Safety/Bot/Match
+- **ライブラリ内の依存は一方向**: Rules/Model/Game/Shanten/Agari/Scoring/Safety/Bot/Match
   （ドメイン層）は Format/ の型を一切参照しない。フォーマットは入出力の1形式にすぎず、
   依存は常に Format → ドメイン層 の向きのみ
 - **ドメイン層の中も三層**: `Model`（素材）→ `Game`（局）→ `Match`（対局）。
@@ -172,5 +173,10 @@ REPLのコマンドは局面フェーズ（仕様§7）で有効性をチェッ�
 
 喰いタンあり・赤3枚（0m/0p/0s各1）・切り上げ満貫なし・一発/裏あり・
 包（大三元/大四喜）あり・大明槓の責任払いなし・人和なし・流し満貫あり（流局扱い）。
-`RuleSet` 構造体に集約し、ハードコードしない（仕様§10の論点3）。
-評価器には注入する（`YakuDetector(rules:)` `FuCalculator(rules:)` など）。
+対局は半荘戦・25000点持ち・トビ終了・アガリやめなし。
+
+**`RuleSet` に集約し、ハードコードしない**（仕様§10の論点3）。1局のルール
+（役・符・点数）と対局のルール（局の繋ぎ方）を1つの型に入れてある —— 雀荘の卓に
+貼ってある取り決めが1枚なのと同じで、`rule:` プリセットも1つ引けば済む。
+層をまたぐので `Rules/` に置き、評価器にも `Match` にも注入する
+（`YakuDetector(rules:)` `FuCalculator(rules:)` `Match(rules:)`）。
