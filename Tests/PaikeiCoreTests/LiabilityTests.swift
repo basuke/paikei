@@ -156,7 +156,7 @@ struct 包の判定 {
         let analysis = try 大明槓の局面().score(
             winningTile: try Tile.parse("8s"), winType: .ツモ,
             options: WinOptions(afterKan: true),
-            rules: RuleSet(daiminkanLiability: true))
+            rules: RuleSet(大明槓の責任払い: true))
         guard case let .点数(score, _, _) = analysis else {
             Issue.record("点数が出るはず: \(analysis)")
             return
@@ -175,7 +175,7 @@ struct 包の判定 {
         state.claim = ClaimTile(tile: try Tile.parse("8s"), from: .対面)
         let analysis = try state.score(
             winningTile: try Tile.parse("8s"), winType: .ロン,
-            rules: RuleSet(daiminkanLiability: true))
+            rules: RuleSet(大明槓の責任払い: true))
         // 役が無いので和了れない（嶺上開花が付かないため）。
         #expect(analysis == .和了できない(.役なし))
     }

@@ -143,7 +143,7 @@ struct 人和 {
 
     @Test func 役満として採用できる() throws {
         guard case let .点数(score, yaku, _) = try 解析(
-            state(), rules: RuleSet(renhou: .役満)) else {
+            state(), rules: RuleSet(人和: .役満)) else {
             Issue.record("点数が出るはず")
             return
         }
@@ -155,7 +155,7 @@ struct 人和 {
     @Test("満貫として採用すると翻として扱われ、他の役と複合する")
     func 満貫として採用できる() throws {
         guard case let .点数(score, yaku, _) = try 解析(
-            state(), rules: RuleSet(renhou: .満貫)) else {
+            state(), rules: RuleSet(人和: .満貫)) else {
             Issue.record("点数が出るはず")
             return
         }
@@ -168,7 +168,7 @@ struct 人和 {
 
     @Test("既に打っていれば第一巡ではない")
     func 既に打っていれば成立しない() throws {
-        let yaku = try 役(state(river: ["1z"]), rules: RuleSet(renhou: .役満))
+        let yaku = try 役(state(river: ["1z"]), rules: RuleSet(人和: .役満))
         #expect(!yaku.contains(.人和(.役満)))
     }
 
@@ -176,13 +176,13 @@ struct 人和 {
     func 第一ツモを過ぎれば成立しない() throws {
         // 南家の第一ツモは山 70−2。そこまで来ていれば人和の窓は閉じている。
         let yaku = try 役(state(wall: GameState.wallAfterDeal - 2),
-                         rules: RuleSet(renhou: .役満))
+                         rules: RuleSet(人和: .役満))
         #expect(!yaku.contains(.人和(.役満)))
     }
 
     @Test("親には成立しない（第一巡に打牌が存在しない）")
     func 親には成立しない() throws {
-        let yaku = try 役(state(席風: .東), rules: RuleSet(renhou: .役満))
+        let yaku = try 役(state(席風: .東), rules: RuleSet(人和: .役満))
         #expect(!yaku.contains(.人和(.役満)))
     }
 }

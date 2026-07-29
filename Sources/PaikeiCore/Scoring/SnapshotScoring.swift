@@ -3,7 +3,7 @@
 /// 導出できるものは解析側が埋めるので、ここで渡すのは**導出できないときの補い**。
 /// 指定した値は導出結果と OR を取るので、明示的に立てたフラグが消えることはない。
 public struct WinOptions: Sendable, Equatable {
-    public var doubleRiichi: Bool
+    public var ダブル立直: Bool
     /// 一発。`GameTimeline` が履歴から導出する。
     public var 一発: Bool
     /// 海底摸月 / 河底撈魚。`wall == 0` から導出する。
@@ -20,7 +20,7 @@ public struct WinOptions: Sendable, Equatable {
     public var uraMarkers: [Tile]
 
     public init(
-        doubleRiichi: Bool = false,
+        ダブル立直: Bool = false,
         一発: Bool = false,
         lastTile: Bool = false,
         afterKan: Bool = false,
@@ -28,7 +28,7 @@ public struct WinOptions: Sendable, Equatable {
         firstTurn: Bool = false,
         uraMarkers: [Tile] = []
     ) {
-        self.doubleRiichi = doubleRiichi
+        self.ダブル立直 = ダブル立直
         self.一発 = 一発
         self.lastTile = lastTile
         self.afterKan = afterKan
@@ -179,7 +179,7 @@ extension GameState {
 
         let riichi = assume(ps.立直, false, .立直不明)
         if doraMarkers.isEmpty { assumptions.append(.ドラ表示牌不明) }
-        if riichi && rules.uraDora && options.uraMarkers.isEmpty {
+        if riichi && rules.裏ドラ && options.uraMarkers.isEmpty {
             assumptions.append(.裏ドラ表示牌不明)
         }
         let honbaCount = assume(本場, 0, .本場不明)
@@ -189,8 +189,8 @@ extension GameState {
             WinContext(
                 seatWind: 席風, roundWind: round, winType: winType,
                 winningTile: winningTile,
-                立直: riichi || options.doubleRiichi,
-                doubleRiichi: options.doubleRiichi,
+                立直: riichi || options.ダブル立直,
+                ダブル立直: options.ダブル立直,
                 一発: options.一発,
                 lastTile: options.lastTile,
                 afterKan: options.afterKan,

@@ -213,7 +213,7 @@ struct 本場供託と切り上げ満貫 {
         #expect(DoraCounter().count(noRiichi).ura == 0)
 
         let ruleOff = try hand("234m55678p234567s", ura: "4p", 立直: true, win: "8p")
-        #expect(DoraCounter(rules: RuleSet(uraDora: false)).count(ruleOff).ura == 0)
+        #expect(DoraCounter(rules: RuleSet(裏ドラ: false)).count(ruleOff).ura == 0)
     }
 
     @Test("副露の牌もドラに数える（槓は4枚とも）")
@@ -257,7 +257,7 @@ struct 本場供託と切り上げ満貫 {
         var ctx = WinContext(seatWind: .南, roundWind: .東, winType: .ロン,
                              winningTile: try Tile.parse("5p"))
         ctx.doraMarkers = [try Tile.parse("4p")]
-        let calc = ScoreCalculator(rules: RuleSet(kuitan: false))
+        let calc = ScoreCalculator(rules: RuleSet(喰いタン: false))
         #expect(try calc.score(concealed: try Tile.parseHand("345m678p456s55p"),
                            melds: [try Meld.parse("pon(2'22m,L)")], context: ctx) == nil)
     }

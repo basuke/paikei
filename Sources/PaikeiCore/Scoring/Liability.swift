@@ -31,7 +31,7 @@ public struct LiabilityDetector: Sendable {
         }
 
         // 大明槓の責任払い: 鳴かせた牌で槓させ、その嶺上牌で和了られた。
-        if rules.daiminkanLiability, afterKan,
+        if rules.大明槓の責任払い, afterKan,
            let last = melds.last, last.kind == .大明槓 {
             return feeder(of: last, winner: winner)
         }

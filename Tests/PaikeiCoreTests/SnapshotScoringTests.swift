@@ -277,10 +277,10 @@ import Testing
                 席風: .西, hand: try Tile.parseHand("345m678p456s55p"),
                 melds: [try Meld.parse("pon(2'22m,L)")], 立直: false)])
         #expect(try s.score(winningTile: try Tile.parse("5p"), winType: .ロン,
-                        rules: RuleSet(kuitan: false)) == .和了できない(.役なし))
+                        rules: RuleSet(喰いタン: false)) == .和了できない(.役なし))
         // 喰いタンありなら断么九で和了できる。
         guard case .点数 = try s.score(winningTile: try Tile.parse("5p"), winType: .ロン,
-                                     rules: RuleSet(kuitan: true)) else {
+                                     rules: RuleSet(喰いタン: true)) else {
             Issue.record("喰いタンありなら和了できるはず")
             return
         }

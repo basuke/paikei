@@ -11,7 +11,7 @@ import Testing
         winType: WinType = .ツモ,
         winTile: String? = nil,
         立直: Bool = false,
-        doubleRiichi: Bool = false,
+        ダブル立直: Bool = false,
         一発: Bool = false,
         afterKan: Bool = false,
         robbingKan: Bool = false
@@ -20,7 +20,7 @@ import Testing
         let wt = try Tile.parse(winTile ?? tiles[0].mpsz)
         let ctx = WinContext(
             seatWind: 席風, roundWind: round, winType: winType, winningTile: wt,
-            立直: 立直, doubleRiichi: doubleRiichi, 一発: 一発,
+            立直: 立直, ダブル立直: ダブル立直, 一発: 一発,
             afterKan: afterKan, robbingKan: robbingKan)
         let evaluator = HandEvaluator(rules: .standard)
         let best = try #require(try evaluator.best(concealed: tiles, melds: melds, context: ctx))
@@ -42,7 +42,7 @@ import Testing
             _ = try self.best("234567m234p55p678s", 一発: true)
         }
         #expect(try best("234567m234p55p678s", 立直: true, 一発: true).contains(.一発))
-        #expect(try best("234567m234p55p678s", doubleRiichi: true, 一発: true).contains(.一発))
+        #expect(try best("234567m234p55p678s", ダブル立直: true, 一発: true).contains(.一発))
     }
 
     @Test("嶺上開花はツモ限定（ロンとの併用は矛盾としてエラー）")

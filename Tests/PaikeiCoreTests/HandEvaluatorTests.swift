@@ -64,12 +64,12 @@ struct 高点法 {
         let ctx = try context(winType: .ロン, winTile: "5p")
 
         let withKuitan = try #require(
-            try HandEvaluator(rules: RuleSet(kuitan: true)).best(concealed: tiles, melds: melds, context: ctx))
+            try HandEvaluator(rules: RuleSet(喰いタン: true)).best(concealed: tiles, melds: melds, context: ctx))
         #expect(withKuitan.yaku == [.断么九])
         #expect(withKuitan.han == 1)
 
         let withoutKuitan = try #require(
-            try HandEvaluator(rules: RuleSet(kuitan: false)).best(concealed: tiles, melds: melds, context: ctx))
+            try HandEvaluator(rules: RuleSet(喰いタン: false)).best(concealed: tiles, melds: melds, context: ctx))
         #expect(withoutKuitan.yaku.isEmpty)
         #expect(withoutKuitan.han == 0)
     }

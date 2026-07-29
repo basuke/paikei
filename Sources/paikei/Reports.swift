@@ -178,7 +178,7 @@ enum ScoreReport {
         var timeline = timeline
         if let bakaze { timeline.snapshot.場風 = bakaze }
         if let seat { timeline.snapshot.players[player, default: PlayerState()].席風 = seat }
-        if options.doubleRiichi {
+        if options.ダブル立直 {
             timeline.snapshot.players[player, default: PlayerState()].立直 = true
         }
         let analysis = try timeline.score(
@@ -195,7 +195,7 @@ enum ScoreReport {
         var state = state
         if let bakaze { state.場風 = bakaze }
         if let seat { state.players[player, default: PlayerState()].席風 = seat }
-        if options.doubleRiichi { state.players[player, default: PlayerState()].立直 = true }
+        if options.ダブル立直 { state.players[player, default: PlayerState()].立直 = true }
 
         let analysis = try state.score(
             for: player, winningTile: winningTile, winType: winType, options: options)
@@ -228,7 +228,7 @@ enum ScoreReport {
             case "rinshan": options.afterKan = true
             case "chankan": options.robbingKan = true
             case "riichi": riichi = true
-            case "double-riichi", "wriichi": options.doubleRiichi = true
+            case "double-riichi", "wriichi": options.ダブル立直 = true
             case "ura":
                 guard pair.count == 2 else { throw ReportError("使い方: ura=<牌列>") }
                 options.uraMarkers = try Tile.parseHand(pair[1])

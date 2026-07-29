@@ -109,7 +109,7 @@ extension MatchState {
         // 親が流れれば規定局数を終えたということ。
         guard continues else { return true }
         // 連荘でも、アガリやめの卓なら親がトップで終局。
-        guard rules.agariyame, case .和了(let winner, _, _) = result, winner == dealer else {
+        guard rules.アガリやめ, case .和了(let winner, _, _) = result, winner == dealer else {
             return false
         }
         let top = scores.values.max() ?? 0

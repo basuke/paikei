@@ -103,7 +103,7 @@ public struct YakuDetector: Sendable {
         let ctx = hand.context
         // 矛盾した組み合わせ（一発×立直なし、嶺上×ロン、槍槓×ツモ）は
         // detect 冒頭の validate() で拒否済み。ここではフラグを信頼してよい。
-        if ctx.doubleRiichi { result.append(.ダブル立直) }
+        if ctx.ダブル立直 { result.append(.ダブル立直) }
         else if ctx.立直 { result.append(.立直) }
         if ctx.一発 && rules.一発 { result.append(.一発) }
         if hand.門前か && ctx.winType == .ツモ { result.append(.門前清自摸和) }
@@ -118,7 +118,7 @@ public struct YakuDetector: Sendable {
                 result.append(ctx.seatWind == .東 ? .天和 : .地和)
             case .ロン:
                 // 親の第一巡にはまだ誰も打っていないので、人和は子だけ。
-                if ctx.seatWind != .東, let rank = rules.renhou {
+                if ctx.seatWind != .東, let rank = rules.人和 {
                     result.append(.人和(rank))
                 }
             }
@@ -133,7 +133,7 @@ public struct YakuDetector: Sendable {
         let tiles = hand.allTiles
 
         if tiles.allSatisfy(\.中張牌か) {
-            if hand.門前か || rules.kuitan { result.append(.断么九) }
+            if hand.門前か || rules.喰いタン { result.append(.断么九) }
         }
 
         if tiles.allSatisfy(\.字牌か) { result.append(.字一色) }

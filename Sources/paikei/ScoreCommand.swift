@@ -90,7 +90,7 @@ struct ScoreCommand: ParsableCommand {
         }
 
         let options = WinOptions(
-            doubleRiichi: doubleRiichi, 一発: ippatsu, lastTile: haitei,
+            ダブル立直: doubleRiichi, 一発: ippatsu, lastTile: haitei,
             afterKan: rinshan, robbingKan: chankan,
             firstTurn: tenho,
             uraMarkers: try ura.map { try Tile.parseHand($0) } ?? [])

@@ -278,7 +278,7 @@ struct 対局 {
 
     @Test("アガリやめなら、オーラスで親がトップのまま和了して終局")
     func アガリやめ() throws {
-        var match = Match(rules: RuleSet(length: .東風戦, agariyame: true))
+        var match = Match(rules: RuleSet(length: .東風戦, アガリやめ: true))
         for _ in 0..<3 {
             try 進める(&match, 和了: match.state.dealer.seated(.下家),
                      放銃: match.state.dealer.seated(.対面))

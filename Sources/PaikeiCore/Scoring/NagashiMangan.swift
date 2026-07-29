@@ -23,7 +23,7 @@ extension GameState {
     /// 支払いは満貫のツモ払い。積み棒が乗るかは `RuleSet` の扱い次第で、
     /// 流局扱いなら乗らない（積み棒は和了者が受け取るもの）。
     public func 流し満貫(rules: RuleSet = .standard) -> [NagashiMangan] {
-        guard let handling = rules.nagashiMangan else { return [] }
+        guard let handling = rules.流し満貫 else { return [] }
 
         return Player.allCases.compactMap { player in
             guard let ps = players[player], !ps.river.isEmpty,
