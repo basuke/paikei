@@ -32,22 +32,27 @@
 新規ファイルの置き場所（未作成のディレクトリは必要になったら作る）:
 
 - `Sources/PaikeiCore/`
-  - `Model/` … 牌・風・プレイヤー・副露・河・`GameState`・`Event`・`GameTimeline`
+  - `Model/` … 牌・風・プレイヤー・副露・河。局にも対局にも属さない素材
+  - `Game/` … 1局（`GameState` / `PlayerState` / `Phase` / `Event` / `GameTimeline` /
+    `GameResult`）。配牌から和了・流局まで
   - `Shanten/` … シャンテン数・受け入れ・何切る
   - `Agari/` … 面子分解・役・平和・和了形の読み
   - `Scoring/` … 符・点数・ドラ・`RuleSet`・応答の選択肢
   - `Safety/` … 論理捨て牌履歴・フリテン・安牌・見えている牌
   - `Format/` … `.paikei` の入出力。`Format/Stream/` は仕様§8とMJAI方言
   - `Bot/` … 局面から手を決める打ち手
-  - `Match/` … 局の連鎖（`Match` / `MatchState` / `GameResult`）。半荘・東風戦
+  - `Match/` … 局の連鎖（`Match` / `MatchState` / `MatchRules`）。半荘・東風戦
 - `Sources/paikei/` … CLI実行ファイル（PaikeiCoreに依存）
 - `Tests/PaikeiCoreTests/Fixtures/` … 仕様§9のサンプルとシャンテン正解データ
 
 設計原則:
 
-- **ライブラリ内の依存は一方向**: Model/Shanten/Agari/Scoring/Safety/Bot/Match（ドメイン層）は
-  Format/ の型を一切参照しない。フォーマットは入出力の1形式にすぎず、
+- **ライブラリ内の依存は一方向**: Model/Game/Shanten/Agari/Scoring/Safety/Bot/Match
+  （ドメイン層）は Format/ の型を一切参照しない。フォーマットは入出力の1形式にすぎず、
   依存は常に Format → ドメイン層 の向きのみ
+- **ドメイン層の中も三層**: `Model`（素材）→ `Game`（局）→ `Match`（対局）。
+  「局の中身」か「局と局のあいだ」かが `Game` と `Match` の境目で、
+  受け渡しは `GameResult` 1つに絞る（点数の移動は `Match` の担当）
 - 全て値型（struct/enum）。ロジックは純粋関数にしてテスト容易性を最優先
 - 「不明」は第一級の概念（仕様§1・§6）。解析関数は不足情報があるとき
   「仮定を明示して答える」か「必要な情報を宣言して断る」— 黙って推測しない。
