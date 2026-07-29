@@ -9,6 +9,9 @@ public enum TileNotationError: Error, Equatable, Sendable {
 }
 
 extension Suit {
+    /// MPSZ のスート文字（`m` `p` `s` `z`）。
+    public var letter: Character { Character(rawValue) }
+
     /// MPSZ のスート文字から Suit を得る。該当なしは nil。
     public init?(letter: Character) {
         self.init(rawValue: String(letter))

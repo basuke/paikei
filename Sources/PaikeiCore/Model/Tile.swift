@@ -2,15 +2,13 @@
 ///
 /// 正規化時の並び順は宣言順（萬子 → 筒子 → 索子 → 字牌）に一致する。
 /// rawValue は MPSZ のスート文字（仕様§2）なので ASCII 固定。
+/// 表記の読み書きは `Format/Notation/TileNotation.swift`。
 public enum Suit: String, Sendable, CaseIterable, Comparable {
     case 萬子 = "m"
     case 筒子 = "p"
     case 索子 = "s"
     /// 東南西北白發中。
     case 字牌 = "z"
-
-    /// MPSZ のスート文字（`m` `p` `s` `z`）。
-    public var letter: Character { Character(rawValue) }
 
     /// 数牌（萬子・筒子・索子）か。字牌なら false。
     public var isNumbered: Bool { self != .字牌 }
@@ -36,6 +34,8 @@ public enum Suit: String, Sendable, CaseIterable, Comparable {
 ///
 /// 赤5は「スート=数牌・rank=5・isRed=true」で表す（MPSZ では `0m` `0p` `0s`）。
 /// 赤フラグは数牌の5にのみ付けられる。
+///
+/// テキスト表記の読み書き（MPSZ / Unicode / MJAI）はすべて `Format/` の担当。
 public struct Tile: Hashable, Sendable {
     /// スート。
     public let suit: Suit
