@@ -24,7 +24,7 @@ import Testing
             afterKan: afterKan, robbingKan: robbingKan)
         let evaluator = HandEvaluator(rules: .standard)
         let best = try #require(try evaluator.best(concealed: tiles, melds: melds, context: ctx))
-        return Set(best.yaku)
+        return Set(best.役)
     }
 
     @Test("断么九 + 門前清自摸和")

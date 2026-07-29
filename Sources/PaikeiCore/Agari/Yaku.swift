@@ -298,8 +298,8 @@ public struct YakuDetector: Sendable {
         }
     }
 
-    private func dedup(_ yaku: [Yaku]) -> [Yaku] {
+    private func dedup(_ 役: [Yaku]) -> [Yaku] {
         var seen: Set<Yaku> = []
-        return yaku.filter { seen.insert($0).inserted }
+        return 役.filter { seen.insert($0).inserted }
     }
 }

@@ -6,14 +6,14 @@ public struct HandEvaluation: Sendable {
     /// 評価対象の読み方。
     public let hand: WinningHand
     /// 成立した役（役満成立時は役満のみ）。空なら役なしで和了できない。
-    public let yaku: [Yaku]
+    public let 役: [Yaku]
     /// 役の翻合計。役満は1つにつき13。
     public let han: Int
     /// 符（切り上げ済み）。役満・国士では使わない。
     public let fu: Int
 
     /// 役満か。
-    public var 役満か: Bool { yaku.contains(where: \.役満か) }
+    public var 役満か: Bool { 役.contains(where: \.役満か) }
 }
 
 /// 和了手の評価と高点法（仕様フェーズ4）。役判定器と符計算器を束ねる。
@@ -34,7 +34,7 @@ public struct HandEvaluator: Sendable {
     public func evaluate(_ hand: WinningHand) throws -> HandEvaluation {
         let yaku = try detector.detect(hand)
         let han = yaku.reduce(0) { $0 + $1.han(menzen: hand.門前か) }
-        return HandEvaluation(hand: hand, yaku: yaku, han: han, fu: fuCalculator.calculate(hand))
+        return HandEvaluation(hand: hand, 役: yaku, han: han, fu: fuCalculator.calculate(hand))
     }
 
     /// 高点法。全ての読み方から最良を選ぶ。
@@ -43,7 +43,7 @@ public struct HandEvaluator: Sendable {
     /// 結果が実行ごとに変わらないようにする（分解の列挙順は保証されないため）。
     /// `hands` が空（＝和了形でない）なら nil。
     ///
-    /// 役なしの手も評価としては返る（`yaku` が空）。「役なしだから和了できない」の
+    /// 役なしの手も評価としては返る（`役` が空）。「役なしだから和了できない」の
     /// 判断は点数計算側の責務で、ここでは形の評価に徹する。
     public func best(_ hands: [WinningHand]) throws -> HandEvaluation? {
         try hands.map(evaluate).max { lhs, rhs in

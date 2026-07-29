@@ -10,31 +10,31 @@ import Testing
         round: Wind = .東,
         winType: WinType = .ツモ,
         winTile: String
-    ) throws -> (fu: Int, yaku: Set<Yaku>) {
+    ) throws -> (fu: Int, 役: Set<Yaku>) {
         let tiles = try Tile.parseHand(concealed)
         let ctx = WinContext(
             seatWind: 席風, roundWind: round, winType: winType,
             winningTile: try Tile.parse(winTile))
         // 高点法（翻→符）は HandEvaluator の責務。
         let best = try #require(try HandEvaluator().best(concealed: tiles, melds: melds, context: ctx))
-        return (best.fu, Set(best.yaku))
+        return (best.fu, Set(best.役))
     }
 
     @Test func 平和ツモは20符() throws {
         let r = try evaluate("234567m234p456s99p", winType: .ツモ, winTile: "6s")
-        #expect(r.yaku.contains(.平和))
+        #expect(r.役.contains(.平和))
         #expect(r.fu == 20)
     }
 
     @Test func 平和ロンは30符() throws {
         let r = try evaluate("234567m234p456s99p", winType: .ロン, winTile: "6s")
-        #expect(r.yaku.contains(.平和))
+        #expect(r.役.contains(.平和))
         #expect(r.fu == 30)
     }
 
     @Test func 七対子は25符() throws {
         let r = try evaluate("1188m2299p3377s11z", winType: .ツモ, winTile: "1z")
-        #expect(r.yaku.contains(.七対子))
+        #expect(r.役.contains(.七対子))
         #expect(r.fu == 25)
     }
 
@@ -43,7 +43,7 @@ import Testing
         // チーで456sを鳴いた全順子形。雀頭99pは役牌でない。
         let r = try evaluate("234m234p678m99p", melds: [try Meld.parse("chi(4'56s)")],
                              winType: .ロン, winTile: "4m")
-        #expect(!r.yaku.contains(.平和))  // 鳴きは平和にならない
+        #expect(!r.役.contains(.平和))  // 鳴きは平和にならない
         #expect(r.fu == 30)
     }
 
@@ -51,7 +51,7 @@ import Testing
     func 嵌張門前ツモは30符() throws {
         // 456mを5mの嵌張で和了。全順子だが両面でないため平和ではない。
         let r = try evaluate("123m456m789s234p55p", winType: .ツモ, winTile: "5m")
-        #expect(!r.yaku.contains(.平和))
+        #expect(!r.役.contains(.平和))
         #expect(r.fu == 30)  // 20 + ツモ2 + 嵌張2 = 24 → 切り上げ30
     }
 
@@ -72,7 +72,7 @@ import Testing
                              winType: .ツモ, winTile: "9s")
         // 20 + 暗槓么九32 + 字牌暗刻8 + ツモ2 + 単騎2 = 64 → 70
         #expect(r.fu == 70)
-        #expect(r.yaku.isSuperset(of: [.中, .門前清自摸和]))  // 暗槓は面前を保つ
+        #expect(r.役.isSuperset(of: [.中, .門前清自摸和]))  // 暗槓は面前を保つ
     }
 
     @Test("么九の大明槓は16符（単騎ロンで50符）")
@@ -81,7 +81,7 @@ import Testing
                              winType: .ロン, winTile: "9s")
         // 20 + 明槓么九16 + 字牌暗刻8 + 単騎2 = 46 → 50（鳴きなので門前ロン10符は付かない）
         #expect(r.fu == 50)
-        #expect(!r.yaku.contains(.門前清自摸和))
+        #expect(!r.役.contains(.門前清自摸和))
     }
 
     @Test func 加槓は大明槓と同じ明槓の符() throws {
@@ -103,7 +103,7 @@ import Testing
         let r = try evaluate("234p99s", melds: melds, winType: .ツモ, winTile: "9s")
         // 20 + 暗槓么九32 + 暗槓中張16×2 + ツモ2 + 単騎2 = 88 → 90
         #expect(r.fu == 90)
-        #expect(r.yaku.isSuperset(of: [.三槓子, .三暗刻]))
+        #expect(r.役.isSuperset(of: [.三槓子, .三暗刻]))
     }
 
     @Test func 連風牌の雀頭符はルールで変わる() throws {

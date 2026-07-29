@@ -20,11 +20,11 @@ public struct LiabilityDetector: Sendable {
 
         if rules.liability {
             // 役満を確定させたのは、該当する副露のうち最後に鳴いたもの。
-            if evaluation.yaku.contains(.大三元),
+            if evaluation.役.contains(.大三元),
                let who = feeder(completing: 3, of: 5...7, in: melds, winner: winner) {
                 return who
             }
-            if evaluation.yaku.contains(.大四喜),
+            if evaluation.役.contains(.大四喜),
                let who = feeder(completing: 4, of: 1...4, in: melds, winner: winner) {
                 return who
             }

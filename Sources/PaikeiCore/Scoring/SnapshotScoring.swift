@@ -257,7 +257,7 @@ extension GameState {
         if !corroboratesWin(player: player, winningTile: winningTile, winType: winType) {
             assumptions.insert(.仮定した和了(winningTile, winType), at: 0)
         }
-        return .点数(score, 役: best.yaku, 仮定: assumptions)
+        return .点数(score, 役: best.役, 仮定: assumptions)
     }
 
     /// 局面がこの和了を裏づけているか（仕様§7のフェーズと突き合わせる）。
@@ -291,13 +291,13 @@ extension GameState {
     ) throws -> [Requirement] {
         /// 風の選び方による違いを見るための、役と符の組。nil は和了形でないこと。
         struct Outcome: Hashable {
-            let yaku: Set<Yaku>
+            let 役: Set<Yaku>
             let fu: Int
         }
         func outcome(round: Wind, 席風: Wind) throws -> Outcome? {
             try HandEvaluator(rules: rules)
                 .best(concealed: concealed, melds: melds, context: context(round, 席風))
-                .map { Outcome(yaku: Set($0.yaku), fu: $0.fu) }
+                .map { Outcome(役: Set($0.役), fu: $0.fu) }
         }
 
         let rounds = 場風.map { [$0] } ?? Wind.allCases

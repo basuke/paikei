@@ -67,10 +67,10 @@ extension GameState {
         guard let analysis = try? score(
             for: player, winningTile: tile, winType: .ロン,
             options: WinOptions(robbingKan: robbing), rules: rules),
-            case let .点数(_, yaku, _) = analysis else { return false }
+            case let .点数(_, 役, _) = analysis else { return false }
 
         // 暗槓を槍槓できるのは国士無双だけ（ルール依存、仕様§3.4）。
-        if context == .暗槓 { return yaku.contains(.国士無双) }
+        if context == .暗槓 { return 役.contains(.国士無双) }
         return true
     }
 

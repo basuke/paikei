@@ -81,9 +81,9 @@ public struct ScoreCalculator: Sendable {
         _ evaluation: HandEvaluation, dora: DoraCount,
         本場: Int = 0, 供託: Int = 0, liable: Player? = nil
     ) -> Score? {
-        guard !evaluation.yaku.isEmpty else { return nil }
+        guard !evaluation.役.isEmpty else { return nil }
 
-        let yakumanCount = evaluation.yaku.count(where: \.役満か)
+        let yakumanCount = evaluation.役.count(where: \.役満か)
         let han = yakumanCount > 0 ? evaluation.han : evaluation.han + dora.total
         let fu = evaluation.fu
 

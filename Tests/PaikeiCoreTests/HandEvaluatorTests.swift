@@ -20,8 +20,8 @@ struct 高点法 {
             try HandEvaluator().best(concealed: tiles, melds: [],
                                  context: try context(winTile: "9s")))
         #expect(best.han == 3)
-        #expect(Set(best.yaku) == [.三暗刻, .門前清自摸和])
-        #expect(!best.yaku.contains(.一盃口))
+        #expect(Set(best.役) == [.三暗刻, .門前清自摸和])
+        #expect(!best.役.contains(.一盃口))
     }
 
     @Test func 翻が同じなら符の高い方を選ぶ() throws {
@@ -30,7 +30,7 @@ struct 高点法 {
         let tiles = try Tile.parseHand("22334455m678p999s")
         let ctx = try context(winTile: "5m")
         let best = try #require(try HandEvaluator().best(concealed: tiles, melds: [], context: ctx))
-        #expect(best.yaku.contains(.一盃口))
+        #expect(best.役.contains(.一盃口))
         // 20 + 999s暗刻8 + ツモ2 + 単騎2 = 32 → 40（両面読みなら30符）
         #expect(best.fu == 40)
         #expect(best.hand.decomposition?.pair.leadTile == Tile(suit: .萬子, rank: 5))
@@ -44,7 +44,7 @@ struct 高点法 {
         for _ in 0..<20 {
             let again = try #require(try HandEvaluator().best(concealed: tiles, melds: [], context: ctx))
             #expect(again.fu == first.fu)
-            #expect(again.yaku == first.yaku)
+            #expect(again.役 == first.役)
             #expect(again.hand.decomposition == first.hand.decomposition)
         }
     }
@@ -65,12 +65,12 @@ struct 高点法 {
 
         let withKuitan = try #require(
             try HandEvaluator(rules: RuleSet(喰いタン: true)).best(concealed: tiles, melds: melds, context: ctx))
-        #expect(withKuitan.yaku == [.断么九])
+        #expect(withKuitan.役 == [.断么九])
         #expect(withKuitan.han == 1)
 
         let withoutKuitan = try #require(
             try HandEvaluator(rules: RuleSet(喰いタン: false)).best(concealed: tiles, melds: melds, context: ctx))
-        #expect(withoutKuitan.yaku.isEmpty)
+        #expect(withoutKuitan.役.isEmpty)
         #expect(withoutKuitan.han == 0)
     }
 
@@ -89,7 +89,7 @@ struct 高点法 {
         let double = try #require(
             try HandEvaluator().best(concealed: try Tile.parseHand("99s"), melds: melds,
                                  context: try context(winTile: "9s")))
-        #expect(Set(double.yaku) == [.四暗刻, .四槓子])
+        #expect(Set(double.役) == [.四暗刻, .四槓子])
         #expect(double.han == 26)
     }
 
@@ -103,8 +103,8 @@ struct 高点法 {
             .best(concealed: tiles, melds: [], context: ctx))
         let off = try #require(try HandEvaluator(rules: RuleSet(一発: false))
             .best(concealed: tiles, melds: [], context: ctx))
-        #expect(on.yaku.contains(.一発))
-        #expect(!off.yaku.contains(.一発))
+        #expect(on.役.contains(.一発))
+        #expect(!off.役.contains(.一発))
         #expect(on.han == off.han + 1)
     }
 }
